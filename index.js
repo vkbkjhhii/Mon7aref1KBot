@@ -1,126 +1,69 @@
-const { Telegraf, Markup } = require("telegraf");
+const TelegramBot = require('node-telegram-bot-api');
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+// 🔴 حط التوكن بتاعك بين العلامات دي بدل النجوم
+const token = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
 
-const developerId = 7771042305;
-const channelUsername = "@x_1fn";
+const bot = new TelegramBot(token, { polling: true });
 
-const pendingSupport = new Map();
+// ===============================
+// رسالة الترحيب عند /start
+// ===============================
 
-// ================== تحقق اشتراك ==================
-async function checkSubscription(ctx) {
-  try {
-    const member = await ctx.telegram.getChatMember(channelUsername, ctx.from.id);
-    return ["member", "administrator", "creator"].includes(member.status);
-  } catch {
-    return false;
-  }
-}
+bot.onText(/\/start/, async (msg) => {
+    const chatId = msg.chat.id;
+    const firstName = msg.from.first_name || "مستخدم";
+    const userId = msg.from.id;
+    const username = msg.from.username ? "@" + msg.from.username : "لا يوجد";
+    const time = new Date().toLocaleString("ar-EG");
 
-async function forceSubscribe(ctx) {
-  return ctx.reply(
-    "🚫 يجب الاشتراك في القناة أولاً لاستخدام البوت",
-    Markup.inlineKeyboard([
-      [Markup.button.url("📢 اشترك الآن", `https://t.me/x_1fn`)],
-      [Markup.button.callback("✅ تحقق من الاشتراك", "check_sub")]
-    ])
-  );
-}
+    const welcomeMessage = `
+👋 أهلاً بك في البوت الخاص بنا
 
-// ================== Start ==================
-bot.start(async (ctx) => {
-  const subscribed = await checkSubscription(ctx);
-  if (!subscribed) return forceSubscribe(ctx);
+👤 الاسم: ${firstName}
+🆔 الايدي: ${userId}
+🔗 اليوزر: ${username}
+⏰ وقت الدخول: ${time}
+🤖 اسم البوت: MonZaref1KBot
+`;
 
-  ctx.reply(
-    "👋 أهلاً بك في البوت الاحترافي\n\nاختر من القائمة:",
-    Markup.inlineKeyboard([
-      [Markup.button.callback("🔥 إنشاء يوزر مميز", "create_user")],
-      [Markup.button.callback("🎮 الألعاب", "games")],
-      [Markup.button.callback("📩 تواصل مع المطور", "support")]
-    ])
-  );
+    bot.sendMessage(chatId, welcomeMessage, {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "📱 أرقام فيك", callback_data: "fake_numbers" }],
+                [{ text: "✨ زخرفة", callback_data: "decorate" }],
+                [{ text: "🎮 ألعاب", callback_data: "games" }],
+                [{ text: "👑 يوزر مميز", callback_data: "vip_user" }],
+                [{ text: "📞 تواصل مع المطور", url: "https://t.me/f_zm1" }]
+            ]
+        }
+    });
 });
 
-bot.action("check_sub", async (ctx) => {
-  const subscribed = await checkSubscription(ctx);
-  if (subscribed) {
-    ctx.editMessageText("✅ تم التحقق بنجاح\nاكتب /start");
-  } else {
-    ctx.answerCbQuery("❌ لم تشترك بعد", { show_alert: true });
-  }
-});
+// ===============================
+// استقبال ضغط الأزرار
+// ===============================
 
-// ================== إنشاء يوزر ==================
-function generateUsernames(type) {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let results = [];
+bot.on("callback_query", (query) => {
+    const chatId = query.message.chat.id;
+    const data = query.data;
 
-  for (let i = 0; i < 10; i++) {
-    let username = "";
-    let length = type === "3" ? 3 : type === "4" ? 4 : 6;
-    for (let j = 0; j < length; j++) {
-      username += chars[Math.floor(Math.random() * chars.length)];
+    if (data === "fake_numbers") {
+        bot.sendMessage(chatId, "📱 اختر الدولة (ميزة تحت التطوير)");
     }
-    results.push("@" + username);
-  }
-  return results.join("\n");
-}
 
-bot.action("create_user", (ctx) => {
-  ctx.editMessageText(
-    "اختر نوع اليوزر:",
-    Markup.inlineKeyboard([
-      [Markup.button.callback("ثلاثي", "user_3")],
-      [Markup.button.callback("رباعي", "user_4")],
-      [Markup.button.callback("عشوائي", "user_random")]
-    ])
-  );
+    if (data === "decorate") {
+        bot.sendMessage(chatId, "✨ اكتب الاسم اللي عايز تزخرفه");
+    }
+
+    if (data === "games") {
+        bot.sendMessage(chatId, "🎮 قريبًا سيتم إضافة ألعاب XO وألعاب أخرى");
+    }
+
+    if (data === "vip_user") {
+        bot.sendMessage(chatId, "👑 سيتم توليد 10 يوزرات مميزة قريبًا");
+    }
+
+    bot.answerCallbackQuery(query.id);
 });
 
-bot.action(/user_(.+)/, (ctx) => {
-  const type = ctx.match[1];
-  const result = generateUsernames(type === "random" ? "6" : type);
-  ctx.reply("🔥 تم توليد 10 يوزرات:\n\n" + result);
-});
-
-// ================== الألعاب ==================
-bot.action("games", (ctx) => {
-  ctx.editMessageText(
-    "🎮 اختر لعبة:",
-    Markup.inlineKeyboard([
-      [Markup.button.callback("❌⭕ لعبة XO", "xo")],
-      [Markup.button.callback("🎲 رمي نرد", "dice")],
-      [Markup.button.callback("🪙 عملة", "coin")],
-      [Markup.button.callback("🔢 رقم عشوائي", "random_number")]
-    ])
-  );
-});
-
-bot.action("dice", (ctx) => ctx.replyWithDice());
-bot.action("coin", (ctx) => ctx.reply(Math.random() > 0.5 ? "🪙 وجه" : "🪙 كتابة"));
-bot.action("random_number", (ctx) => ctx.reply("🔢 " + Math.floor(Math.random() * 100)));
-
-bot.action("xo", (ctx) => {
-  ctx.reply("❌⭕ لعبة XO قادمة في التحديث القادم 🔥");
-});
-
-// ================== تواصل مع المطور ==================
-bot.action("support", (ctx) => {
-  pendingSupport.set(ctx.from.id, true);
-  ctx.reply("✍️ اكتب رسالتك الآن وسيتم إرسالها للمطور");
-});
-
-bot.on("text", async (ctx) => {
-  if (pendingSupport.get(ctx.from.id)) {
-    pendingSupport.delete(ctx.from.id);
-    await ctx.telegram.sendMessage(
-      developerId,
-      `📩 رسالة جديدة من:\n\n👤 ${ctx.from.first_name}\n🆔 ${ctx.from.id}\n\n💬 ${ctx.message.text}`
-    );
-    ctx.reply("✅ تم إرسال رسالتك للمطور");
-  }
-});
-
-bot.launch();
-console.log("Bot Running...");
+console.log("✅ Bot is running...");
