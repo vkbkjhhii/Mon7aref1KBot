@@ -1,19 +1,13 @@
 const { Telegraf } = require("telegraf");
 
-// بنجيب التوكن من Environment Variables
+if (!process.env.BOT_TOKEN) {
+  console.error("BOT_TOKEN is missing!");
+  process.exit(1);
+}
+
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// أمر /start
-bot.start((ctx) => {
-  ctx.reply("البوت اشتغل بنجاح 🔥");
-});
-
-// أي رسالة
-bot.on("text", (ctx) => {
-  ctx.reply("استلمت رسالتك 👌");
-});
-
-// تشغيل البوت
+bot.start((ctx) => ctx.reply("البوت اشتغل 🔥"));
 bot.launch();
 
 console.log("Bot is running...");
