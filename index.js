@@ -1,11 +1,47 @@
 const { Telegraf, Markup } = require("telegraf");
-const fs = require("fs");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-let userState = {};
 let aiSessions = {};
-let lastGeneratedNumber = {};
+let userJoinTime = {};
+let lastNumberData = {};
+
+/* ================== القائمة الرئيسية ================== */
+
+function mainMenu() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback("📱 أرقام فيك", "numbers"),
+      Markup.button.callback("✨ زخرفة", "decorate")
+    ],
+    [
+      Markup.button.callback("👑 يوزر مميز", "username"),
+      Markup.button.callback("🤖 ذكاء اصطناعي", "ai")
+    ]
+  ]);
+}
+
+/* ================== رسالة الدخول الاحترافية ================== */
+
+bot.start(async (ctx) => {
+  userJoinTime[ctx.from.id] = new Date().toLocaleString();
+
+  const welcome = `
+╔══════════════════╗
+║ 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 𝗣𝗥𝗢 𝗕𝗢𝗧 👑
+╠══════════════════╣
+║ 👤 الاسم : ${ctx.from.first_name}
+║ 🆔 الايدي : ${ctx.from.id}
+║ 🤖 البوت : ${ctx.botInfo.first_name}
+║ ⏳ وقت الدخول :
+║ ${userJoinTime[ctx.from.id]}
+╚══════════════════╝
+`;
+
+  await ctx.reply(welcome, mainMenu());
+});
+
+/* ================== أرقام فيك ================== */
 
 const countries = {
   "🇪🇬 مصر": "+2010",
@@ -30,27 +66,6 @@ const countries = {
   "🇰🇼 الكويت": "+965"
 };
 
-/* ================= القائمة الرئيسية ================= */
-
-function mainMenu() {
-  return Markup.inlineKeyboard([
-    [
-      Markup.button.callback("📱 أرقام فيك", "numbers"),
-      Markup.button.callback("✨ زخرفة", "decorate")
-    ],
-    [
-      Markup.button.callback("👑 يوزر مميز", "username"),
-      Markup.button.callback("🤖 ذكاء اصطناعي", "ai")
-    ]
-  ]);
-}
-
-bot.start(async (ctx) => {
-  await ctx.reply("👑 مرحباً بك في النسخة الاحترافية", mainMenu());
-});
-
-/* ================= أرقام ================= */
-
 bot.action("numbers", async (ctx) => {
   const buttons = Object.keys(countries).map(name =>
     Markup.button.callback(name, "num_" + name)
@@ -61,8 +76,6 @@ bot.action("numbers", async (ctx) => {
     rows.push([buttons[i], buttons[i + 1]]);
   }
 
-  rows.push([Markup.button.callback("🔙 رجوع", "back")]);
-
   await ctx.reply("🌍 اختر الدولة:", Markup.inlineKeyboard(rows));
 });
 
@@ -71,9 +84,10 @@ bot.action(/num_(.+)/, async (ctx) => {
   const prefix = countries[name];
 
   const number = prefix + Math.floor(1000000 + Math.random() * 9000000);
-  lastGeneratedNumber[ctx.from.id] = number;
 
-  await ctx.reply(
+  lastNumberData[ctx.from.id] = { prefix, messageId: ctx.callbackQuery.message.message_id };
+
+  await ctx.editMessageText(
     `📱 الرقم:\n${number}`,
     Markup.inlineKeyboard([
       [
@@ -86,49 +100,33 @@ bot.action(/num_(.+)/, async (ctx) => {
 });
 
 bot.action("change_number", async (ctx) => {
-  const old = lastGeneratedNumber[ctx.from.id];
-  if (!old) return;
+  const data = lastNumberData[ctx.from.id];
+  if (!data) return;
 
-  const prefix = old.slice(0, old.length - 7);
-  const number = prefix + Math.floor(1000000 + Math.random() * 9000000);
-  lastGeneratedNumber[ctx.from.id] = number;
+  const newNumber = data.prefix + Math.floor(1000000 + Math.random() * 9000000);
 
-  await ctx.reply(`🔄 رقم جديد:\n${number}`);
-});
-
-bot.action("get_code", async (ctx) => {
-  const code = Math.floor(100000 + Math.random() * 900000);
-  await ctx.reply(`📨 الكود:\n${code}`);
-});
-
-/* ================= زخرفة ================= */
-
-const decorations = Array.from({ length: 50 }, (_, i) => (name) =>
-  `★${name}★\n꧁${name}꧂\n『${name}』\n✿${name}✿\n彡${name}彡`
-);
-
-bot.action("decorate", async (ctx) => {
-  userState[ctx.from.id] = "decorate";
-  await ctx.reply("✨ اكتب الاسم:");
-});
-
-/* ================= يوزر مميز ================= */
-
-bot.action("username", async (ctx) => {
-  await ctx.reply(
-    "👑 اختر النوع:",
+  await ctx.editMessageText(
+    `📱 الرقم:\n${newNumber}`,
     Markup.inlineKeyboard([
       [
-        Markup.button.callback("ثلاثي", "user_3"),
-        Markup.button.callback("رباعي", "user_4")
+        Markup.button.callback("🔄 تغيير الرقم", "change_number"),
+        Markup.button.callback("📩 طلب كود", "get_code")
       ],
       [Markup.button.callback("🔙 رجوع", "back")]
     ])
   );
 });
 
+bot.action("get_code", async (ctx) => {
+  const code = Math.floor(100000 + Math.random() * 900000);
+  await ctx.answerCbQuery("📨 تم توليد الكود");
+  await ctx.reply(`🔢 الكود الخاص بك:\n${code}`);
+});
+
+/* ================== يوزر مميز ================== */
+
 function generateUser(length) {
-  const chars = "abcdefghijklmnopqrstuvwxyz";
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   for (let i = 0; i < length; i++) {
     result += chars[Math.floor(Math.random() * chars.length)];
@@ -136,15 +134,26 @@ function generateUser(length) {
   return "@" + result;
 }
 
-bot.action("user_3", (ctx) => ctx.reply(generateUser(3)));
-bot.action("user_4", (ctx) => ctx.reply(generateUser(4)));
+bot.action("username", async (ctx) => {
+  let list = "";
+  for (let i = 0; i < 15; i++) {
+    list += generateUser(4) + "\n";
+  }
 
-/* ================= ذكاء اصطناعي 10 دقائق ================= */
+  await ctx.reply(
+    `👑 15 يوزر مميز:\n\n${list}`,
+    Markup.inlineKeyboard([
+      [Markup.button.callback("🔙 رجوع", "back")]
+    ])
+  );
+});
+
+/* ================== ذكاء اصطناعي احترافي ================== */
 
 bot.action("ai", async (ctx) => {
   aiSessions[ctx.from.id] = Date.now();
 
-  await ctx.reply("🤖 بدأت المحادثة لمدة 10 دقائق... اكتب أي شيء.");
+  await ctx.reply("🤖 تم تفعيل الذكاء الاصطناعي لمدة 10 دقائق.\nابدأ المحادثة الآن.");
 
   setTimeout(() => {
     delete aiSessions[ctx.from.id];
@@ -152,43 +161,29 @@ bot.action("ai", async (ctx) => {
   }, 10 * 60 * 1000);
 });
 
-/* ================= رجوع ================= */
+bot.on("text", async (ctx) => {
+  if (aiSessions[ctx.from.id]) {
 
-bot.action("back", async (ctx) => {
-  await ctx.reply("🔙 رجعنا للقائمة الرئيسية", mainMenu());
+    const msg = ctx.message.text.toLowerCase();
+
+    if (msg.includes("hello") || msg.includes("hi"))
+      return ctx.reply("Hello 👋 How can I help you today?");
+
+    if (msg.includes("السلام"))
+      return ctx.reply("وعليكم السلام ورحمة الله 👋 كيف أساعدك؟");
+
+    if (msg.includes("who are you"))
+      return ctx.reply("I am an advanced AI assistant designed to help you.");
+
+    return ctx.reply("🤖 أفهم ما تقوله... أخبرني أكثر لأساعدك بشكل أفضل.");
+  }
 });
 
-/* ================= استقبال النص ================= */
+/* ================== رجوع ================== */
 
-bot.on("text", async (ctx) => {
-
-  // زخرفة
-  if (userState[ctx.from.id] === "decorate") {
-    const name = ctx.message.text;
-    const styles = decorations
-      .map(fn => fn(name))
-      .join("\n\n");
-
-    await ctx.reply("✨ الزخارف:\n\n" + styles);
-    userState[ctx.from.id] = null;
-    return;
-  }
-
-  // AI Session
-  if (aiSessions[ctx.from.id]) {
-    const replies = [
-      "فهمت عليك 👌",
-      "ممكن توضح أكتر؟",
-      "فكرة جميلة 🔥",
-      "أنا معاك",
-      "تمام"
-    ];
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    await ctx.reply(reply);
-    return;
-  }
-
+bot.action("back", async (ctx) => {
+  await ctx.reply("🔙 القائمة الرئيسية", mainMenu());
 });
 
 bot.launch();
-console.log("🚀 Bot Running");
+console.log("🚀 PRO Bot Running");
