@@ -1,6 +1,5 @@
 const { Telegraf, session } = require("telegraf")
 
-// تأكد إنك حاطط BOT_TOKEN في Railway
 const bot = new Telegraf(process.env.BOT_TOKEN)
 
 bot.use(session())
@@ -21,14 +20,17 @@ function getTime() {
 }
 
 // رسالة البداية
-bot.start((ctx) => {
-    ctx.reply("اضغط الزر لطلب رقم 👇", {
+bot.start(async (ctx) => {
+    const msg = await ctx.reply("اضغط الزر لطلب رقم 👇", {
         reply_markup: {
             inline_keyboard: [
                 [{ text: "📞 طلب رقم", callback_data: "fake_number" }]
             ]
         }
     })
+
+    // نحفظ message_id عشان نعدل نفس الرسالة
+    ctx.session.messageId = msg.message_id
 })
 
 // إنشاء رقم
@@ -55,14 +57,22 @@ ${number}
 اضغط ع الرقم لنسخه.
 `
 
-    await ctx.editMessageText(text, {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
-                [{ text: "💬 طلب الكود", callback_data: "get_code" }]
-            ]
+    await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        ctx.session.messageId,
+        null,
+        text,
+        {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
+                    [{ text: "💬 طلب الكود", callback_data: "get_code" }]
+                ]
+            }
         }
-    })
+    )
+
+    await ctx.answerCbQuery()
 })
 
 // تغيير الرقم
@@ -89,14 +99,22 @@ ${number}
 اضغط ع الرقم لنسخه.
 `
 
-    await ctx.editMessageText(text, {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
-                [{ text: "💬 طلب الكود", callback_data: "get_code" }]
-            ]
+    await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        ctx.session.messageId,
+        null,
+        text,
+        {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
+                    [{ text: "💬 طلب الكود", callback_data: "get_code" }]
+                ]
+            }
         }
-    })
+    )
+
+    await ctx.answerCbQuery()
 })
 
 // طلب الكود (وهمي)
