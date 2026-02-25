@@ -1,127 +1,217 @@
-const { Telegraf, session } = require("telegraf")
+const { Telegraf, Markup } = require("telegraf");
+const fs = require("fs");
+const axios = require("axios");
 
-const bot = new Telegraf(process.env.BOT_TOKEN)
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-bot.use(session())
+const USERS_FILE = "./users.json";
+const REQUIRED_CHANNEL = "@x_1fn";
+const DEVELOPER_ID = 7771042305;
 
-// توليد رقم عشوائي
-function generateNumber() {
-    const prefix = "+33"
-    const random = Math.floor(100000000 + Math.random() * 900000000)
-    return prefix + random
+let waitingForLink = {};
+let waitingForDecoration = {};
+
+if (!fs.existsSync(USERS_FILE)) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify({}));
 }
 
-function getTime() {
-    const now = new Date()
-    return {
-        date: now.toLocaleDateString("ar-EG"),
-        time: now.toLocaleTimeString("ar-EG")
-    }
+function saveUser(user) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  if (!users[user.id]) {
+    users[user.id] = {
+      name: user.first_name,
+      username: user.username || "لا يوجد",
+      joinedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  }
 }
 
-// رسالة البداية
+function getUser(id) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  return users[id];
+}
+
+/* ================= START ================= */
+
 bot.start(async (ctx) => {
-    const msg = await ctx.reply("اضغط الزر لطلب رقم 👇", {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: "📞 طلب رقم", callback_data: "fake_number" }]
-            ]
-        }
-    })
+  saveUser(ctx.from);
+  const userData = getUser(ctx.from.id);
 
-    // نحفظ message_id عشان نعدل نفس الرسالة
-    ctx.session.messageId = msg.message_id
-})
+  let photo = null;
+  try {
+    const profilePhotos = await ctx.telegram.getUserProfilePhotos(ctx.from.id);
+    if (profilePhotos.total_count > 0) {
+      photo = profilePhotos.photos[0][0].file_id;
+    }
+  } catch {}
 
-// إنشاء رقم
-bot.action("fake_number", async (ctx) => {
+  const caption = `
+╔═══『 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 👑 』═══╗
+┃ 👤 الاسم: ${ctx.from.first_name}
+┃ 🆔 الايدي: ${ctx.from.id}
+┃ 🤖 البوت: ${ctx.botInfo.first_name}
+┃ 📅 وقت الدخول:
+┃ ${new Date(userData.joinedAt).toLocaleString()}
+╚════════════════════╝
+  `;
 
-    const number = generateNumber()
-    const { date, time } = getTime()
+  const buttons = Markup.inlineKeyboard([
+    [
+      Markup.button.callback("📱 أرقام فيك", "fake_numbers"),
+      Markup.button.callback("✨ زخرفة", "decorate")
+    ],
+    [
+      Markup.button.callback("🎮 ألعاب", "games"),
+      Markup.button.callback("🔗 فحص", "check_link")
+    ],
+    [
+      Markup.button.callback("🔄 اشتراك", "mandatory_subscription"),
+      Markup.button.callback("🗣 المطور", "dev")
+    ]
+  ]);
 
-    ctx.session.number = number
+  if (photo) {
+    await ctx.replyWithPhoto(photo, { caption, ...buttons });
+  } else {
+    await ctx.reply(caption, buttons);
+  }
+});
 
-    const text = `
-🔔 تم الطلب
+/* ================= أرقام فيك ================= */
 
-📞 رقم الهاتف :
-${number}
+bot.action("fake_numbers", async (ctx) => {
+  await ctx.answerCbQuery();
 
-🌍 الدولة : فرنسا 🇫🇷
-🔢 رمز الدولة : +33
-🪐 المنصة : لجميع الموقع والبرامج
+  await ctx.reply(
+    "🌍 اختر الدولة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🇪🇬 مصر", "num_eg"),
+        Markup.button.callback("🇸🇦 السعودية", "num_sa")
+      ],
+      [
+        Markup.button.callback("🇺🇸 أمريكا", "num_us"),
+        Markup.button.callback("🇦🇪 الإمارات", "num_ae")
+      ]
+    ])
+  );
+});
 
-📅 تاريخ الإنشاء : ${date}
-⏰ وقت الإنشاء : ${time}
+function randomNumber(prefix, length) {
+  return prefix + Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, "0");
+}
 
-اضغط ع الرقم لنسخه.
-`
+bot.action("num_eg", (ctx) => ctx.reply("📱 " + randomNumber("010", 8)));
+bot.action("num_sa", (ctx) => ctx.reply("📱 " + randomNumber("05", 8)));
+bot.action("num_us", (ctx) => ctx.reply("📱 " + randomNumber("+1", 9)));
+bot.action("num_ae", (ctx) => ctx.reply("📱 " + randomNumber("050", 7)));
 
-    await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        ctx.session.messageId,
-        null,
-        text,
-        {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
-                    [{ text: "💬 طلب الكود", callback_data: "get_code" }]
-                ]
-            }
-        }
-    )
+/* ================= زخرفة ================= */
 
-    await ctx.answerCbQuery()
-})
+bot.action("decorate", async (ctx) => {
+  waitingForDecoration[ctx.from.id] = true;
+  await ctx.reply("✨ اكتب الاسم اللي عايز تزخرفه:");
+});
 
-// تغيير الرقم
-bot.action("change_number", async (ctx) => {
+/* ================= فحص الروابط ================= */
 
-    const number = generateNumber()
-    const { date, time } = getTime()
+bot.action("check_link", async (ctx) => {
+  waitingForLink[ctx.from.id] = true;
+  await ctx.reply("🔗 أرسل الرابط:");
+});
 
-    ctx.session.number = number
+/* ================= الألعاب ================= */
 
-    const text = `
-🔔 تم الطلب
+bot.action("games", async (ctx) => {
+  await ctx.reply(
+    "🎮 اختر لعبة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🎯 تخمين", "game1"),
+        Markup.button.callback("❓ سؤال", "game2")
+      ]
+    ])
+  );
+});
 
-📞 رقم الهاتف :
-${number}
+bot.action("game1", (ctx) => {
+  const num = Math.floor(Math.random() * 10) + 1;
+  ctx.reply(`🎯 الرقم هو: ${num}`);
+});
 
-🌍 الدولة : فرنسا 🇫🇷
-🔢 رمز الدولة : +33
-🪐 المنصة : لجميع الموقع والبرامج
+bot.action("game2", (ctx) => {
+  ctx.reply("❓ عاصمة مصر؟\n1️⃣ القاهرة\n2️⃣ دبي\n3️⃣ الرياض");
+});
 
-📅 تاريخ الإنشاء : ${date}
-⏰ وقت الإنشاء : ${time}
+/* ================= الاشتراك ================= */
 
-اضغط ع الرقم لنسخه.
-`
+bot.action("mandatory_subscription", async (ctx) => {
+  try {
+    const status = await ctx.telegram.getChatMember(REQUIRED_CHANNEL, ctx.from.id);
+    if (["member", "administrator", "creator"].includes(status.status)) {
+      ctx.reply("✅ انت مشترك بالفعل!");
+    } else {
+      ctx.reply("⚠️ لازم تشترك في القناة: " + REQUIRED_CHANNEL);
+    }
+  } catch {
+    ctx.reply("⚠️ ضيف البوت ادمن في القناة.");
+  }
+});
 
-    await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        ctx.session.messageId,
-        null,
-        text,
-        {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
-                    [{ text: "💬 طلب الكود", callback_data: "get_code" }]
-                ]
-            }
-        }
-    )
+/* ================= المطور ================= */
 
-    await ctx.answerCbQuery()
-})
+bot.action("dev", async (ctx) => {
+  ctx.reply("📩 تم إرسال طلبك للمطور.");
+  ctx.telegram.sendMessage(
+    DEVELOPER_ID,
+    `📢 طلب تواصل جديد
+👤 ${ctx.from.first_name}
+🆔 ${ctx.from.id}
+@${ctx.from.username || "لا يوجد"}`
+  );
+});
 
-// طلب الكود (وهمي)
-bot.action("get_code", async (ctx) => {
-    await ctx.answerCbQuery("📭 لا توجد رسائل جديدة", { show_alert: true })
-})
+/* ================= استقبال الرسائل ================= */
 
-bot.launch()
+bot.on("text", async (ctx) => {
 
-console.log("Bot is running...")
+  // فحص الروابط
+  if (waitingForLink[ctx.from.id] && ctx.message.text.startsWith("http")) {
+    try {
+      const response = await axios.head(ctx.message.text);
+      await ctx.reply(response.status === 200 ? "✅ الرابط صالح" : "❌ الرابط غير صالح");
+    } catch {
+      await ctx.reply("❌ فشل فحص الرابط");
+    }
+    waitingForLink[ctx.from.id] = false;
+    return;
+  }
+
+  // زخرفة
+  if (waitingForDecoration[ctx.from.id]) {
+    const name = ctx.message.text;
+
+    const decorated = `
+꧁${name}꧂
+『${name}』
+★彡${name}彡★
+꧁༒${name}༒꧂
+✿ ${name} ✿
+𓆩${name}𓆪
+    `;
+
+    await ctx.reply("✨ الزخارف:\n" + decorated);
+    waitingForDecoration[ctx.from.id] = false;
+    return;
+  }
+
+});
+
+/* ================= تشغيل ================= */
+
+bot.launch();
+console.log("Bot is running 🚀");
+
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
