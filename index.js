@@ -1,62 +1,39 @@
-const { Telegraf, Markup } = require('telegraf');
-const axios = require('axios');
+require("dotenv").config();
+const TelegramBot = require("node-telegram-bot-api");
+const OpenAI = require("openai");
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
-// تخزين المستخدمين اللي دخلوا وضع الذكاء
-let aiUsers = new Set();
-
-bot.start((ctx) => {
-  ctx.reply(
-    '👑 اهلا بيك في البوت\nاختار من القائمة 👇',
-    Markup.keyboard([
-      ['📱 أرقام فيك', '✨ زخرفة'],
-      ['🤖 ذكاء اصطناعي']
-    ]).resize()
-  );
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_KEY,
 });
 
-// دخول وضع الذكاء الاصطناعي
-bot.hears('🤖 ذكاء اصطناعي', (ctx) => {
-  aiUsers.add(ctx.from.id);
-  ctx.reply('🤖 اكتب سؤالك الآن...');
+bot.onText(/\/start/, (msg) => {
+  bot.sendMessage(msg.chat.id, "اهلا بيك 👑\nاختار من القائمة 👇", {
+    reply_markup: {
+      keyboard: [["🤖 ذكاء اصطناعي"]],
+      resize_keyboard: true,
+    },
+  });
 });
 
-// استقبال الرسائل للذكاء
-bot.on('text', async (ctx) => {
+bot.on("message", async (msg) => {
+  if (msg.text === "🤖 ذكاء اصطناعي") {
+    bot.sendMessage(msg.chat.id, "🤖 اكتب سؤالك الآن...");
+    return;
+  }
 
-  if (!aiUsers.has(ctx.from.id)) return;
-
-  const userMessage = ctx.message.text;
+  if (!msg.text || msg.text.startsWith("/")) return;
 
   try {
-    const response = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: "انت مساعد ذكي ترد بالعربي." },
-          { role: "user", content: userMessage }
-        ]
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${process.env.OPENAI_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: msg.text }],
+    });
 
-    const reply = response.data.choices[0].message.content;
-
-    ctx.reply(reply);
-
+    bot.sendMessage(msg.chat.id, response.choices[0].message.content);
   } catch (error) {
-    console.log(error.response?.data || error.message);
-    ctx.reply("❌ حصل خطأ في الذكاء الاصطناعي");
+    console.log(error);
+    bot.sendMessage(msg.chat.id, "❌ حصل خطأ في الذكاء الاصطناعي");
   }
 });
-
-bot.launch();
-
-console.log("Bot is running 🔥");
