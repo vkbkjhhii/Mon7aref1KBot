@@ -1,263 +1,217 @@
-const TelegramBot = require("node-telegram-bot-api");
+const { Telegraf, Markup } = require("telegraf");
+const fs = require("fs");
 const axios = require("axios");
-const moment = require("moment");
 
-const token = "PUT_BOT_TOKEN";
-const OPENAI_KEY = "PUT_OPENAI_KEY";
-const ADMIN_ID = 123456789;
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const bot = new TelegramBot(token, { polling: true });
+const USERS_FILE = "./users.json";
+const REQUIRED_CHANNEL = "@x_1fn";
+const DEVELOPER_ID = 7771042305;
 
-let aiSessions = {};
-let users = {};
-let userState = {};
-let banned = new Set();
-let lastMessageTime = {};
+let waitingForLink = {};
+let waitingForDecoration = {};
 
-function mainMenu() {
-  return {
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: "🧠 الذكاء الاصطناعي", callback_data: "menu_ai" }],
-        [{ text: "🎭 قسم الزخرفة", callback_data: "menu_z" }],
-        [{ text: "🔢 قسم التوليد", callback_data: "menu_gen" }],
-        [{ text: "👑 قسم اليوزرات", callback_data: "menu_user" }],
-        [{ text: "🛡 قسم الحماية", callback_data: "menu_protect" }],
-        [{ text: "⚙️ لوحة التحكم", callback_data: "admin" }]
-      ]
-    }
-  };
+if (!fs.existsSync(USERS_FILE)) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify({}));
 }
 
-function backBtn() {
-  return {
-    reply_markup: {
-      inline_keyboard: [[{ text: "🔙 رجوع", callback_data: "back" }]]
-    }
-  };
+function saveUser(user) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  if (!users[user.id]) {
+    users[user.id] = {
+      name: user.first_name,
+      username: user.username || "لا يوجد",
+      joinedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  }
+}
+
+function getUser(id) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  return users[id];
 }
 
 /* ================= START ================= */
 
-bot.onText(/\/start/, async (msg) => {
-  const id = msg.from.id;
-  if (banned.has(id)) return;
+bot.start(async (ctx) => {
+  saveUser(ctx.from);
+  const userData = getUser(ctx.from.id);
 
-  const name = msg.from.first_name;
-  const time = moment().format("YYYY-MM-DD HH:mm:ss");
-
-  users[id] = { join: time };
-
+  let photo = null;
   try {
-    const photos = await bot.getUserProfilePhotos(id);
-    if (photos.total_count > 0) {
-      const fileId = photos.photos[0][0].file_id;
-      await bot.sendPhoto(
-        msg.chat.id,
-        fileId,
-        {
-          caption:
-`🔥 مرحبًا ${name}
-🆔 ID: ${id}
-⏰ وقت الدخول: ${time}
-🤖 ${bot.me.username}`,
-          ...mainMenu()
-        }
-      );
-    } else {
-      bot.sendMessage(msg.chat.id,
-`🔥 مرحبًا ${name}
-🆔 ID: ${id}
-⏰ وقت الدخول: ${time}
-🤖 ${bot.me.username}`,
-        mainMenu()
-      );
+    const profilePhotos = await ctx.telegram.getUserProfilePhotos(ctx.from.id);
+    if (profilePhotos.total_count > 0) {
+      photo = profilePhotos.photos[0][0].file_id;
     }
   } catch {}
+
+  const caption = `
+╔═══『 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 👑 』═══╗
+┃ 👤 الاسم: ${ctx.from.first_name}
+┃ 🆔 الايدي: ${ctx.from.id}
+┃ 🤖 البوت: ${ctx.botInfo.first_name}
+┃ 📅 وقت الدخول:
+┃ ${new Date(userData.joinedAt).toLocaleString()}
+╚════════════════════╝
+  `;
+
+  const buttons = Markup.inlineKeyboard([
+    [
+      Markup.button.callback("📱 أرقام فيك", "fake_numbers"),
+      Markup.button.callback("✨ زخرفة", "decorate")
+    ],
+    [
+      Markup.button.callback("🎮 ألعاب", "games"),
+      Markup.button.callback("🔗 فحص", "check_link")
+    ],
+    [
+      Markup.button.callback("🔄 اشتراك", "mandatory_subscription"),
+      Markup.button.callback("🗣 المطور", "dev")
+    ]
+  ]);
+
+  if (photo) {
+    await ctx.replyWithPhoto(photo, { caption, ...buttons });
+  } else {
+    await ctx.reply(caption, buttons);
+  }
 });
 
-/* ================= CALLBACK ================= */
+/* ================= أرقام فيك ================= */
 
-bot.on("callback_query", async (q) => {
-  const id = q.from.id;
-  const msgId = q.message.message_id;
-  const chatId = q.message.chat.id;
+bot.action("fake_numbers", async (ctx) => {
+  await ctx.answerCbQuery();
 
-  if (q.data === "back") {
-    return bot.editMessageText("🏠 القائمة الرئيسية", {
-      chat_id: chatId,
-      message_id: msgId,
-      ...mainMenu()
-    });
-  }
+  await ctx.reply(
+    "🌍 اختر الدولة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🇪🇬 مصر", "num_eg"),
+        Markup.button.callback("🇸🇦 السعودية", "num_sa")
+      ],
+      [
+        Markup.button.callback("🇺🇸 أمريكا", "num_us"),
+        Markup.button.callback("🇦🇪 الإمارات", "num_ae")
+      ]
+    ])
+  );
+});
 
-  /* ===== AI ===== */
-  if (q.data === "menu_ai") {
-    return bot.editMessageText("🧠 قسم الذكاء الاصطناعي", {
-      chat_id: chatId,
-      message_id: msgId,
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "💬 تحدث مع AI", callback_data: "ai_start" }],
-          [{ text: "🎨 توليد صورة", callback_data: "img" }],
-          [{ text: "🖼 تحويل أنمي", callback_data: "anime" }],
-          [{ text: "🔙 رجوع", callback_data: "back" }]
-        ]
-      }
-    });
-  }
+function randomNumber(prefix, length) {
+  return prefix + Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, "0");
+}
 
-  if (q.data === "ai_start") {
-    aiSessions[id] = Date.now();
-    bot.editMessageText("✅ بدأ الذكاء الاصطناعي — لديك 10 دقائق", {
-      chat_id: chatId,
-      message_id: msgId,
-      ...backBtn()
-    });
+bot.action("num_eg", (ctx) => ctx.reply("📱 " + randomNumber("010", 8)));
+bot.action("num_sa", (ctx) => ctx.reply("📱 " + randomNumber("05", 8)));
+bot.action("num_us", (ctx) => ctx.reply("📱 " + randomNumber("+1", 9)));
+bot.action("num_ae", (ctx) => ctx.reply("📱 " + randomNumber("050", 7)));
 
-    setTimeout(() => {
-      delete aiSessions[id];
-      bot.sendMessage(chatId, "⏳ انتهت جلسة الذكاء الاصطناعي.");
-    }, 600000);
-  }
+/* ================= زخرفة ================= */
 
-  /* ===== زخرفة ===== */
-  if (q.data === "menu_z") {
-    return bot.editMessageText("🎭 اختر نوع الزخرفة", {
-      chat_id: chatId,
-      message_id: msgId,
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "🇸🇦 عربي", callback_data: "z_ar" }],
-          [{ text: "🇬🇧 English", callback_data: "z_en" }],
-          [{ text: "🔙 رجوع", callback_data: "back" }]
-        ]
-      }
-    });
-  }
+bot.action("decorate", async (ctx) => {
+  waitingForDecoration[ctx.from.id] = true;
+  await ctx.reply("✨ اكتب الاسم اللي عايز تزخرفه:");
+});
 
-  if (q.data === "z_ar" || q.data === "z_en") {
-    userState[id] = q.data;
-    bot.sendMessage(chatId, "✍️ ارسل الاسم الآن:");
-  }
+/* ================= فحص الروابط ================= */
 
-  /* ===== توليد ===== */
-  if (q.data === "menu_gen") {
-    return bot.editMessageText("🔢 قسم التوليد", {
-      chat_id: chatId,
-      message_id: msgId,
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "🔐 توليد باسورد", callback_data: "pass" }],
-          [{ text: "📧 توليد ايميل", callback_data: "email" }],
-          [{ text: "🌐 أرقام فيك", callback_data: "fake" }],
-          [{ text: "🔙 رجوع", callback_data: "back" }]
-        ]
-      }
-    });
-  }
+bot.action("check_link", async (ctx) => {
+  waitingForLink[ctx.from.id] = true;
+  await ctx.reply("🔗 أرسل الرابط:");
+});
 
-  if (q.data === "fake") {
-    const num = "+1" + Math.floor(Math.random() * 9000000000);
-    bot.editMessageText(`🌐 رقم فيك:\n${num}`, {
-      chat_id: chatId,
-      message_id: msgId,
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "🔄 رقم جديد", callback_data: "fake" }],
-          [{ text: "🔙 رجوع", callback_data: "back" }]
-        ]
-      }
-    });
-  }
+/* ================= الألعاب ================= */
 
-  /* ===== يوزرات ===== */
-  if (q.data === "menu_user") {
-    let list = "";
-    for (let i = 0; i < 15; i++) {
-      list += `@Elite_${Math.random().toString(36).substring(2,6)}\n`;
+bot.action("games", async (ctx) => {
+  await ctx.reply(
+    "🎮 اختر لعبة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🎯 تخمين", "game1"),
+        Markup.button.callback("❓ سؤال", "game2")
+      ]
+    ])
+  );
+});
+
+bot.action("game1", (ctx) => {
+  const num = Math.floor(Math.random() * 10) + 1;
+  ctx.reply(`🎯 الرقم هو: ${num}`);
+});
+
+bot.action("game2", (ctx) => {
+  ctx.reply("❓ عاصمة مصر؟\n1️⃣ القاهرة\n2️⃣ دبي\n3️⃣ الرياض");
+});
+
+/* ================= الاشتراك ================= */
+
+bot.action("mandatory_subscription", async (ctx) => {
+  try {
+    const status = await ctx.telegram.getChatMember(REQUIRED_CHANNEL, ctx.from.id);
+    if (["member", "administrator", "creator"].includes(status.status)) {
+      ctx.reply("✅ انت مشترك بالفعل!");
+    } else {
+      ctx.reply("⚠️ لازم تشترك في القناة: " + REQUIRED_CHANNEL);
     }
-    bot.editMessageText("👑 يوزرات مميزة:\n\n" + list, {
-      chat_id: chatId,
-      message_id: msgId,
-      ...backBtn()
-    });
-  }
-
-  /* ===== حماية ===== */
-  if (q.data === "menu_protect") {
-    bot.editMessageText("🛡 نظام حماية مفعل", {
-      chat_id: chatId,
-      message_id: msgId,
-      ...backBtn()
-    });
-  }
-
-  /* ===== ادمن ===== */
-  if (q.data === "admin") {
-    if (id != ADMIN_ID)
-      return bot.answerCallbackQuery(q.id, { text: "❌ ليس لديك صلاحية", show_alert: true });
-
-    bot.editMessageText("⚙️ لوحة التحكم", {
-      chat_id: chatId,
-      message_id: msgId,
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "📢 إذاعة", callback_data: "broadcast" }],
-          [{ text: "📈 عدد المستخدمين", callback_data: "count" }],
-          [{ text: "🔙 رجوع", callback_data: "back" }]
-        ]
-      }
-    });
-  }
-
-  if (q.data === "count") {
-    bot.answerCallbackQuery(q.id, {
-      text: `👥 عدد المستخدمين: ${Object.keys(users).length}`,
-      show_alert: true
-    });
+  } catch {
+    ctx.reply("⚠️ ضيف البوت ادمن في القناة.");
   }
 });
 
-/* ================= الرسائل ================= */
+/* ================= المطور ================= */
 
-bot.on("message", async (msg) => {
-  const id = msg.from.id;
-  if (banned.has(id)) return;
+bot.action("dev", async (ctx) => {
+  ctx.reply("📩 تم إرسال طلبك للمطور.");
+  ctx.telegram.sendMessage(
+    DEVELOPER_ID,
+    `📢 طلب تواصل جديد
+👤 ${ctx.from.first_name}
+🆔 ${ctx.from.id}
+@${ctx.from.username || "لا يوجد"}`
+  );
+});
 
-  // Anti Flood
-  if (lastMessageTime[id] && Date.now() - lastMessageTime[id] < 1000)
+/* ================= استقبال الرسائل ================= */
+
+bot.on("text", async (ctx) => {
+
+  // فحص الروابط
+  if (waitingForLink[ctx.from.id] && ctx.message.text.startsWith("http")) {
+    try {
+      const response = await axios.head(ctx.message.text);
+      await ctx.reply(response.status === 200 ? "✅ الرابط صالح" : "❌ الرابط غير صالح");
+    } catch {
+      await ctx.reply("❌ فشل فحص الرابط");
+    }
+    waitingForLink[ctx.from.id] = false;
     return;
-  lastMessageTime[id] = Date.now();
+  }
 
   // زخرفة
-  if (userState[id]) {
-    const name = msg.text;
-    let result = "";
-    for (let i = 0; i < 10; i++) {
-      result += `✨ ${name}_${Math.random().toString(36).substring(2,4)}\n`;
-    }
-    bot.sendMessage(msg.chat.id, "🎭 الزخرفة:\n\n" + result);
-    delete userState[id];
+  if (waitingForDecoration[ctx.from.id]) {
+    const name = ctx.message.text;
+
+    const decorated = `
+꧁${name}꧂
+『${name}』
+★彡${name}彡★
+꧁༒${name}༒꧂
+✿ ${name} ✿
+𓆩${name}𓆪
+    `;
+
+    await ctx.reply("✨ الزخارف:\n" + decorated);
+    waitingForDecoration[ctx.from.id] = false;
+    return;
   }
 
-  // AI
-  if (aiSessions[id]) {
-    try {
-      const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-4o-mini",
-          messages: [{ role: "user", content: msg.text }]
-        },
-        {
-          headers: { Authorization: `Bearer ${OPENAI_KEY}` }
-        }
-      );
-
-      bot.sendMessage(msg.chat.id, response.data.choices[0].message.content);
-    } catch {
-      bot.sendMessage(msg.chat.id, "⚠️ خطأ في الذكاء الاصطناعي");
-    }
-  }
 });
+
+/* ================= تشغيل ================= */
+
+bot.launch();
+console.log("Bot is running 🚀");
+
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
