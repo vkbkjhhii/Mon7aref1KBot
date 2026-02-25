@@ -1,111 +1,134 @@
-import TelegramBot from "node-telegram-bot-api";
-import express from "express";
-import axios from "axios";
+const { Telegraf, Markup, session } = require('telegraf')
+const axios = require('axios')
 
-const token = process.env.BOT_TOKEN;
-const url = process.env.RAILWAY_STATIC_URL;
+const bot = new Telegraf(process.env.BOT_TOKEN)
+bot.use(session())
 
-const bot = new TelegramBot(token);
-const app = express();
+const CHANNEL = process.env.CHANNEL_USERNAME
 
-app.use(express.json());
-
-bot.setWebHook(`${url}/bot${token}`);
-
-app.post(`/bot${token}`, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
-
-app.listen(process.env.PORT || 3000);
-
-const userJoinDate = new Map();
-
-const mainKeyboard = {
-  reply_markup: {
-    inline_keyboard: [
-      [{ text: "🎲 يوزرات مميزة", callback_data: "users" }],
-      [{ text: "✨ زخرفة اسماء", callback_data: "zakhrafa" }],
-      [{ text: "😂 نكته", callback_data: "joke" }],
-      [{ text: "🎮 لعبة XO", callback_data: "xo" }],
-      [{ text: "📩 تواصل مع المطور", callback_data: "dev" }]
-    ]
-  }
-};
-
-bot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
-  const user = msg.from;
-
-  if (!userJoinDate.has(user.id)) {
-    userJoinDate.set(user.id, new Date().toLocaleDateString());
-  }
-
-  const text = `
-╭━━━〔 👤 بياناتك 〕━━━╮
-
-👤 الاسم:
-${user.first_name}
-
-🆔 الايدي:
-${user.id}
-
-🔗 اليوزر:
-@${user.username || "لا يوجد"}
-
-╰━━━━━━━━━━━━━━╯
-`;
-
-  bot.sendMessage(chatId, text, mainKeyboard);
-});
-
-bot.on("callback_query", async (query) => {
-  const chatId = query.message.chat.id;
-
-  if (query.data === "users") {
-    let list = "";
-    for (let i = 0; i < 10; i++) {
-      list += `@user${Math.floor(Math.random() * 9999)}\n`;
+// تحقق الاشتراك
+async function checkSub(ctx) {
+    try {
+        const member = await ctx.telegram.getChatMember(CHANNEL, ctx.from.id)
+        return ["creator", "administrator", "member"].includes(member.status)
+    } catch {
+        return false
     }
-    bot.editMessageText("⭐ يوزرات مميزة:\n\n" + list, {
-      chat_id: chatId,
-      message_id: query.message.message_id
-    });
-  }
+}
 
-  if (query.data === "zakhrafa") {
-    bot.editMessageText("✍️ أرسل الاسم الذي تريد زخرفته", {
-      chat_id: chatId,
-      message_id: query.message.message_id
-    });
-  }
+// رسالة ستارت
+bot.start(async (ctx) => {
 
-  if (query.data === "joke") {
-    const jokes = [
-      "مرة واحد بخيل دخل الجنة قالهم فين العروض 😂",
-      "واحد اتجوز مدرسة خلفوا فصل 😂",
-      "مرة واحد غبي وقع من السلم فضل يدور على السلم 😂"
-    ];
-    const random = jokes[Math.floor(Math.random() * jokes.length)];
+    const isSub = await checkSub(ctx)
 
-    bot.editMessageText(random, {
-      chat_id: chatId,
-      message_id: query.message.message_id,
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "🔄 نكته أخرى", callback_data: "joke" }]
-        ]
-      }
-    });
-  }
+    if (!isSub) {
+        return ctx.reply(
+            "❌ لازم تشترك في القناة أولاً",
+            Markup.inlineKeyboard([
+                [Markup.button.url("🔔 اشترك", `https://t.me/${CHANNEL.replace("@","")}`)],
+                [Markup.button.callback("✅ تحقق", "check_sub")]
+            ])
+        )
+    }
 
-  if (query.data === "dev") {
-    bot.editMessageText(
-      "📩 تم فتح خاصية التواصل مع المطور\n\nأرسل رسالتك الآن وسيتم عرضها على المطور 👑",
-      {
-        chat_id: chatId,
-        message_id: query.message.message_id
-      }
-    );
-  }
-});
+    const photos = await ctx.telegram.getUserProfilePhotos(ctx.from.id)
+    let photoId = null
+
+    if (photos.total_count > 0) {
+        photoId = photos.photos[0][0].file_id
+    }
+
+    const caption = `
+╔═══「 👤 بياناتك 」═══╗
+
+الاسم :
+${ctx.from.first_name}
+
+ID :
+${ctx.from.id}
+
+اليوزر :
+@${ctx.from.username || "لا يوجد"}
+
+╚════════════════════╝
+`
+
+    const keyboard = Markup.inlineKeyboard([
+        [Markup.button.callback("✨ يوزرات مميزة", "usernames")],
+        [Markup.button.callback("🎨 زخرفة أسماء", "decorate")],
+        [Markup.button.callback("🔍 فحص رابط", "scan")],
+        [Markup.button.callback("🎙 تحويل نص لصوت", "tts")],
+        [Markup.button.callback("😂 نكتة مصرية", "joke")],
+        [Markup.button.callback("🎮 لعبة XO", "xo")],
+        [Markup.button.callback("🔗 اختصار رابط", "short")],
+        [Markup.button.callback("📩 تواصل مع المطور", "owner")]
+    ])
+
+    if (photoId) {
+        await ctx.replyWithPhoto(photoId, { caption, ...keyboard })
+    } else {
+        await ctx.reply(caption, keyboard)
+    }
+})
+
+bot.action("check_sub", async (ctx) => {
+    const isSub = await checkSub(ctx)
+    if (isSub) {
+        ctx.editMessageText("✅ تم التحقق بنجاح\nاكتب /start")
+    } else {
+        ctx.answerCbQuery("لسه مش مشترك ❌")
+    }
+})
+
+
+// يوزرات عشوائية
+bot.action("usernames", async (ctx) => {
+
+    function randomUser(len) {
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+        let u = ""
+        for (let i=0;i<len;i++){
+            u += chars[Math.floor(Math.random()*chars.length)]
+        }
+        return u
+    }
+
+    let list = ""
+    for (let i=0;i<10;i++){
+        list += `@${randomUser(4)}\n`
+    }
+
+    ctx.editMessageCaption(`
+✨ يوزرات عشوائية:
+
+${list}
+`,
+    Markup.inlineKeyboard([
+        [Markup.button.callback("🔄 تغيير", "usernames")]
+    ])
+    )
+})
+
+
+// نكتة
+const jokes = [
+"مرة واحد بلع مسمار… بقى مسمارح 😂",
+"مرة مدرس رياضيات خلف ولد سماه سين 😂",
+"مرة واحد بخيل مات… كتبوا على قبره تحت الصيانة 😂"
+]
+
+bot.action("joke", async (ctx) => {
+    const joke = jokes[Math.floor(Math.random()*jokes.length)]
+
+    ctx.editMessageCaption(`
+😂 نكتة اليوم:
+
+${joke}
+`,
+    Markup.inlineKeyboard([
+        [Markup.button.callback("🔄 نكتة تانية", "joke")]
+    ])
+    )
+})
+
+bot.launch()
