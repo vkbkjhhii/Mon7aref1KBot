@@ -1,271 +1,217 @@
 const { Telegraf, Markup } = require("telegraf");
+const fs = require("fs");
 const axios = require("axios");
-const moment = require("moment");
-const fs = require("fs-extra");
 
-const bot = new Telegraf(process.env.TOKEN);
-const CHANNEL = process.env.CHANNEL;
-const DEV_ID = Number(process.env.DEV_ID);
-const DEV_USER = process.env.DEV_USER;
-const OPENAI_KEY = process.env.OPENAI_KEY || "";
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-let usedUsers = new Set();
-let fakeCache = {};
-let styleWait = {};
-let aiWait = {};
-let xoGames = {};
+const USERS_FILE = "./users.json";
+const REQUIRED_CHANNEL = "@x_1fn";
+const DEVELOPER_ID = 7771042305;
 
-// ===== اشتراك إجباري =====
-async function checkSub(ctx){
-  try{
-    const m = await ctx.telegram.getChatMember(CHANNEL, ctx.from.id);
-    return ["creator","administrator","member"].includes(m.status);
-  }catch{ return false; }
+let waitingForLink = {};
+let waitingForDecoration = {};
+
+if (!fs.existsSync(USERS_FILE)) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify({}));
 }
 
-async function forceSub(ctx){
-  const ok = await checkSub(ctx);
-  if(ok) return true;
-  await ctx.reply("⚠️ لازم تشترك في القناة أولاً",
-    Markup.inlineKeyboard([
-      [Markup.button.url("اشترك الآن", `https://t.me/${CHANNEL.replace("@","")}`)],
-      [Markup.button.callback("تحقق", "checksub")]
-    ])
-  );
-  return false;
+function saveUser(user) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  if (!users[user.id]) {
+    users[user.id] = {
+      name: user.first_name,
+      username: user.username || "لا يوجد",
+      joinedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  }
 }
 
-bot.action("checksub", async (ctx)=>{
-  const ok = await checkSub(ctx);
-  if(ok){ ctx.answerCbQuery("تم التحقق ✅"); ctx.deleteMessage(); }
-  else ctx.answerCbQuery("لسه مش مشترك ❌");
-});
+function getUser(id) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  return users[id];
+}
 
-// ===== START =====
-bot.start(async (ctx)=>{
-  if(!(await forceSub(ctx))) return;
+/* ================= START ================= */
 
-  const photos = await ctx.telegram.getUserProfilePhotos(ctx.from.id);
-  const photo = photos.total_count ? photos.photos[0][0].file_id : null;
-  const time = moment().format("YYYY-MM-DD HH:mm:ss");
+bot.start(async (ctx) => {
+  saveUser(ctx.from);
+  const userData = getUser(ctx.from.id);
 
-  const caption =
-`𓂀 𝐀𝐋𝐌𝐍𝐇𝐑𝐅 𓂀
+  let photo = null;
+  try {
+    const profilePhotos = await ctx.telegram.getUserProfilePhotos(ctx.from.id);
+    if (profilePhotos.total_count > 0) {
+      photo = profilePhotos.photos[0][0].file_id;
+    }
+  } catch {}
 
-👤 Name :
-${ctx.from.first_name}
+  const caption = `
+╔═══『 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 👑 』═══╗
+┃ 👤 الاسم: ${ctx.from.first_name}
+┃ 🆔 الايدي: ${ctx.from.id}
+┃ 🤖 البوت: ${ctx.botInfo.first_name}
+┃ 📅 وقت الدخول:
+┃ ${new Date(userData.joinedAt).toLocaleString()}
+╚════════════════════╝
+  `;
 
-🔗 Username :
-@${ctx.from.username || "None"}
-
-🆔 ID :
-${ctx.from.id}
-
-⏰ Time :
-${time}
-
-━━━━━━━━━━━━━━
-
-أهلاً بك 👑
-أنت الآن مستخدم في البوت الخاص بنا`;
-
-  const keyboard = Markup.inlineKeyboard([
+  const buttons = Markup.inlineKeyboard([
     [
-      Markup.button.callback("📱 أرقام فيك","fake"),
-      Markup.button.callback("👑 User مميز","user")
+      Markup.button.callback("📱 أرقام فيك", "fake_numbers"),
+      Markup.button.callback("✨ زخرفة", "decorate")
     ],
     [
-      Markup.button.callback("✨ زخرفة","style"),
-      Markup.button.callback("🎮 XO","xo")
+      Markup.button.callback("🎮 ألعاب", "games"),
+      Markup.button.callback("🔗 فحص", "check_link")
     ],
     [
-      Markup.button.callback("🤖 ذكاء اصطناعي","ai"),
-      Markup.button.callback("👨‍💻 المطور","dev")
+      Markup.button.callback("🔄 اشتراك", "mandatory_subscription"),
+      Markup.button.callback("🗣 المطور", "dev")
     ]
   ]);
 
-  if(photo) ctx.replyWithPhoto(photo,{caption,...keyboard});
-  else ctx.reply(caption,keyboard);
+  if (photo) {
+    await ctx.replyWithPhoto(photo, { caption, ...buttons });
+  } else {
+    await ctx.reply(caption, buttons);
+  }
 });
 
-// ===== أرقام فيك =====
-const countries = ["Egypt","Yemen","UAE","Saudi","Qatar","Kuwait","Oman","Bahrain",
-"USA","UK","Germany","France","Italy","Spain","Turkey","India","China","Japan","Brazil","Canada"];
+/* ================= أرقام فيك ================= */
 
-function genNum(){
-  return "+20"+Math.floor(100000000+Math.random()*900000000);
+bot.action("fake_numbers", async (ctx) => {
+  await ctx.answerCbQuery();
+
+  await ctx.reply(
+    "🌍 اختر الدولة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🇪🇬 مصر", "num_eg"),
+        Markup.button.callback("🇸🇦 السعودية", "num_sa")
+      ],
+      [
+        Markup.button.callback("🇺🇸 أمريكا", "num_us"),
+        Markup.button.callback("🇦🇪 الإمارات", "num_ae")
+      ]
+    ])
+  );
+});
+
+function randomNumber(prefix, length) {
+  return prefix + Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, "0");
 }
 
-bot.action("fake",(ctx)=>{
-  const btn = countries.map(c=>[Markup.button.callback(c,"c_"+c)]);
-  ctx.editMessageText("🌍 اختر الدولة",Markup.inlineKeyboard(btn));
+bot.action("num_eg", (ctx) => ctx.reply("📱 " + randomNumber("010", 8)));
+bot.action("num_sa", (ctx) => ctx.reply("📱 " + randomNumber("05", 8)));
+bot.action("num_us", (ctx) => ctx.reply("📱 " + randomNumber("+1", 9)));
+bot.action("num_ae", (ctx) => ctx.reply("📱 " + randomNumber("050", 7)));
+
+/* ================= زخرفة ================= */
+
+bot.action("decorate", async (ctx) => {
+  waitingForDecoration[ctx.from.id] = true;
+  await ctx.reply("✨ اكتب الاسم اللي عايز تزخرفه:");
 });
 
-bot.action(/c_(.+)/,(ctx)=>{
-  const num = genNum();
-  fakeCache[ctx.from.id]=num;
-  ctx.editMessageText(
-`📱 الرقم :
+/* ================= فحص الروابط ================= */
 
-${num}`,
-  Markup.inlineKeyboard([
-    [Markup.button.callback("🔄 تغيير الرقم","chg")],
-    [Markup.button.callback("📩 طلب كود","code")]
-  ]));
+bot.action("check_link", async (ctx) => {
+  waitingForLink[ctx.from.id] = true;
+  await ctx.reply("🔗 أرسل الرابط:");
 });
 
-bot.action("chg",(ctx)=>{
-  const num = genNum();
-  fakeCache[ctx.from.id]=num;
-  ctx.editMessageText(
-`📱 الرقم :
+/* ================= الألعاب ================= */
 
-${num}`,
-  Markup.inlineKeyboard([
-    [Markup.button.callback("🔄 تغيير الرقم","chg")],
-    [Markup.button.callback("📩 طلب كود","code")]
-  ]));
+bot.action("games", async (ctx) => {
+  await ctx.reply(
+    "🎮 اختر لعبة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🎯 تخمين", "game1"),
+        Markup.button.callback("❓ سؤال", "game2")
+      ]
+    ])
+  );
 });
 
-bot.action("code",(ctx)=>{
-  const code = Math.floor(100000+Math.random()*900000);
-  ctx.answerCbQuery();
-  ctx.reply(`🔐 كودك العشوائي:\n\n${code}`);
+bot.action("game1", (ctx) => {
+  const num = Math.floor(Math.random() * 10) + 1;
+  ctx.reply(`🎯 الرقم هو: ${num}`);
 });
 
-// ===== User مميز =====
-function randomUser(len){
-  const chars="abcdefghijklmnopqrstuvwxyz";
-  let u="";
-  while(u.length<len){
-    const c=chars[Math.floor(Math.random()*chars.length)];
-    u+=c;
+bot.action("game2", (ctx) => {
+  ctx.reply("❓ عاصمة مصر؟\n1️⃣ القاهرة\n2️⃣ دبي\n3️⃣ الرياض");
+});
+
+/* ================= الاشتراك ================= */
+
+bot.action("mandatory_subscription", async (ctx) => {
+  try {
+    const status = await ctx.telegram.getChatMember(REQUIRED_CHANNEL, ctx.from.id);
+    if (["member", "administrator", "creator"].includes(status.status)) {
+      ctx.reply("✅ انت مشترك بالفعل!");
+    } else {
+      ctx.reply("⚠️ لازم تشترك في القناة: " + REQUIRED_CHANNEL);
+    }
+  } catch {
+    ctx.reply("⚠️ ضيف البوت ادمن في القناة.");
   }
-  if(usedUsers.has(u)) return randomUser(len);
-  usedUsers.add(u);
-  return u;
-}
-
-bot.action("user",(ctx)=>{
-  ctx.editMessageText("اختر النوع",
-  Markup.inlineKeyboard([
-    [Markup.button.callback("ثلاثي","u3")],
-    [Markup.button.callback("رباعي","u4")]
-  ]));
 });
 
-bot.action(/u(3|4)/,(ctx)=>{
-  const len=Number(ctx.match[1]);
-  let list="";
-  for(let i=0;i<10;i++) list+=`@${randomUser(len)}\n`;
-  ctx.editMessageText("👑 أفضل 10 يوزرات:\n\n"+list);
+/* ================= المطور ================= */
+
+bot.action("dev", async (ctx) => {
+  ctx.reply("📩 تم إرسال طلبك للمطور.");
+  ctx.telegram.sendMessage(
+    DEVELOPER_ID,
+    `📢 طلب تواصل جديد
+👤 ${ctx.from.first_name}
+🆔 ${ctx.from.id}
+@${ctx.from.username || "لا يوجد"}`
+  );
 });
 
-// ===== زخرفة =====
-bot.action("style",(ctx)=>{
-  ctx.editMessageText("اختر اللغة",
-  Markup.inlineKeyboard([
-    [Markup.button.callback("عربي","ar")],
-    [Markup.button.callback("English","en")]
-  ]));
-});
+/* ================= استقبال الرسائل ================= */
 
-bot.action(/ar|en/,(ctx)=>{
-  styleWait[ctx.from.id]=ctx.callbackQuery.data;
-  ctx.reply("أرسل الاسم الآن ✍️");
-});
+bot.on("text", async (ctx) => {
 
-bot.on("text",(ctx)=>{
-  if(styleWait[ctx.from.id]){
-    const name=ctx.message.text;
-    delete styleWait[ctx.from.id];
-    const list=
-`★彡${name}彡★
-
-꧁${name}꧂
-
-𓆩${name}𓆪
-
-『${name}』
-
-✿${name}✿
-
-๖${name}๖
-
-༺${name}༻
-
-۝${name}۝
-
-♛${name}♛
-
-♔${name}♔`;
-    return ctx.reply("✨ زخارف احترافية:\n\n"+list);
-  }
-
-  if(aiWait[ctx.from.id] && OPENAI_KEY){
-    axios.post("https://api.openai.com/v1/chat/completions",{
-      model:"gpt-3.5-turbo",
-      messages:[{role:"user",content:ctx.message.text}]
-    },{
-      headers:{Authorization:`Bearer ${OPENAI_KEY}`}
-    }).then(r=>{
-      ctx.reply(r.data.choices[0].message.content);
-    }).catch(()=>ctx.reply("حصل خطأ في AI"));
+  // فحص الروابط
+  if (waitingForLink[ctx.from.id] && ctx.message.text.startsWith("http")) {
+    try {
+      const response = await axios.head(ctx.message.text);
+      await ctx.reply(response.status === 200 ? "✅ الرابط صالح" : "❌ الرابط غير صالح");
+    } catch {
+      await ctx.reply("❌ فشل فحص الرابط");
+    }
+    waitingForLink[ctx.from.id] = false;
     return;
   }
-});
 
-// ===== AI =====
-bot.action("ai",(ctx)=>{
-  if(!OPENAI_KEY) return ctx.answerCbQuery("لم يتم ضبط API ❌",true);
-  aiWait[ctx.from.id]=true;
-  ctx.reply("اكتب سؤالك الآن 🤖");
-});
+  // زخرفة
+  if (waitingForDecoration[ctx.from.id]) {
+    const name = ctx.message.text;
 
-// ===== XO =====
-bot.action("xo",(ctx)=>{
-  xoGames[ctx.from.id]=Array(9).fill("-");
-  drawXO(ctx);
-});
+    const decorated = `
+꧁${name}꧂
+『${name}』
+★彡${name}彡★
+꧁༒${name}༒꧂
+✿ ${name} ✿
+𓆩${name}𓆪
+    `;
 
-function drawXO(ctx){
-  const b=xoGames[ctx.from.id];
-  const btn=[];
-  for(let i=0;i<9;i+=3){
-    btn.push([
-      Markup.button.callback(b[i],"x"+i),
-      Markup.button.callback(b[i+1],"x"+(i+1)),
-      Markup.button.callback(b[i+2],"x"+(i+2))
-    ]);
+    await ctx.reply("✨ الزخارف:\n" + decorated);
+    waitingForDecoration[ctx.from.id] = false;
+    return;
   }
-  ctx.editMessageText("🎮 XO",Markup.inlineKeyboard(btn));
-}
 
-bot.action(/x(\d)/,(ctx)=>{
-  const i=Number(ctx.match[1]);
-  if(xoGames[ctx.from.id][i]==="-"){
-    xoGames[ctx.from.id][i]="X";
-    const empty=xoGames[ctx.from.id].map((v,i)=>v==="-"?i:null).filter(v=>v!==null);
-    if(empty.length){
-      const r=empty[Math.floor(Math.random()*empty.length)];
-      xoGames[ctx.from.id][r]="O";
-    }
-  }
-  drawXO(ctx);
 });
 
-// ===== المطور =====
-bot.action("dev",(ctx)=>{
-  ctx.editMessageText(
-`👑 أقوى مطور مصري
-
-خبرة عالية في برمجة البوتات
-
-ID : ${DEV_ID}`,
-  Markup.inlineKeyboard([
-    [Markup.button.url("تواصل مع المطور",`https://t.me/${DEV_USER}`)]
-  ]));
-});
+/* ================= تشغيل ================= */
 
 bot.launch();
-console.log("Bot Started");
+console.log("Bot is running 🚀");
+
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
