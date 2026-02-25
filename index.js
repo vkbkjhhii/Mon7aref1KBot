@@ -1,217 +1,80 @@
-const { Telegraf, Markup } = require("telegraf");
-const fs = require("fs");
-const axios = require("axios");
+const { Telegraf, Markup } = require('telegraf');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const USERS_FILE = "./users.json";
-const REQUIRED_CHANNEL = "@x_1fn";
-const DEVELOPER_ID = 7771042305;
-
-let waitingForLink = {};
-let waitingForDecoration = {};
-
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify({}));
-}
-
-function saveUser(user) {
-  const users = JSON.parse(fs.readFileSync(USERS_FILE));
-  if (!users[user.id]) {
-    users[user.id] = {
-      name: user.first_name,
-      username: user.username || "لا يوجد",
-      joinedAt: new Date().toISOString()
-    };
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-  }
-}
-
-function getUser(id) {
-  const users = JSON.parse(fs.readFileSync(USERS_FILE));
-  return users[id];
-}
-
-/* ================= START ================= */
-
-bot.start(async (ctx) => {
-  saveUser(ctx.from);
-  const userData = getUser(ctx.from.id);
-
-  let photo = null;
-  try {
-    const profilePhotos = await ctx.telegram.getUserProfilePhotos(ctx.from.id);
-    if (profilePhotos.total_count > 0) {
-      photo = profilePhotos.photos[0][0].file_id;
-    }
-  } catch {}
-
-  const caption = `
-╔═══『 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 👑 』═══╗
-┃ 👤 الاسم: ${ctx.from.first_name}
-┃ 🆔 الايدي: ${ctx.from.id}
-┃ 🤖 البوت: ${ctx.botInfo.first_name}
-┃ 📅 وقت الدخول:
-┃ ${new Date(userData.joinedAt).toLocaleString()}
-╚════════════════════╝
-  `;
-
-  const buttons = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("📱 أرقام فيك", "fake_numbers"),
-      Markup.button.callback("✨ زخرفة", "decorate")
-    ],
-    [
-      Markup.button.callback("🎮 ألعاب", "games"),
-      Markup.button.callback("🔗 فحص", "check_link")
-    ],
-    [
-      Markup.button.callback("🔄 اشتراك", "mandatory_subscription"),
-      Markup.button.callback("🗣 المطور", "dev")
-    ]
-  ]);
-
-  if (photo) {
-    await ctx.replyWithPhoto(photo, { caption, ...buttons });
-  } else {
-    await ctx.reply(caption, buttons);
-  }
-});
-
-/* ================= أرقام فيك ================= */
-
-bot.action("fake_numbers", async (ctx) => {
-  await ctx.answerCbQuery();
-
-  await ctx.reply(
-    "🌍 اختر الدولة:",
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback("🇪🇬 مصر", "num_eg"),
-        Markup.button.callback("🇸🇦 السعودية", "num_sa")
-      ],
-      [
-        Markup.button.callback("🇺🇸 أمريكا", "num_us"),
-        Markup.button.callback("🇦🇪 الإمارات", "num_ae")
-      ]
-    ])
+bot.start((ctx) => {
+  ctx.reply(
+    "اختر من الزرار 👇",
+    Markup.keyboard([
+      ["📺 قنوات التليفزيون"]
+    ]).resize()
   );
 });
 
-function randomNumber(prefix, length) {
-  return prefix + Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, "0");
-}
+bot.hears("📺 قنوات التليفزيون", (ctx) => {
+  ctx.reply(`
+🔗 https://5b622f07944df.streamlock.net/aghapy.tv/aghapy.smil/playlist.m3u8
 
-bot.action("num_eg", (ctx) => ctx.reply("📱 " + randomNumber("010", 8)));
-bot.action("num_sa", (ctx) => ctx.reply("📱 " + randomNumber("05", 8)));
-bot.action("num_us", (ctx) => ctx.reply("📱 " + randomNumber("+1", 9)));
-bot.action("num_ae", (ctx) => ctx.reply("📱 " + randomNumber("050", 7)));
+🔹 Al Ghad TV (1080p)
+🔗 https://eazyvwqssi.erbvr.com/alghadtv/alghadtv.m3u8
 
-/* ================= زخرفة ================= */
+🔹 Al Masriyah [Geo-Blocked]
+🔗 https://viamotionhsi.netplus.ch/live/eds/almasriyah/browser-HLS8/almasriyah.m3u8
 
-bot.action("decorate", async (ctx) => {
-  waitingForDecoration[ctx.from.id] = true;
-  await ctx.reply("✨ اكتب الاسم اللي عايز تزخرفه:");
+🔹 ATVSat (1080p) [Not 24/7]
+🔗 https://stream.atvsat.com/atvsatlive/smil:atvsatlive.smil/playlist.m3u8
+
+🔹 CBC (576p)
+🔗 https://flu.systemnet.tv/CBC/index.m3u8
+
+🔹 CBC Drama (576p)
+🔗 https://flu.systemnet.tv/CBCDrama/index.m3u8
+
+🔹 CBC Sofra (576p)
+🔗 https://flu.systemnet.tv/CBCSofra/index.m3u8
+
+🔹 Coptic TV (720p) [Not 24/7]
+🔗 https://5aafcc5de91f1.streamlock.net/ctvchannel.tv/ctv.smil/playlist.m3u8
+
+🔹 El Radio 9090 FM (480p)
+🔗 https://9090video.mobtada.com/hls/stream.m3u8
+
+🔹 Elbeshara GTV (1080p) [Not 24/7]
+🔗 http://media3.smc-host.com:1935/elbesharagtv.com/gtv.smil/playlist.m3u8
+
+🔹 Huda TV (720p) [Not 24/7]
+🔗 https://cdn.bestream.io:19360/elfaro1/elfaro1.m3u8
+
+🔹 Koogi TV (1080p)
+🔗 https://5d658d7e9f562.streamlock.net/koogi.tv/koogi.smil/playlist.m3u8
+
+🔹 MBC 1 Egypt (1080p)
+🔗 https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1-na/eec141533c90dd34722c503a296dd0d8/index.m3u8
+
+🔹 MBC Masr (1080p)
+🔗 https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8
+
+🔹 MBC Masr 2 (1080p)
+🔗 https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8
+
+🔹 MBC Masr Drama (1080p)
+🔗 https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-drama/567b703c19ede6598222de81b0e4508b/index.m3u8
+
+🔹 Mekameleen TV (1080p)
+🔗 https://mn-nl.mncdn.com/mekameleen/smil:mekameleentv.smil/playlist.m3u8
+
+🔹 Mix Hollywood (1080p)
+🔗 https://ml-pull-hwc.myco.io/MixTV/hls/index.m3u8
+
+🔹 NogoumFMTV (672p) [Not 24/7]
+🔗 https://nogoumtv.nrpstream.com/hls/stream.m3u8
+
+🔹 PNC Drama
+🔗 https://d35j504z0x2vu2.cloudfront.net/v1/master/0bc8e8376bd8417a1b6761138aa41c26c7309312/pnc-drama/master.m3u8?ads.vf=xdliEBYtdWS
+
+🔹 Watan TV (1080p)
+🔗 https://rp.tactivemedia.com/watantv_source/live/playlist.m3u8
+`);
 });
-
-/* ================= فحص الروابط ================= */
-
-bot.action("check_link", async (ctx) => {
-  waitingForLink[ctx.from.id] = true;
-  await ctx.reply("🔗 أرسل الرابط:");
-});
-
-/* ================= الألعاب ================= */
-
-bot.action("games", async (ctx) => {
-  await ctx.reply(
-    "🎮 اختر لعبة:",
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback("🎯 تخمين", "game1"),
-        Markup.button.callback("❓ سؤال", "game2")
-      ]
-    ])
-  );
-});
-
-bot.action("game1", (ctx) => {
-  const num = Math.floor(Math.random() * 10) + 1;
-  ctx.reply(`🎯 الرقم هو: ${num}`);
-});
-
-bot.action("game2", (ctx) => {
-  ctx.reply("❓ عاصمة مصر؟\n1️⃣ القاهرة\n2️⃣ دبي\n3️⃣ الرياض");
-});
-
-/* ================= الاشتراك ================= */
-
-bot.action("mandatory_subscription", async (ctx) => {
-  try {
-    const status = await ctx.telegram.getChatMember(REQUIRED_CHANNEL, ctx.from.id);
-    if (["member", "administrator", "creator"].includes(status.status)) {
-      ctx.reply("✅ انت مشترك بالفعل!");
-    } else {
-      ctx.reply("⚠️ لازم تشترك في القناة: " + REQUIRED_CHANNEL);
-    }
-  } catch {
-    ctx.reply("⚠️ ضيف البوت ادمن في القناة.");
-  }
-});
-
-/* ================= المطور ================= */
-
-bot.action("dev", async (ctx) => {
-  ctx.reply("📩 تم إرسال طلبك للمطور.");
-  ctx.telegram.sendMessage(
-    DEVELOPER_ID,
-    `📢 طلب تواصل جديد
-👤 ${ctx.from.first_name}
-🆔 ${ctx.from.id}
-@${ctx.from.username || "لا يوجد"}`
-  );
-});
-
-/* ================= استقبال الرسائل ================= */
-
-bot.on("text", async (ctx) => {
-
-  // فحص الروابط
-  if (waitingForLink[ctx.from.id] && ctx.message.text.startsWith("http")) {
-    try {
-      const response = await axios.head(ctx.message.text);
-      await ctx.reply(response.status === 200 ? "✅ الرابط صالح" : "❌ الرابط غير صالح");
-    } catch {
-      await ctx.reply("❌ فشل فحص الرابط");
-    }
-    waitingForLink[ctx.from.id] = false;
-    return;
-  }
-
-  // زخرفة
-  if (waitingForDecoration[ctx.from.id]) {
-    const name = ctx.message.text;
-
-    const decorated = `
-꧁${name}꧂
-『${name}』
-★彡${name}彡★
-꧁༒${name}༒꧂
-✿ ${name} ✿
-𓆩${name}𓆪
-    `;
-
-    await ctx.reply("✨ الزخارف:\n" + decorated);
-    waitingForDecoration[ctx.from.id] = false;
-    return;
-  }
-
-});
-
-/* ================= تشغيل ================= */
 
 bot.launch();
-console.log("Bot is running 🚀");
-
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
