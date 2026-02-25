@@ -1,189 +1,263 @@
-const { Telegraf, Markup } = require("telegraf");
+const TelegramBot = require("node-telegram-bot-api");
+const axios = require("axios");
+const moment = require("moment");
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const token = "PUT_BOT_TOKEN";
+const OPENAI_KEY = "PUT_OPENAI_KEY";
+const ADMIN_ID = 123456789;
+
+const bot = new TelegramBot(token, { polling: true });
 
 let aiSessions = {};
-let userJoinTime = {};
-let lastNumberData = {};
-
-/* ================== القائمة الرئيسية ================== */
+let users = {};
+let userState = {};
+let banned = new Set();
+let lastMessageTime = {};
 
 function mainMenu() {
-  return Markup.inlineKeyboard([
-    [
-      Markup.button.callback("📱 أرقام فيك", "numbers"),
-      Markup.button.callback("✨ زخرفة", "decorate")
-    ],
-    [
-      Markup.button.callback("👑 يوزر مميز", "username"),
-      Markup.button.callback("🤖 ذكاء اصطناعي", "ai")
-    ]
-  ]);
+  return {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "🧠 الذكاء الاصطناعي", callback_data: "menu_ai" }],
+        [{ text: "🎭 قسم الزخرفة", callback_data: "menu_z" }],
+        [{ text: "🔢 قسم التوليد", callback_data: "menu_gen" }],
+        [{ text: "👑 قسم اليوزرات", callback_data: "menu_user" }],
+        [{ text: "🛡 قسم الحماية", callback_data: "menu_protect" }],
+        [{ text: "⚙️ لوحة التحكم", callback_data: "admin" }]
+      ]
+    }
+  };
 }
 
-/* ================== رسالة الدخول الاحترافية ================== */
-
-bot.start(async (ctx) => {
-  userJoinTime[ctx.from.id] = new Date().toLocaleString();
-
-  const welcome = `
-╔══════════════════╗
-║ 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 𝗣𝗥𝗢 𝗕𝗢𝗧 👑
-╠══════════════════╣
-║ 👤 الاسم : ${ctx.from.first_name}
-║ 🆔 الايدي : ${ctx.from.id}
-║ 🤖 البوت : ${ctx.botInfo.first_name}
-║ ⏳ وقت الدخول :
-║ ${userJoinTime[ctx.from.id]}
-╚══════════════════╝
-`;
-
-  await ctx.reply(welcome, mainMenu());
-});
-
-/* ================== أرقام فيك ================== */
-
-const countries = {
-  "🇪🇬 مصر": "+2010",
-  "🇸🇦 السعودية": "+9665",
-  "🇦🇪 الإمارات": "+9715",
-  "🇺🇸 أمريكا": "+1",
-  "🇬🇧 بريطانيا": "+44",
-  "🇫🇷 فرنسا": "+33",
-  "🇩🇪 ألمانيا": "+49",
-  "🇮🇹 إيطاليا": "+39",
-  "🇪🇸 إسبانيا": "+34",
-  "🇹🇷 تركيا": "+90",
-  "🇧🇷 البرازيل": "+55",
-  "🇨🇦 كندا": "+1",
-  "🇮🇳 الهند": "+91",
-  "🇵🇰 باكستان": "+92",
-  "🇲🇦 المغرب": "+212",
-  "🇩🇿 الجزائر": "+213",
-  "🇹🇳 تونس": "+216",
-  "🇯🇴 الأردن": "+962",
-  "🇮🇶 العراق": "+964",
-  "🇰🇼 الكويت": "+965"
-};
-
-bot.action("numbers", async (ctx) => {
-  const buttons = Object.keys(countries).map(name =>
-    Markup.button.callback(name, "num_" + name)
-  );
-
-  const rows = [];
-  for (let i = 0; i < buttons.length; i += 2) {
-    rows.push([buttons[i], buttons[i + 1]]);
-  }
-
-  await ctx.reply("🌍 اختر الدولة:", Markup.inlineKeyboard(rows));
-});
-
-bot.action(/num_(.+)/, async (ctx) => {
-  const name = ctx.match[1];
-  const prefix = countries[name];
-
-  const number = prefix + Math.floor(1000000 + Math.random() * 9000000);
-
-  lastNumberData[ctx.from.id] = { prefix, messageId: ctx.callbackQuery.message.message_id };
-
-  await ctx.editMessageText(
-    `📱 الرقم:\n${number}`,
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback("🔄 تغيير الرقم", "change_number"),
-        Markup.button.callback("📩 طلب كود", "get_code")
-      ],
-      [Markup.button.callback("🔙 رجوع", "back")]
-    ])
-  );
-});
-
-bot.action("change_number", async (ctx) => {
-  const data = lastNumberData[ctx.from.id];
-  if (!data) return;
-
-  const newNumber = data.prefix + Math.floor(1000000 + Math.random() * 9000000);
-
-  await ctx.editMessageText(
-    `📱 الرقم:\n${newNumber}`,
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback("🔄 تغيير الرقم", "change_number"),
-        Markup.button.callback("📩 طلب كود", "get_code")
-      ],
-      [Markup.button.callback("🔙 رجوع", "back")]
-    ])
-  );
-});
-
-bot.action("get_code", async (ctx) => {
-  const code = Math.floor(100000 + Math.random() * 900000);
-  await ctx.answerCbQuery("📨 تم توليد الكود");
-  await ctx.reply(`🔢 الكود الخاص بك:\n${code}`);
-});
-
-/* ================== يوزر مميز ================== */
-
-function generateUser(length) {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return "@" + result;
+function backBtn() {
+  return {
+    reply_markup: {
+      inline_keyboard: [[{ text: "🔙 رجوع", callback_data: "back" }]]
+    }
+  };
 }
 
-bot.action("username", async (ctx) => {
-  let list = "";
-  for (let i = 0; i < 15; i++) {
-    list += generateUser(4) + "\n";
+/* ================= START ================= */
+
+bot.onText(/\/start/, async (msg) => {
+  const id = msg.from.id;
+  if (banned.has(id)) return;
+
+  const name = msg.from.first_name;
+  const time = moment().format("YYYY-MM-DD HH:mm:ss");
+
+  users[id] = { join: time };
+
+  try {
+    const photos = await bot.getUserProfilePhotos(id);
+    if (photos.total_count > 0) {
+      const fileId = photos.photos[0][0].file_id;
+      await bot.sendPhoto(
+        msg.chat.id,
+        fileId,
+        {
+          caption:
+`🔥 مرحبًا ${name}
+🆔 ID: ${id}
+⏰ وقت الدخول: ${time}
+🤖 ${bot.me.username}`,
+          ...mainMenu()
+        }
+      );
+    } else {
+      bot.sendMessage(msg.chat.id,
+`🔥 مرحبًا ${name}
+🆔 ID: ${id}
+⏰ وقت الدخول: ${time}
+🤖 ${bot.me.username}`,
+        mainMenu()
+      );
+    }
+  } catch {}
+});
+
+/* ================= CALLBACK ================= */
+
+bot.on("callback_query", async (q) => {
+  const id = q.from.id;
+  const msgId = q.message.message_id;
+  const chatId = q.message.chat.id;
+
+  if (q.data === "back") {
+    return bot.editMessageText("🏠 القائمة الرئيسية", {
+      chat_id: chatId,
+      message_id: msgId,
+      ...mainMenu()
+    });
   }
 
-  await ctx.reply(
-    `👑 15 يوزر مميز:\n\n${list}`,
-    Markup.inlineKeyboard([
-      [Markup.button.callback("🔙 رجوع", "back")]
-    ])
-  );
-});
+  /* ===== AI ===== */
+  if (q.data === "menu_ai") {
+    return bot.editMessageText("🧠 قسم الذكاء الاصطناعي", {
+      chat_id: chatId,
+      message_id: msgId,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "💬 تحدث مع AI", callback_data: "ai_start" }],
+          [{ text: "🎨 توليد صورة", callback_data: "img" }],
+          [{ text: "🖼 تحويل أنمي", callback_data: "anime" }],
+          [{ text: "🔙 رجوع", callback_data: "back" }]
+        ]
+      }
+    });
+  }
 
-/* ================== ذكاء اصطناعي احترافي ================== */
+  if (q.data === "ai_start") {
+    aiSessions[id] = Date.now();
+    bot.editMessageText("✅ بدأ الذكاء الاصطناعي — لديك 10 دقائق", {
+      chat_id: chatId,
+      message_id: msgId,
+      ...backBtn()
+    });
 
-bot.action("ai", async (ctx) => {
-  aiSessions[ctx.from.id] = Date.now();
+    setTimeout(() => {
+      delete aiSessions[id];
+      bot.sendMessage(chatId, "⏳ انتهت جلسة الذكاء الاصطناعي.");
+    }, 600000);
+  }
 
-  await ctx.reply("🤖 تم تفعيل الذكاء الاصطناعي لمدة 10 دقائق.\nابدأ المحادثة الآن.");
+  /* ===== زخرفة ===== */
+  if (q.data === "menu_z") {
+    return bot.editMessageText("🎭 اختر نوع الزخرفة", {
+      chat_id: chatId,
+      message_id: msgId,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🇸🇦 عربي", callback_data: "z_ar" }],
+          [{ text: "🇬🇧 English", callback_data: "z_en" }],
+          [{ text: "🔙 رجوع", callback_data: "back" }]
+        ]
+      }
+    });
+  }
 
-  setTimeout(() => {
-    delete aiSessions[ctx.from.id];
-    ctx.telegram.sendMessage(ctx.from.id, "⏳ انتهت جلسة الذكاء الاصطناعي.");
-  }, 10 * 60 * 1000);
-});
+  if (q.data === "z_ar" || q.data === "z_en") {
+    userState[id] = q.data;
+    bot.sendMessage(chatId, "✍️ ارسل الاسم الآن:");
+  }
 
-bot.on("text", async (ctx) => {
-  if (aiSessions[ctx.from.id]) {
+  /* ===== توليد ===== */
+  if (q.data === "menu_gen") {
+    return bot.editMessageText("🔢 قسم التوليد", {
+      chat_id: chatId,
+      message_id: msgId,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🔐 توليد باسورد", callback_data: "pass" }],
+          [{ text: "📧 توليد ايميل", callback_data: "email" }],
+          [{ text: "🌐 أرقام فيك", callback_data: "fake" }],
+          [{ text: "🔙 رجوع", callback_data: "back" }]
+        ]
+      }
+    });
+  }
 
-    const msg = ctx.message.text.toLowerCase();
+  if (q.data === "fake") {
+    const num = "+1" + Math.floor(Math.random() * 9000000000);
+    bot.editMessageText(`🌐 رقم فيك:\n${num}`, {
+      chat_id: chatId,
+      message_id: msgId,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🔄 رقم جديد", callback_data: "fake" }],
+          [{ text: "🔙 رجوع", callback_data: "back" }]
+        ]
+      }
+    });
+  }
 
-    if (msg.includes("hello") || msg.includes("hi"))
-      return ctx.reply("Hello 👋 How can I help you today?");
+  /* ===== يوزرات ===== */
+  if (q.data === "menu_user") {
+    let list = "";
+    for (let i = 0; i < 15; i++) {
+      list += `@Elite_${Math.random().toString(36).substring(2,6)}\n`;
+    }
+    bot.editMessageText("👑 يوزرات مميزة:\n\n" + list, {
+      chat_id: chatId,
+      message_id: msgId,
+      ...backBtn()
+    });
+  }
 
-    if (msg.includes("السلام"))
-      return ctx.reply("وعليكم السلام ورحمة الله 👋 كيف أساعدك؟");
+  /* ===== حماية ===== */
+  if (q.data === "menu_protect") {
+    bot.editMessageText("🛡 نظام حماية مفعل", {
+      chat_id: chatId,
+      message_id: msgId,
+      ...backBtn()
+    });
+  }
 
-    if (msg.includes("who are you"))
-      return ctx.reply("I am an advanced AI assistant designed to help you.");
+  /* ===== ادمن ===== */
+  if (q.data === "admin") {
+    if (id != ADMIN_ID)
+      return bot.answerCallbackQuery(q.id, { text: "❌ ليس لديك صلاحية", show_alert: true });
 
-    return ctx.reply("🤖 أفهم ما تقوله... أخبرني أكثر لأساعدك بشكل أفضل.");
+    bot.editMessageText("⚙️ لوحة التحكم", {
+      chat_id: chatId,
+      message_id: msgId,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "📢 إذاعة", callback_data: "broadcast" }],
+          [{ text: "📈 عدد المستخدمين", callback_data: "count" }],
+          [{ text: "🔙 رجوع", callback_data: "back" }]
+        ]
+      }
+    });
+  }
+
+  if (q.data === "count") {
+    bot.answerCallbackQuery(q.id, {
+      text: `👥 عدد المستخدمين: ${Object.keys(users).length}`,
+      show_alert: true
+    });
   }
 });
 
-/* ================== رجوع ================== */
+/* ================= الرسائل ================= */
 
-bot.action("back", async (ctx) => {
-  await ctx.reply("🔙 القائمة الرئيسية", mainMenu());
+bot.on("message", async (msg) => {
+  const id = msg.from.id;
+  if (banned.has(id)) return;
+
+  // Anti Flood
+  if (lastMessageTime[id] && Date.now() - lastMessageTime[id] < 1000)
+    return;
+  lastMessageTime[id] = Date.now();
+
+  // زخرفة
+  if (userState[id]) {
+    const name = msg.text;
+    let result = "";
+    for (let i = 0; i < 10; i++) {
+      result += `✨ ${name}_${Math.random().toString(36).substring(2,4)}\n`;
+    }
+    bot.sendMessage(msg.chat.id, "🎭 الزخرفة:\n\n" + result);
+    delete userState[id];
+  }
+
+  // AI
+  if (aiSessions[id]) {
+    try {
+      const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: msg.text }]
+        },
+        {
+          headers: { Authorization: `Bearer ${OPENAI_KEY}` }
+        }
+      );
+
+      bot.sendMessage(msg.chat.id, response.data.choices[0].message.content);
+    } catch {
+      bot.sendMessage(msg.chat.id, "⚠️ خطأ في الذكاء الاصطناعي");
+    }
+  }
 });
-
-bot.launch();
-console.log("🚀 PRO Bot Running");
