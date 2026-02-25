@@ -1,3 +1,10 @@
+const { Telegraf, session } = require("telegraf")
+
+// تأكد إنك حاطط BOT_TOKEN في Railway
+const bot = new Telegraf(process.env.BOT_TOKEN)
+
+bot.use(session())
+
 // توليد رقم عشوائي
 function generateNumber() {
     const prefix = "+33"
@@ -13,6 +20,18 @@ function getTime() {
     }
 }
 
+// رسالة البداية
+bot.start((ctx) => {
+    ctx.reply("اضغط الزر لطلب رقم 👇", {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "📞 طلب رقم", callback_data: "fake_number" }]
+            ]
+        }
+    })
+})
+
+// إنشاء رقم
 bot.action("fake_number", async (ctx) => {
 
     const number = generateNumber()
@@ -36,7 +55,7 @@ ${number}
 اضغط ع الرقم لنسخه.
 `
 
-    ctx.editMessageText(text, {
+    await ctx.editMessageText(text, {
         reply_markup: {
             inline_keyboard: [
                 [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
@@ -46,6 +65,7 @@ ${number}
     })
 })
 
+// تغيير الرقم
 bot.action("change_number", async (ctx) => {
 
     const number = generateNumber()
@@ -69,7 +89,7 @@ ${number}
 اضغط ع الرقم لنسخه.
 `
 
-    ctx.editMessageText(text, {
+    await ctx.editMessageText(text, {
         reply_markup: {
             inline_keyboard: [
                 [{ text: "🔄 تغيير الرقم", callback_data: "change_number" }],
@@ -79,6 +99,11 @@ ${number}
     })
 })
 
+// طلب الكود (وهمي)
 bot.action("get_code", async (ctx) => {
-    ctx.answerCbQuery("لا توجد رسائل جديدة 📭", { show_alert: true })
+    await ctx.answerCbQuery("📭 لا توجد رسائل جديدة", { show_alert: true })
 })
+
+bot.launch()
+
+console.log("Bot is running...")
