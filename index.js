@@ -1,252 +1,217 @@
-import os
-import random
-import asyncio
-import datetime
-import json
-from urllib.parse import urlparse
+const { Telegraf, Markup } = require("telegraf");
+const fs = require("fs");
+const axios = require("axios");
 
-from aiogram import Bot, Dispatcher, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils import executor
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-# ---------------- إعدادات البوت ----------------
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-FORCE_CHANNEL = "@x_1fn"  # قناة البوت
-DEV_USERNAME = "@f_zm1"   # يوزر المطور
+const USERS_FILE = "./users.json";
+const REQUIRED_CHANNEL = "@x_1fn";
+const DEVELOPER_ID = 7771042305;
 
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
-dp = Dispatcher(bot)
+let waitingForLink = {};
+let waitingForDecoration = {};
 
-# ---------------- قاعدة بيانات بسيطة ----------------
-USERS_FILE = "users.json"
-BUTTONS_FILE = "buttons.json"
+if (!fs.existsSync(USERS_FILE)) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify({}));
+}
 
-def load_users():
-    if os.path.exists(USERS_FILE):
-        with open(USERS_FILE, "r") as f:
-            return json.load(f)
-    return []
+function saveUser(user) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  if (!users[user.id]) {
+    users[user.id] = {
+      name: user.first_name,
+      username: user.username || "لا يوجد",
+      joinedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  }
+}
 
-def save_user(user_id):
-    users = load_users()
-    if user_id not in users:
-        users.append(user_id)
-        with open(USERS_FILE, "w") as f:
-            json.dump(users, f)
+function getUser(id) {
+  const users = JSON.parse(fs.readFileSync(USERS_FILE));
+  return users[id];
+}
 
-def load_buttons():
-    if os.path.exists(BUTTONS_FILE):
-        with open(BUTTONS_FILE, "r") as f:
-            return json.load(f)
-    return {}
+/* ================= START ================= */
 
-def save_buttons(buttons):
-    with open(BUTTONS_FILE, "w") as f:
-        json.dump(buttons, f)
+bot.start(async (ctx) => {
+  saveUser(ctx.from);
+  const userData = getUser(ctx.from.id);
 
-# ---------------- أدوات مساعدة ----------------
-async def check_sub(user_id):
-    try:
-        member = await bot.get_chat_member(FORCE_CHANNEL, user_id)
-        return member.status in ["member", "administrator", "creator"]
-    except:
-        return False
+  let photo = null;
+  try {
+    const profilePhotos = await ctx.telegram.getUserProfilePhotos(ctx.from.id);
+    if (profilePhotos.total_count > 0) {
+      photo = profilePhotos.photos[0][0].file_id;
+    }
+  } catch {}
 
-def main_menu():
-    kb = InlineKeyboardMarkup(row_width=2)
-    kb.add(
-        InlineKeyboardButton("📱 أرقام فيك", callback_data="fake"),
-        InlineKeyboardButton("👑 يوزر مميز", callback_data="vip"),
-        InlineKeyboardButton("🔗 فحص رابط", callback_data="scan"),
-        InlineKeyboardButton("🎮 لعبة XO", callback_data="xo"),
-        InlineKeyboardButton("👨‍💻 لوحة التحكم", callback_data="dev_control"),
-    )
-    return kb
+  const caption = `
+╔═══『 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 👑 』═══╗
+┃ 👤 الاسم: ${ctx.from.first_name}
+┃ 🆔 الايدي: ${ctx.from.id}
+┃ 🤖 البوت: ${ctx.botInfo.first_name}
+┃ 📅 وقت الدخول:
+┃ ${new Date(userData.joinedAt).toLocaleString()}
+╚════════════════════╝
+  `;
 
-def back_menu():
-    kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
-    return kb
+  const buttons = Markup.inlineKeyboard([
+    [
+      Markup.button.callback("📱 أرقام فيك", "fake_numbers"),
+      Markup.button.callback("✨ زخرفة", "decorate")
+    ],
+    [
+      Markup.button.callback("🎮 ألعاب", "games"),
+      Markup.button.callback("🔗 فحص", "check_link")
+    ],
+    [
+      Markup.button.callback("🔄 اشتراك", "mandatory_subscription"),
+      Markup.button.callback("🗣 المطور", "dev")
+    ]
+  ]);
 
-def countries_menu():
-    kb = InlineKeyboardMarkup(row_width=2)
-    kb.add(
-        InlineKeyboardButton("🇪🇬 مصر", callback_data="country_eg"),
-        InlineKeyboardButton("🇸🇦 السعودية", callback_data="country_sa"),
-    )
-    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
-    return kb
+  if (photo) {
+    await ctx.replyWithPhoto(photo, { caption, ...buttons });
+  } else {
+    await ctx.reply(caption, buttons);
+  }
+});
 
-def fake_number(country):
-    if country == "eg":
-        return "+20 10" + "".join([str(random.randint(0,9)) for _ in range(8)])
-    if country == "sa":
-        return "+966 5" + "".join([str(random.randint(0,9)) for _ in range(8)])
+/* ================= أرقام فيك ================= */
 
-def fake_buttons(country):
-    kb = InlineKeyboardMarkup()
-    kb.add(
-        InlineKeyboardButton("🔄 تغيير الرقم", callback_data=f"change_{country}")
-    )
-    kb.add(
-        InlineKeyboardButton("📩 تلقي كود", callback_data="code")
-    )
-    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
-    return kb
+bot.action("fake_numbers", async (ctx) => {
+  await ctx.answerCbQuery();
 
-# ---------------- Start / Restart ----------------
-@dp.message_handler(commands=["start", "restart"])
-async def restart(msg: types.Message):
-    save_user(msg.from_user.id)  # حفظ ID المستخدم
-    if not await check_sub(msg.from_user.id):
-        kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("اشتركت الآن ✅", callback_data="check_sub"))
-        kb.add(InlineKeyboardButton("📢 القناة", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}"))
-        return await msg.answer("⚠️ يجب الاشتراك في القناة أولاً", reply_markup=kb)
+  await ctx.reply(
+    "🌍 اختر الدولة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🇪🇬 مصر", "num_eg"),
+        Markup.button.callback("🇸🇦 السعودية", "num_sa")
+      ],
+      [
+        Markup.button.callback("🇺🇸 أمريكا", "num_us"),
+        Markup.button.callback("🇦🇪 الإمارات", "num_ae")
+      ]
+    ])
+  );
+});
 
-    user = msg.from_user
-    now = datetime.datetime.now()
-    text = f"""
-╭───〔 👑 أهلاً بك 〕───╮
-👤 الاسم : {user.full_name}
-🆔 ID : <code>{user.id}</code>
-📛 اليوزر : @{user.username if user.username else "لا يوجد"}
-📅 التاريخ : {now.strftime("%d-%m-%Y")}
-⏰ الوقت : {now.strftime("%H:%M")}
-╰────────────────────╯
-"""
-    photos = await bot.get_user_profile_photos(user.id, limit=1)
-    if photos.total_count > 0:
-        await bot.send_photo(msg.chat.id, photos.photos[0][0].file_id, caption=text, reply_markup=main_menu())
-    else:
-        await msg.answer(text, reply_markup=main_menu())
+function randomNumber(prefix, length) {
+  return prefix + Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, "0");
+}
 
-# ---------------- العودة للقائمة الرئيسية ----------------
-@dp.callback_query_handler(lambda c: c.data == "main")
-async def go_main(call: types.CallbackQuery):
-    await call.message.edit_text("🏠 القائمة الرئيسية", reply_markup=main_menu())
+bot.action("num_eg", (ctx) => ctx.reply("📱 " + randomNumber("010", 8)));
+bot.action("num_sa", (ctx) => ctx.reply("📱 " + randomNumber("05", 8)));
+bot.action("num_us", (ctx) => ctx.reply("📱 " + randomNumber("+1", 9)));
+bot.action("num_ae", (ctx) => ctx.reply("📱 " + randomNumber("050", 7)));
 
-# ---------------- أرقام فيك ----------------
-@dp.callback_query_handler(lambda c: c.data == "fake")
-async def fake(call: types.CallbackQuery):
-    await call.message.edit_text("🌍 اختر الدولة:", reply_markup=countries_menu())
+/* ================= زخرفة ================= */
 
-@dp.callback_query_handler(lambda c: c.data.startswith("country_"))
-async def country(call: types.CallbackQuery):
-    country = call.data.split("_")[1]
-    number = fake_number(country)
-    now = datetime.datetime.now()
-    text = f"""
-📱 الدولة : {country.upper()}
-☎️ الرقم : <code>{number}</code>
-📅 التاريخ : {now.strftime("%d-%m-%Y")}
-⏰ الوقت : {now.strftime("%H:%M")}
-"""
-    await call.message.edit_text(text, reply_markup=fake_buttons(country))
+bot.action("decorate", async (ctx) => {
+  waitingForDecoration[ctx.from.id] = true;
+  await ctx.reply("✨ اكتب الاسم اللي عايز تزخرفه:");
+});
 
-@dp.callback_query_handler(lambda c: c.data.startswith("change_"))
-async def change(call: types.CallbackQuery):
-    country = call.data.split("_")[1]
-    number = fake_number(country)
-    now = datetime.datetime.now()
-    text = f"""
-📱 الدولة : {country.upper()}
-☎️ الرقم : <code>{number}</code>
-📅 التاريخ : {now.strftime("%d-%m-%Y")}
-⏰ الوقت : {now.strftime("%H:%M")}
-"""
-    await call.message.edit_text(text, reply_markup=fake_buttons(country))
+/* ================= فحص الروابط ================= */
 
-@dp.callback_query_handler(lambda c: c.data == "code")
-async def code(call: types.CallbackQuery):
-    await call.answer()
-    await asyncio.sleep(2)
-    await call.message.answer("📭 لم يتم استلام أي رسائل الآن.")
+bot.action("check_link", async (ctx) => {
+  waitingForLink[ctx.from.id] = true;
+  await ctx.reply("🔗 أرسل الرابط:");
+});
 
-# ---------------- يوزر مميز ----------------
-@dp.callback_query_handler(lambda c: c.data == "vip")
-async def vip(call: types.CallbackQuery):
-    kb = InlineKeyboardMarkup()
-    kb.add(
-        InlineKeyboardButton("🔥 ثلاثي", callback_data="tri"),
-        InlineKeyboardButton("💎 رباعي", callback_data="quad"),
-    )
-    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
-    await call.message.edit_text("اختر نوع اليوزر:", reply_markup=kb)
+/* ================= الألعاب ================= */
 
-def generate_user(length):
-    chars = "abcdefghijklmnopqrstuvwxyz0123456789"
-    return "@" + "".join(random.choice(chars) for _ in range(length))
+bot.action("games", async (ctx) => {
+  await ctx.reply(
+    "🎮 اختر لعبة:",
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback("🎯 تخمين", "game1"),
+        Markup.button.callback("❓ سؤال", "game2")
+      ]
+    ])
+  );
+});
 
-@dp.callback_query_handler(lambda c: c.data in ["tri","quad"])
-async def gen_user(call: types.CallbackQuery):
-    length = 3 if call.data == "tri" else 4
-    msg = await call.message.edit_text("⏳ جاري توليد يوزرات مميزة...\n[■■□□□□□□] 20%")
-    await asyncio.sleep(1)
-    await msg.edit_text("⏳ جاري التوليد...\n[■■■■■■■■] 100%")
-    users = "\n".join(generate_user(length) for _ in range(10))
-    await asyncio.sleep(1)
-    await msg.edit_text(f"👑 اليوزرات المميزة:\n\n{users}", reply_markup=back_menu())
+bot.action("game1", (ctx) => {
+  const num = Math.floor(Math.random() * 10) + 1;
+  ctx.reply(`🎯 الرقم هو: ${num}`);
+});
 
-# ---------------- فحص رابط ----------------
-@dp.callback_query_handler(lambda c: c.data == "scan")
-async def scan(call: types.CallbackQuery):
-    await call.message.edit_text("🔗 أرسل الرابط لفحصه:", reply_markup=back_menu())
+bot.action("game2", (ctx) => {
+  ctx.reply("❓ عاصمة مصر؟\n1️⃣ القاهرة\n2️⃣ دبي\n3️⃣ الرياض");
+});
 
-@dp.message_handler(lambda m: m.text and m.text.startswith("http"))
-async def scan_result(msg: types.Message):
-    parsed = urlparse(msg.text)
-    text = f"""
-🔎 نتيجة الفحص:
-🌍 الدومين : {parsed.netloc}
-🔐 البروتوكول : {parsed.scheme}
-📂 المسار : {parsed.path}
-"""
-    await msg.answer(text, reply_markup=back_menu())
+/* ================= الاشتراك ================= */
 
-# ---------------- لوحة التحكم للمطور ----------------
-@dp.callback_query_handler(lambda c: c.data == "dev_control")
-async def dev_control(call: types.CallbackQuery):
-    if call.from_user.username != DEV_USERNAME.replace("@",""):
-        return await call.answer("❌ أنت لست المطور", show_alert=True)
+bot.action("mandatory_subscription", async (ctx) => {
+  try {
+    const status = await ctx.telegram.getChatMember(REQUIRED_CHANNEL, ctx.from.id);
+    if (["member", "administrator", "creator"].includes(status.status)) {
+      ctx.reply("✅ انت مشترك بالفعل!");
+    } else {
+      ctx.reply("⚠️ لازم تشترك في القناة: " + REQUIRED_CHANNEL);
+    }
+  } catch {
+    ctx.reply("⚠️ ضيف البوت ادمن في القناة.");
+  }
+});
 
-    kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton("➕ إضافة زر جديد", callback_data="add_button"))
-    kb.add(InlineKeyboardButton("📢 إرسال إذاعة", callback_data="broadcast"))
-    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
-    await call.message.edit_text("👑 لوحة تحكم المطور", reply_markup=kb)
+/* ================= المطور ================= */
 
-# ---------------- إضافة زر جديد ----------------
-@dp.callback_query_handler(lambda c: c.data == "add_button")
-async def add_button(call: types.CallbackQuery):
-    await call.message.edit_text("📌 أرسل نص الزر الجديد (سيظهر للمستخدمين):")
+bot.action("dev", async (ctx) => {
+  ctx.reply("📩 تم إرسال طلبك للمطور.");
+  ctx.telegram.sendMessage(
+    DEVELOPER_ID,
+    `📢 طلب تواصل جديد
+👤 ${ctx.from.first_name}
+🆔 ${ctx.from.id}
+@${ctx.from.username || "لا يوجد"}`
+  );
+});
 
-    @dp.message_handler(lambda m: True, content_types=types.ContentTypes.TEXT)
-    async def save_new_button(msg: types.Message):
-        buttons = load_buttons()
-        buttons[msg.text] = msg.text  # نص الزر كـ callback_data
-        save_buttons(buttons)
-        await msg.answer(f"✅ تم إنشاء الزر: {msg.text}", reply_markup=back_menu())
-        dp.message_handlers.unregister(save_new_button)  # إزالة الهاندلر بعد الاستخدام
+/* ================= استقبال الرسائل ================= */
 
-# ---------------- إذاعة الرسائل ----------------
-@dp.callback_query_handler(lambda c: c.data == "broadcast")
-async def broadcast(call: types.CallbackQuery):
-    await call.message.edit_text("✉️ أرسل الرسالة لإرسالها لجميع المستخدمين:")
+bot.on("text", async (ctx) => {
 
-    @dp.message_handler(lambda m: True, content_types=types.ContentTypes.TEXT)
-    async def send_broadcast(msg: types.Message):
-        users = load_users()
-        count = 0
-        for user_id in users:
-            try:
-                await bot.send_message(user_id, msg.text)
-                count += 1
-            except:
-                continue
-        await msg.answer(f"✅ تم الإرسال لـ {count} مستخدم", reply_markup=back_menu())
-        dp.message_handlers.unregister(send_broadcast)
+  // فحص الروابط
+  if (waitingForLink[ctx.from.id] && ctx.message.text.startsWith("http")) {
+    try {
+      const response = await axios.head(ctx.message.text);
+      await ctx.reply(response.status === 200 ? "✅ الرابط صالح" : "❌ الرابط غير صالح");
+    } catch {
+      await ctx.reply("❌ فشل فحص الرابط");
+    }
+    waitingForLink[ctx.from.id] = false;
+    return;
+  }
 
-# ---------------- Main ----------------
-if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+  // زخرفة
+  if (waitingForDecoration[ctx.from.id]) {
+    const name = ctx.message.text;
+
+    const decorated = `
+꧁${name}꧂
+『${name}』
+★彡${name}彡★
+꧁༒${name}༒꧂
+✿ ${name} ✿
+𓆩${name}𓆪
+    `;
+
+    await ctx.reply("✨ الزخارف:\n" + decorated);
+    waitingForDecoration[ctx.from.id] = false;
+    return;
+  }
+
+});
+
+/* ================= تشغيل ================= */
+
+bot.launch();
+console.log("Bot is running 🚀");
+
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
