@@ -1,217 +1,235 @@
-const { Telegraf, Markup } = require("telegraf");
-const fs = require("fs");
-const axios = require("axios");
+import os
+import random
+import asyncio
+import datetime
+from urllib.parse import urlparse
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils import executor
 
-const USERS_FILE = "./users.json";
-const REQUIRED_CHANNEL = "@x_1fn";
-const DEVELOPER_ID = 7771042305;
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+FORCE_CHANNEL = os.getenv("FORCE_CHANNEL")
+DEV_USERNAME = os.getenv("DEV_USERNAME")
 
-let waitingForLink = {};
-let waitingForDecoration = {};
+bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
+dp = Dispatcher(bot)
 
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify({}));
-}
+# ------------------ أدوات مساعدة ------------------
 
-function saveUser(user) {
-  const users = JSON.parse(fs.readFileSync(USERS_FILE));
-  if (!users[user.id]) {
-    users[user.id] = {
-      name: user.first_name,
-      username: user.username || "لا يوجد",
-      joinedAt: new Date().toISOString()
-    };
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-  }
-}
+async def check_sub(user_id):
+    try:
+        member = await bot.get_chat_member(FORCE_CHANNEL, user_id)
+        return member.status in ["member", "administrator", "creator"]
+    except:
+        return False
 
-function getUser(id) {
-  const users = JSON.parse(fs.readFileSync(USERS_FILE));
-  return users[id];
-}
+def main_menu():
+    kb = InlineKeyboardMarkup(row_width=2)
+    kb.add(
+        InlineKeyboardButton("📱 أرقام فيك", callback_data="fake"),
+        InlineKeyboardButton("👑 يوزر مميز", callback_data="vip"),
+        InlineKeyboardButton("🔗 فحص رابط", callback_data="scan"),
+        InlineKeyboardButton("🎮 لعبة XO", callback_data="xo"),
+        InlineKeyboardButton("👨‍💻 قسم المطور", callback_data="dev"),
+    )
+    return kb
 
-/* ================= START ================= */
+def countries_menu():
+    kb = InlineKeyboardMarkup(row_width=2)
+    kb.add(
+        InlineKeyboardButton("🇪🇬 مصر", callback_data="country_eg"),
+        InlineKeyboardButton("🇸🇦 السعودية", callback_data="country_sa"),
+    )
+    return kb
 
-bot.start(async (ctx) => {
-  saveUser(ctx.from);
-  const userData = getUser(ctx.from.id);
+def fake_number(country):
+    if country == "eg":
+        return "+20 10" + "".join([str(random.randint(0,9)) for _ in range(8)])
+    if country == "sa":
+        return "+966 5" + "".join([str(random.randint(0,9)) for _ in range(8)])
 
-  let photo = null;
-  try {
-    const profilePhotos = await ctx.telegram.getUserProfilePhotos(ctx.from.id);
-    if (profilePhotos.total_count > 0) {
-      photo = profilePhotos.photos[0][0].file_id;
-    }
-  } catch {}
+def fake_buttons(country):
+    kb = InlineKeyboardMarkup()
+    kb.add(
+        InlineKeyboardButton("🔄 تغيير الرقم", callback_data=f"change_{country}")
+    )
+    kb.add(
+        InlineKeyboardButton("📩 تلقي كود", callback_data="code")
+    )
+    return kb
 
-  const caption = `
-╔═══『 👑 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 👑 』═══╗
-┃ 👤 الاسم: ${ctx.from.first_name}
-┃ 🆔 الايدي: ${ctx.from.id}
-┃ 🤖 البوت: ${ctx.botInfo.first_name}
-┃ 📅 وقت الدخول:
-┃ ${new Date(userData.joinedAt).toLocaleString()}
-╚════════════════════╝
-  `;
+# ------------------ Restart ------------------
 
-  const buttons = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("📱 أرقام فيك", "fake_numbers"),
-      Markup.button.callback("✨ زخرفة", "decorate")
-    ],
-    [
-      Markup.button.callback("🎮 ألعاب", "games"),
-      Markup.button.callback("🔗 فحص", "check_link")
-    ],
-    [
-      Markup.button.callback("🔄 اشتراك", "mandatory_subscription"),
-      Markup.button.callback("🗣 المطور", "dev")
-    ]
-  ]);
+@dp.message_handler(commands=["restart", "start"])
+async def restart(msg: types.Message):
+    if not await check_sub(msg.from_user.id):
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton("اشتركت الآن ✅", callback_data="check_sub"))
+        kb.add(InlineKeyboardButton("📢 القناة", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}"))
+        return await msg.answer("⚠️ يجب الاشتراك في القناة أولاً", reply_markup=kb)
 
-  if (photo) {
-    await ctx.replyWithPhoto(photo, { caption, ...buttons });
-  } else {
-    await ctx.reply(caption, buttons);
-  }
-});
+    user = msg.from_user
+    now = datetime.datetime.now()
+    text = f"""
+╭───〔 👑 أهلاً بك عزيزي المستخدم 〕───╮
 
-/* ================= أرقام فيك ================= */
+👤 الاسم : {user.full_name}
 
-bot.action("fake_numbers", async (ctx) => {
-  await ctx.answerCbQuery();
+🆔 ID : <code>{user.id}</code>
 
-  await ctx.reply(
-    "🌍 اختر الدولة:",
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback("🇪🇬 مصر", "num_eg"),
-        Markup.button.callback("🇸🇦 السعودية", "num_sa")
-      ],
-      [
-        Markup.button.callback("🇺🇸 أمريكا", "num_us"),
-        Markup.button.callback("🇦🇪 الإمارات", "num_ae")
-      ]
-    ])
-  );
-});
+📛 اليوزر : @{user.username if user.username else "لا يوجد"}
 
-function randomNumber(prefix, length) {
-  return prefix + Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, "0");
-}
+📅 التاريخ : {now.strftime("%d-%m-%Y")}
 
-bot.action("num_eg", (ctx) => ctx.reply("📱 " + randomNumber("010", 8)));
-bot.action("num_sa", (ctx) => ctx.reply("📱 " + randomNumber("05", 8)));
-bot.action("num_us", (ctx) => ctx.reply("📱 " + randomNumber("+1", 9)));
-bot.action("num_ae", (ctx) => ctx.reply("📱 " + randomNumber("050", 7)));
+⏰ الوقت : {now.strftime("%H:%M")}
 
-/* ================= زخرفة ================= */
+╰────────────────────╯
+"""
+    photos = await bot.get_user_profile_photos(user.id, limit=1)
+    if photos.total_count > 0:
+        await bot.send_photo(msg.chat.id, photos.photos[0][0].file_id, caption=text, reply_markup=main_menu())
+    else:
+        await msg.answer(text, reply_markup=main_menu())
 
-bot.action("decorate", async (ctx) => {
-  waitingForDecoration[ctx.from.id] = true;
-  await ctx.reply("✨ اكتب الاسم اللي عايز تزخرفه:");
-});
+# ------------------ اشتراك ------------------
 
-/* ================= فحص الروابط ================= */
+@dp.callback_query_handler(lambda c: c.data == "check_sub")
+async def check_sub_btn(call: types.CallbackQuery):
+    if await check_sub(call.from_user.id):
+        await call.message.delete()
+        await restart(call.message)
+    else:
+        await call.answer("❌ لم يتم الاشتراك بعد", show_alert=True)
 
-bot.action("check_link", async (ctx) => {
-  waitingForLink[ctx.from.id] = true;
-  await ctx.reply("🔗 أرسل الرابط:");
-});
+# ------------------ أرقام فيك ------------------
 
-/* ================= الألعاب ================= */
+@dp.callback_query_handler(lambda c: c.data == "fake")
+async def fake(call: types.CallbackQuery):
+    await call.message.edit_text("🌍 اختر الدولة:", reply_markup=countries_menu())
 
-bot.action("games", async (ctx) => {
-  await ctx.reply(
-    "🎮 اختر لعبة:",
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback("🎯 تخمين", "game1"),
-        Markup.button.callback("❓ سؤال", "game2")
-      ]
-    ])
-  );
-});
+@dp.callback_query_handler(lambda c: c.data.startswith("country_"))
+async def country(call: types.CallbackQuery):
+    country = call.data.split("_")[1]
+    number = fake_number(country)
+    now = datetime.datetime.now()
+    text = f"""
+📱 الدولة : {country.upper()}
 
-bot.action("game1", (ctx) => {
-  const num = Math.floor(Math.random() * 10) + 1;
-  ctx.reply(`🎯 الرقم هو: ${num}`);
-});
+☎️ الرقم : <code>{number}</code>
 
-bot.action("game2", (ctx) => {
-  ctx.reply("❓ عاصمة مصر؟\n1️⃣ القاهرة\n2️⃣ دبي\n3️⃣ الرياض");
-});
+📅 التاريخ : {now.strftime("%d-%m-%Y")}
 
-/* ================= الاشتراك ================= */
+⏰ الوقت : {now.strftime("%H:%M")}
+"""
+    await call.message.edit_text(text, reply_markup=fake_buttons(country))
 
-bot.action("mandatory_subscription", async (ctx) => {
-  try {
-    const status = await ctx.telegram.getChatMember(REQUIRED_CHANNEL, ctx.from.id);
-    if (["member", "administrator", "creator"].includes(status.status)) {
-      ctx.reply("✅ انت مشترك بالفعل!");
-    } else {
-      ctx.reply("⚠️ لازم تشترك في القناة: " + REQUIRED_CHANNEL);
-    }
-  } catch {
-    ctx.reply("⚠️ ضيف البوت ادمن في القناة.");
-  }
-});
+@dp.callback_query_handler(lambda c: c.data.startswith("change_"))
+async def change(call: types.CallbackQuery):
+    country = call.data.split("_")[1]
+    number = fake_number(country)
+    now = datetime.datetime.now()
+    text = f"""
+📱 الدولة : {country.upper()}
 
-/* ================= المطور ================= */
+☎️ الرقم : <code>{number}</code>
 
-bot.action("dev", async (ctx) => {
-  ctx.reply("📩 تم إرسال طلبك للمطور.");
-  ctx.telegram.sendMessage(
-    DEVELOPER_ID,
-    `📢 طلب تواصل جديد
-👤 ${ctx.from.first_name}
-🆔 ${ctx.from.id}
-@${ctx.from.username || "لا يوجد"}`
-  );
-});
+📅 التاريخ : {now.strftime("%d-%m-%Y")}
 
-/* ================= استقبال الرسائل ================= */
+⏰ الوقت : {now.strftime("%H:%M")}
+"""
+    await call.message.edit_text(text, reply_markup=fake_buttons(country))
 
-bot.on("text", async (ctx) => {
+@dp.callback_query_handler(lambda c: c.data == "code")
+async def code(call: types.CallbackQuery):
+    await call.answer()
+    await asyncio.sleep(2)
+    await call.message.answer("📭 لم يتم استلام أي رسائل الآن.")
 
-  // فحص الروابط
-  if (waitingForLink[ctx.from.id] && ctx.message.text.startsWith("http")) {
-    try {
-      const response = await axios.head(ctx.message.text);
-      await ctx.reply(response.status === 200 ? "✅ الرابط صالح" : "❌ الرابط غير صالح");
-    } catch {
-      await ctx.reply("❌ فشل فحص الرابط");
-    }
-    waitingForLink[ctx.from.id] = false;
-    return;
-  }
+# ------------------ يوزر مميز ------------------
 
-  // زخرفة
-  if (waitingForDecoration[ctx.from.id]) {
-    const name = ctx.message.text;
+@dp.callback_query_handler(lambda c: c.data == "vip")
+async def vip(call: types.CallbackQuery):
+    kb = InlineKeyboardMarkup()
+    kb.add(
+        InlineKeyboardButton("🔥 ثلاثي", callback_data="tri"),
+        InlineKeyboardButton("💎 رباعي", callback_data="quad")
+    )
+    await call.message.edit_text("اختر نوع اليوزر:", reply_markup=kb)
 
-    const decorated = `
-꧁${name}꧂
-『${name}』
-★彡${name}彡★
-꧁༒${name}༒꧂
-✿ ${name} ✿
-𓆩${name}𓆪
-    `;
+def generate_user(length):
+    chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+    return "@" + "".join(random.choice(chars) for _ in range(length))
 
-    await ctx.reply("✨ الزخارف:\n" + decorated);
-    waitingForDecoration[ctx.from.id] = false;
-    return;
-  }
+@dp.callback_query_handler(lambda c: c.data in ["tri","quad"])
+async def gen_user(call: types.CallbackQuery):
+    length = 3 if call.data == "tri" else 4
+    msg = await call.message.edit_text("⏳ جاري توليد يوزرات مميزة...\n[■■□□□□□□] 20%")
+    await asyncio.sleep(1)
+    await msg.edit_text("⏳ جاري التوليد...\n[■■■■■■■■] 100%")
+    users = "\n".join(generate_user(length) for _ in range(10))
+    await asyncio.sleep(1)
+    await msg.edit_text(f"👑 اليوزرات المميزة:\n\n{users}")
 
-});
+# ------------------ فحص رابط ------------------
 
-/* ================= تشغيل ================= */
+@dp.callback_query_handler(lambda c: c.data == "scan")
+async def scan(call: types.CallbackQuery):
+    await call.message.edit_text("🔗 أرسل الرابط لفحصه:")
 
-bot.launch();
-console.log("Bot is running 🚀");
+@dp.message_handler(lambda m: m.text and m.text.startswith("http"))
+async def scan_result(msg: types.Message):
+    parsed = urlparse(msg.text)
+    text = f"""
+🔎 نتيجة الفحص:
 
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+🌍 الدومين : {parsed.netloc}
+🔐 البروتوكول : {parsed.scheme}
+📂 المسار : {parsed.path}
+"""
+    await msg.answer(text)
+
+# ------------------ لعبة XO ------------------
+
+board = [" "] * 9
+
+def xo_keyboard():
+    kb = InlineKeyboardMarkup(row_width=3)
+    for i in range(9):
+        kb.insert(InlineKeyboardButton(board[i], callback_data=f"xo_{i}"))
+    return kb
+
+@dp.callback_query_handler(lambda c: c.data == "xo")
+async def xo_start(call: types.CallbackQuery):
+    global board
+    board = [" "] * 9
+    await call.message.edit_text("🎮 لعبة XO", reply_markup=xo_keyboard())
+
+@dp.callback_query_handler(lambda c: c.data.startswith("xo_"))
+async def xo_play(call: types.CallbackQuery):
+    global board
+    i = int(call.data.split("_")[1])
+    if board[i] == " ":
+        board[i] = "X"
+        free = [idx for idx, val in enumerate(board) if val == " "]
+        if free:
+            board[random.choice(free)] = "O"
+    await call.message.edit_reply_markup(reply_markup=xo_keyboard())
+
+# ------------------ قسم المطور ------------------
+
+@dp.callback_query_handler(lambda c: c.data == "dev")
+async def dev(call: types.CallbackQuery):
+    text = f"""
+👑 المطور الرسمي
+
+اليوزر : {DEV_USERNAME}
+
+🚀 بوت احترافي متعدد الخدمات
+"""
+    await call.message.edit_text(text)
+
+# ------------------
+
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)
