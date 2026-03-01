@@ -41,6 +41,7 @@ async def check_sub(user_id):
     except:
         return False
 
+# ---------------- قوائم ----------------
 def main_menu():
     kb = InlineKeyboardMarkup(row_width=2)
     kb.add(
@@ -92,6 +93,9 @@ async def start(msg: types.Message):
         )
         return await msg.answer("⚠️ يجب الاشتراك في القناة أولاً", reply_markup=kb)
 
+    await send_welcome(msg)
+
+async def send_welcome(msg: types.Message):
     user = msg.from_user
     now = datetime.datetime.now()
     text = f"""
@@ -107,6 +111,15 @@ async def start(msg: types.Message):
         await bot.send_photo(msg.chat.id, photos.photos[0][0].file_id, caption=text, reply_markup=main_menu())
     else:
         await msg.answer(text, reply_markup=main_menu())
+
+# ---------------- زرار الاشتراك ✅ ----------------
+@dp.callback_query_handler(lambda c: c.data == "check_sub")
+async def check_subscription(call: types.CallbackQuery):
+    if await check_sub(call.from_user.id):
+        await call.answer("✅ تم التحقق من الاشتراك")
+        await send_welcome(call.message)
+    else:
+        await call.answer("❌ لم يتم الاشتراك بعد", show_alert=True)
 
 # ---------------- Main Menu ----------------
 @dp.callback_query_handler(lambda c: c.data == "main")
@@ -194,8 +207,6 @@ async def dev_control(call: types.CallbackQuery):
         return await call.answer("❌ أنت لست المطور", show_alert=True)
     kb = InlineKeyboardMarkup()
     kb.add(
-        InlineKeyboardButton("➕ إضافة زر جديد", callback_data="add_button"),
-        InlineKeyboardButton("📢 إرسال إذاعة", callback_data="broadcast"),
         InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main")
     )
     await call.message.edit_text("👑 لوحة تحكم المطور", reply_markup=kb)
