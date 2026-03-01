@@ -99,6 +99,7 @@ async def send_number(callback_query: types.CallbackQuery):
 ━━━━━━━━━━━━
 
 ➖ اضغط ع الرقم لنسخه.
+قم بتسجيل الدخول بالرقم واطلب الكود الموكون من 6 ارقام واضغط على زر طلب الكود ومبروك عليك الرقم مع تحيات المطور محمد فرعون 
 """
 
     keyboard = InlineKeyboardMarkup()
