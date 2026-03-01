@@ -7,12 +7,13 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_NAME = "Mon7aref1KBot"
+DEV_NAME = "MOHAMED ELSAYED MOHAMED"
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
 # ---------------- الدول ----------------
-
 countries = {
     "eg": ("🇪🇬 مصر", "+20"),
     "sa": ("🇸🇦 السعودية", "+966"),
@@ -37,62 +38,74 @@ countries = {
 }
 
 # ---------------- توليد رقم ----------------
-
 def generate_number(code):
     return code + "".join(str(random.randint(0, 9)) for _ in range(8))
 
-# ---------------- القائمة الرئيسية ----------------
-
+# ---------------- القوائم ----------------
 def main_menu():
     kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton("ارقام فيك 🌐", callback_data="fake"))
+    kb.add(
+        InlineKeyboardButton("ارقام فيك 🌐", callback_data="fake"),
+    )
     return kb
-
-# ---------------- قائمة الدول ----------------
 
 def countries_menu():
     kb = InlineKeyboardMarkup(row_width=2)
-    buttons = []
-    for key, value in countries.items():
-        buttons.append(
-            InlineKeyboardButton(value[0], callback_data=f"country_{key}")
-        )
+    buttons = [InlineKeyboardButton(name, callback_data=f"country_{key}") for key, (name, _) in countries.items()]
     kb.add(*buttons)
     kb.add(InlineKeyboardButton("🏠 رجوع", callback_data="main"))
     return kb
 
-# ---------------- أزرار الرقم ----------------
-
 def number_buttons(country_key):
     kb = InlineKeyboardMarkup()
     kb.add(
-        InlineKeyboardButton("🔄 تغيير الرقم", callback_data=f"change_{country_key}")
-    )
-    kb.add(
+        InlineKeyboardButton("🔄 تغيير الرقم", callback_data=f"change_{country_key}"),
         InlineKeyboardButton("📩 طلب كود", callback_data="get_code")
     )
+    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
     return kb
 
-# ---------------- /start ----------------
+# ---------------- رسالة مزخرفة ----------------
+def profile_message(user: types.User):
+    now = datetime.datetime.now()
+    return f"""
+╭───〔 {BOT_NAME} 〕───╮
+👤 الاسم: {user.full_name}
+🆔 ID: <code>{user.id}</code>
+📛 اليوزر: @{user.username if user.username else "لا يوجد"}
+📅 التاريخ: {now.strftime("%d-%m-%Y")}
+⏰ الوقت: {now.strftime("%H:%M:%S")}
+👨‍💻 المطور: {DEV_NAME}
+╰─────────────────╯
+"""
 
+# ---------------- /start ----------------
 @dp.message_handler(commands=["start"])
 async def start(msg: types.Message):
     await msg.answer("مرحباً بك 👋", reply_markup=main_menu())
 
-# ---------------- رجوع ----------------
+# ---------------- /restart ----------------
+@dp.message_handler(commands=["restart"])
+async def restart(msg: types.Message):
+    user = msg.from_user
+    photos = await bot.get_user_profile_photos(user.id, limit=1)
+    text = profile_message(user)
+    if photos.total_count > 0:
+        await bot.send_photo(msg.chat.id, photos.photos[0][0].file_id, caption=text, reply_markup=main_menu())
+    else:
+        await msg.answer(text, reply_markup=main_menu())
 
+# ---------------- رجوع للقائمة الرئيسية ----------------
 @dp.callback_query_handler(lambda c: c.data == "main")
 async def back(call: types.CallbackQuery):
     await call.message.edit_text("القائمة الرئيسية 👇", reply_markup=main_menu())
 
-# ---------------- زرار ارقام فيك ----------------
-
+# ---------------- ارقام فيك ----------------
 @dp.callback_query_handler(lambda c: c.data == "fake")
 async def fake(call: types.CallbackQuery):
     await call.message.edit_text("🌍 اختر الدولة:", reply_markup=countries_menu())
 
 # ---------------- اختيار دولة ----------------
-
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
 async def show_number(call: types.CallbackQuery):
     key = call.data.split("_")[1]
@@ -107,15 +120,12 @@ async def show_number(call: types.CallbackQuery):
     text = f"""
 📍 الدولة: {name}
 ☎️ الرقم: <code>{number}</code>
-
 📅 التاريخ: {now.strftime("%d-%m-%Y")}
 ⏰ الوقت: {now.strftime("%H:%M:%S")}
 """
-
     await call.message.edit_text(text, reply_markup=number_buttons(key))
 
 # ---------------- تغيير الرقم ----------------
-
 @dp.callback_query_handler(lambda c: c.data.startswith("change_"))
 async def change_number(call: types.CallbackQuery):
     key = call.data.split("_")[1]
@@ -127,20 +137,16 @@ async def change_number(call: types.CallbackQuery):
     text = f"""
 📍 الدولة: {name}
 ☎️ الرقم: <code>{number}</code>
-
 📅 التاريخ: {now.strftime("%d-%m-%Y")}
 ⏰ الوقت: {now.strftime("%H:%M:%S")}
 """
-
     await call.message.edit_text(text, reply_markup=number_buttons(key))
 
 # ---------------- طلب كود ----------------
-
 @dp.callback_query_handler(lambda c: c.data == "get_code")
 async def get_code(call: types.CallbackQuery):
     await call.answer("📭 لم يصل أي كود حتى الآن", show_alert=True)
 
 # ---------------- تشغيل البوت ----------------
-
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
