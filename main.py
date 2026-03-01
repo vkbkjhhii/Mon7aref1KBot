@@ -1,43 +1,106 @@
 import os
 import random
 import asyncio
+import datetime
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
-# ---------------- إعداد البوت ----------------
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # ضع توكن البوت هنا أو في Variables
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
-# ---------------- زر واحد ----------------
+# ---------------- الدول ----------------
+
+countries = {
+    "eg": ("🇪🇬 مصر", "+20"),
+    "sa": ("🇸🇦 السعودية", "+966"),
+    "ae": ("🇦🇪 الإمارات", "+971"),
+    "us": ("🇺🇸 أمريكا", "+1"),
+    "uk": ("🇬🇧 بريطانيا", "+44"),
+    "fr": ("🇫🇷 فرنسا", "+33"),
+    "de": ("🇩🇪 ألمانيا", "+49"),
+    "tr": ("🇹🇷 تركيا", "+90"),
+    "it": ("🇮🇹 إيطاليا", "+39"),
+    "es": ("🇪🇸 إسبانيا", "+34"),
+    "br": ("🇧🇷 البرازيل", "+55"),
+    "in": ("🇮🇳 الهند", "+91"),
+    "cn": ("🇨🇳 الصين", "+86"),
+    "jp": ("🇯🇵 اليابان", "+81"),
+    "ru": ("🇷🇺 روسيا", "+7"),
+    "ca": ("🇨🇦 كندا", "+1"),
+    "au": ("🇦🇺 أستراليا", "+61"),
+    "mx": ("🇲🇽 المكسيك", "+52"),
+    "id": ("🇮🇩 إندونيسيا", "+62"),
+    "za": ("🇿🇦 جنوب أفريقيا", "+27"),
+}
+
+# ---------------- توليد رقم ----------------
+
+def generate_number(code):
+    return code + "".join(str(random.randint(0,9)) for _ in range(8))
+
+# ---------------- القائمة الرئيسية ----------------
+
 def main_menu():
     kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton("👑 توليد يوزرات", callback_data="generate_users"))
+    kb.add(InlineKeyboardButton("ارقام فيك 🌐", callback_data="fake_numbers"))
     return kb
 
-# ---------------- توليد اليوزرات ----------------
-def generate_user(length=5):
-    chars = "abcdefghijklmnopqrstuvwxyz0123456789"
-    return "@" + "".join(random.choice(chars) for _ in range(length))
+# ---------------- قائمة الدول ----------------
+
+def countries_menu():
+    kb = InlineKeyboardMarkup(row_width=2)
+    buttons = []
+    for key, value in countries.items():
+        buttons.append(InlineKeyboardButton(value[0], callback_data=f"country_{key}"))
+    kb.add(*buttons)
+    kb.add(InlineKeyboardButton("🏠 رجوع", callback_data="main"))
+    return kb
 
 # ---------------- /start ----------------
+
 @dp.message_handler(commands=["start"])
 async def start(msg: types.Message):
-    await msg.answer("مرحبا بك! اضغط على الزر لتوليد 20 يوزر:", reply_markup=main_menu())
+    await msg.answer("مرحباً بك 👋", reply_markup=main_menu())
 
-# ---------------- زر التوليد ----------------
-@dp.callback_query_handler(lambda c: c.data == "generate_users")
-async def generate(call: types.CallbackQuery):
-    # عرض رسالة جاري التحميل
-    loading = await call.message.edit_text("⏳ جاري توليد اليوزرات...\n[■■□□□□□□] 20%")
-    await asyncio.sleep(1)
-    await loading.edit_text("⏳ جاري التوليد...\n[■■■■■■■■] 100%")
-    
-    # توليد 20 يوزر
-    users = "\n".join(generate_user() for _ in range(20))
-    await call.message.edit_text(f"👑 تم توليد 20 يوزر:\n\n{users}")
+# ---------------- الرجوع ----------------
+
+@dp.callback_query_handler(lambda c: c.data == "main")
+async def back_main(call: types.CallbackQuery):
+    await call.message.edit_text("القائمة الرئيسية 👇", reply_markup=main_menu())
+
+# ---------------- زرار ارقام فيك ----------------
+
+@dp.callback_query_handler(lambda c: c.data == "fake_numbers")
+async def fake_numbers(call: types.CallbackQuery):
+    await call.message.edit_text("🌍 اختار الدولة:", reply_markup=countries_menu())
+
+# ---------------- اختيار الدولة ----------------
+
+@dp.callback_query_handler(lambda c: c.data.startswith("country_"))
+async def show_number(call: types.CallbackQuery):
+    key = call.data.split("_")[1]
+    name, code = countries[key]
+
+    await call.message.edit_text("⏳ جاري تحميل الرقم...")
+    await asyncio.sleep(2)
+
+    number = generate_number(code)
+    now = datetime.datetime.now()
+
+    text = f"""
+📍 الدولة: {name}
+☎️ الرقم: <code>{number}</code>
+
+📅 التاريخ: {now.strftime("%d-%m-%Y")}
+⏰ الوقت: {now.strftime("%H:%M:%S")}
+"""
+
+    await call.message.edit_text(text, reply_markup=countries_menu())
 
 # ---------------- تشغيل البوت ----------------
+
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
