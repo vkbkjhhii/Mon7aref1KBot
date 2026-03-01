@@ -22,6 +22,20 @@ countries = {
     "uk": ("🇬🇧 بريطانيا", "+44"),
     "fr": ("🇫🇷 فرنسا", "+33"),
     "de": ("🇩🇪 ألمانيا", "+49"),
+    "tr": ("🇹🇷 تركيا", "+90"),
+    "it": ("🇮🇹 إيطاليا", "+39"),
+    "es": ("🇪🇸 إسبانيا", "+34"),
+    "br": ("🇧🇷 البرازيل", "+55"),
+    "in": ("🇮🇳 الهند", "+91"),
+    "cn": ("🇨🇳 الصين", "+86"),
+    "jp": ("🇯🇵 اليابان", "+81"),
+    "ru": ("🇷🇺 روسيا", "+7"),
+    "ca": ("🇨🇦 كندا", "+1"),
+    "au": ("🇦🇺 أستراليا", "+61"),
+    "mx": ("🇲🇽 المكسيك", "+52"),
+    "id": ("🇮🇩 إندونيسيا", "+62"),
+    "za": ("🇿🇦 جنوب أفريقيا", "+27"),
+    "ae": ("🇦🇪 الإمارات", "+971"),
 }
 
 # ---------------- التحقق من الاشتراك ----------------
@@ -58,10 +72,22 @@ def number_buttons(country_key):
     kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
     return kb
 
-# ---------------- رسالة الترحيب ----------------
-def welcome_message(user: types.User):
+# ---------------- رسالة الترحيب مزخرفة ----------------
+def profile_message(user: types.User):
     now = datetime.datetime.now()
-    return f"أهلاً بك عزيزي {user.full_name} في البوت 🏴‍☠️\n🕒 الوقت: {now.strftime('%H:%M:%S')}\n📅 التاريخ: {now.strftime('%d-%m-%Y')}"
+    return f"""
+╭───〔 {BOT_NAME} 〕───╮
+
+👤 الاسم: {user.full_name}
+
+📛 اليوزر: @{user.username if user.username else "لا يوجد"}
+
+⏰ الوقت: {now.strftime("%H:%M:%S")}
+
+📅 التاريخ: {now.strftime("%d-%m-%Y")}
+
+╰─────────────────╯
+"""
 
 # ---------------- /start ----------------
 @dp.message_handler(commands=["start"])
@@ -72,12 +98,19 @@ async def start(msg: types.Message):
         kb.add(InlineKeyboardButton("اشترك الآن ✅", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}"))
         return await msg.answer("⚠️ يجب الاشتراك في القناة أولاً", reply_markup=kb)
 
-    await msg.answer(welcome_message(user), reply_markup=main_menu())
+    photos = await bot.get_user_profile_photos(user.id, limit=1)
+    text = profile_message(user)
+    if photos.total_count > 0:
+        await bot.send_photo(msg.chat.id, photos.photos[0][0].file_id, caption=text, reply_markup=main_menu())
+    else:
+        await msg.answer(text, reply_markup=main_menu())
 
 # ---------------- رجوع للقائمة الرئيسية ----------------
 @dp.callback_query_handler(lambda c: c.data == "main")
 async def back(call: types.CallbackQuery):
-    await call.message.edit_text(welcome_message(call.from_user), reply_markup=main_menu())
+    user = call.from_user
+    text = profile_message(user)
+    await call.message.edit_text(text, reply_markup=main_menu())
 
 # ---------------- أرقام فيك ----------------
 @dp.callback_query_handler(lambda c: c.data == "fake")
@@ -90,15 +123,15 @@ async def show_number(call: types.CallbackQuery):
     key = call.data.split("_")[1]
     name, code = countries[key]
 
-    loading_msg = await call.message.edit_text("⏳ جاري تحميل الرقم...\n[░░░░░░░░░░] 0%")
+    loading_msg = await call.message.edit_text("⏳ جاري إنشاء الرقم...\n[░░░░░░░░░░] 0%")
     for i in range(1, 11):
         await asyncio.sleep(0.2)
         bar = "█" * i + "░" * (10 - i)
-        await loading_msg.edit_text(f"⏳ جاري تحميل الرقم...\n[{bar}] {i*10}%")
+        await loading_msg.edit_text(f"⏳ جاري إنشاء الرقم...\n[{bar}] {i*10}%")
 
     number = generate_number(code)
     await loading_msg.edit_text(
-        f"📍 الدولة: {name}\n☎️ الرقم: <code>{number}</code>\n⏰ الوقت: {datetime.datetime.now().strftime('%H:%M:%S')}\n📅 التاريخ: {datetime.datetime.now().strftime('%d-%m-%Y')}",
+        f"🎉 تم إنشاء الرقم!\n\n📍 الدولة: {name}\n☎️ الرقم: <code>{number}</code>\n⏰ الوقت: {datetime.datetime.now().strftime('%H:%M:%S')}\n📅 التاريخ: {datetime.datetime.now().strftime('%d-%m-%Y')}",
         reply_markup=number_buttons(key)
     )
 
@@ -127,5 +160,4 @@ async def get_code(call: types.CallbackQuery):
 
 # ---------------- تشغيل البوت ----------------
 if __name__ == "__main__":
-    from aiogram import executor
     executor.start_polling(dp, skip_updates=True)
