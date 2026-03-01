@@ -59,7 +59,6 @@ def main_menu():
         InlineKeyboardButton("📱 أرقام فيك", callback_data="fake"),
         InlineKeyboardButton("👑 يوزر مميز", callback_data="vip"),
         InlineKeyboardButton("🔗 فحص رابط", callback_data="scan"),
-        InlineKeyboardButton("🎮 لعبة XO", callback_data="xo"),
         InlineKeyboardButton("👨‍💻 لوحة التحكم", callback_data="dev_control"),
     )
     return kb
@@ -108,13 +107,12 @@ async def restart(msg: types.Message):
     user = msg.from_user
     now = datetime.datetime.now()
     text = f"""
-╭───〔 👑 أهلاً بك 〕───╮
+👑 أهلاً بك
 👤 الاسم : {user.full_name}
 🆔 ID : <code>{user.id}</code>
 📛 اليوزر : @{user.username if user.username else "لا يوجد"}
 📅 التاريخ : {now.strftime("%d-%m-%Y")}
 ⏰ الوقت : {now.strftime("%H:%M")}
-╰────────────────────╯
 """
     photos = await bot.get_user_profile_photos(user.id, limit=1)
     if photos.total_count > 0:
@@ -182,9 +180,7 @@ def generate_user(length):
 @dp.callback_query_handler(lambda c: c.data in ["tri","quad"])
 async def gen_user(call: types.CallbackQuery):
     length = 3 if call.data == "tri" else 4
-    msg = await call.message.edit_text("⏳ جاري توليد يوزرات مميزة...\n[■■□□□□□□] 20%")
-    await asyncio.sleep(1)
-    await msg.edit_text("⏳ جاري التوليد...\n[■■■■■■■■] 100%")
+    msg = await call.message.edit_text("⏳ جاري توليد يوزرات مميزة...")
     users = "\n".join(generate_user(length) for _ in range(10))
     await asyncio.sleep(1)
     await msg.edit_text(f"👑 اليوزرات المميزة:\n\n{users}", reply_markup=back_menu())
@@ -216,30 +212,6 @@ async def dev_control(call: types.CallbackQuery):
     kb.add(InlineKeyboardButton("📢 إرسال إذاعة", callback_data="broadcast"))
     kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
     await call.message.edit_text("👑 لوحة تحكم المطور", reply_markup=kb)
-
-# ---------------- إضافة زر جديد (مستقل) ----------------
-@dp.message_handler(lambda m: m.text.startswith("زر: "))
-async def save_new_button(msg: types.Message):
-    buttons = load_buttons()
-    button_text = msg.text.replace("زر: ", "")
-    buttons[button_text] = button_text
-    save_buttons(buttons)
-    await msg.answer(f"✅ تم إنشاء الزر: {button_text}", reply_markup=back_menu())
-
-# ---------------- إذاعة الرسائل (مستقل) ----------------
-@dp.message_handler(lambda m: m.text.startswith("إذاعة: "))
-async def send_broadcast(msg: types.Message):
-    if msg.from_user.username != DEV_USERNAME.replace("@",""):
-        return
-    users = load_users()
-    count = 0
-    for user_id in users:
-        try:
-            await bot.send_message(user_id, msg.text.replace("إذاعة: ",""))
-            count += 1
-        except:
-            continue
-    await msg.answer(f"✅ تم الإرسال لـ {count} مستخدم", reply_markup=back_menu())
 
 # ---------------- Main ----------------
 if __name__ == "__main__":
