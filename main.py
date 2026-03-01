@@ -2,6 +2,7 @@ import os
 import random
 import asyncio
 import datetime
+import json
 from urllib.parse import urlparse
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -15,7 +16,7 @@ DEV_USERNAME = "@f_zm1"
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
-# ---------------- قاعدة بيانات ----------------
+# ---------------- قاعدة بيانات بسيطة ----------------
 USERS_FILE = "users.json"
 
 def load_users():
