@@ -6,12 +6,12 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # ضع توكن البوت في Variables باسم BOT_TOKEN
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
-# ----------- الدول 20 دولة -----------
+# ---------------- الدول 20 دولة ----------------
 countries = {
     "egypt": ("🇪🇬 مصر", "+20"),
     "usa": ("🇺🇸 امريكا", "+1"),
@@ -35,11 +35,11 @@ countries = {
     "australia": ("🇦🇺 استراليا", "+61"),
 }
 
-# ----------- توليد رقم -----------
+# ---------------- توليد رقم عشوائي ----------------
 def generate_number(code):
     return code + str(random.randint(100000000, 999999999))
 
-# ----------- رسالة البداية -----------
+# ---------------- رسالة البداية ----------------
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
     name = message.from_user.first_name
@@ -51,7 +51,7 @@ async def start(message: types.Message):
         reply_markup=keyboard
     )
 
-# ----------- اختيار الدولة -----------
+# ---------------- اختيار الدولة ----------------
 @dp.callback_query_handler(lambda c: c.data == "numbers")
 async def choose_country(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup(row_width=2)
@@ -60,26 +60,44 @@ async def choose_country(callback_query: types.CallbackQuery):
     
     await callback_query.message.edit_text("🌍 اختر الدولة", reply_markup=keyboard)
 
-# ----------- توليد الرقم -----------
+# ---------------- توليد الرقم مع شريط تحميل ----------------
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
 async def send_number(callback_query: types.CallbackQuery):
     country_key = callback_query.data.split("_")[1]
     country_name, country_code = countries[country_key]
 
-    msg = await callback_query.message.edit_text("⏳ جاري انشاء الرقم...")
-    await asyncio.sleep(2)
+    # رسالة البداية للتحميل
+    msg = await callback_query.message.edit_text("🔹 جاري انشاء الرقم...")
 
+    # شريط تحميل متحرك
+    progress = ["🔹▫▫▫▫▫", "🔹🔹▫▫▫▫", "🔹🔹🔹▫▫▫", "🔹🔹🔹🔹▫▫", "🔹🔹🔹🔹🔹▫", "🔹🔹🔹🔹🔹🔹"]
+    for p in progress:
+        await asyncio.sleep(1)
+        await msg.edit_text(f"⏳ إنشاء الرقم:\n{p}")
+
+    # بعد انتهاء التحميل
     number = generate_number(country_code)
     now = datetime.datetime.now()
 
     text = f"""
 ➖ تم انشاء الرقم 🛎•
+━━━━━━━━━━━━
+
 ➖ رقم الهاتف ☎️ : <code>{number}</code>
+
 ➖ الدوله : {country_name}
+
 ➖ رمز الدوله 🌏 : {country_code}
+━━━━━━━━━━━━
+
 ➖ المنصه 🔮 : لجميع الموقع والبرامج
+━━━━━━━━━━━━
+
 ➖ تاريج الانشاء 📅 : {now.strftime('%Y-%m-%d')}
+
 ➖ وقت الانشاء ⏰ : {now.strftime('%I:%M %p')}
+━━━━━━━━━━━━
+
 ➖ اضغط ع الرقم لنسخه.
 """
 
@@ -93,11 +111,11 @@ async def send_number(callback_query: types.CallbackQuery):
 
     await msg.edit_text(text, reply_markup=keyboard)
 
-# ----------- طلب الكود -----------
+# ---------------- طلب الكود ----------------
 @dp.callback_query_handler(lambda c: c.data == "get_code")
 async def get_code(callback_query: types.CallbackQuery):
     await callback_query.answer("لا توجد رسائل جديدة 📂", show_alert=True)
 
-# ----------- تشغيل البوت -----------
+# ---------------- تشغيل البوت ----------------
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
