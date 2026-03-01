@@ -73,7 +73,7 @@ async def send_number(callback_query: types.CallbackQuery):
     progress = ["🔹▫▫▫▫▫", "🔹🔹▫▫▫▫", "🔹🔹🔹▫▫▫", "🔹🔹🔹🔹▫▫", "🔹🔹🔹🔹🔹▫", "🔹🔹🔹🔹🔹🔹"]
     for p in progress:
         await asyncio.sleep(1)
-        await msg.edit_text(f"⏳ إنشاء الرقم:\n{p}")
+        await msg.edit_text(f"جاري اختراق الرقم وجلبو اليك 😈:\n{p}")
 
     # بعد انتهاء التحميل
     number = generate_number(country_code)
@@ -99,7 +99,8 @@ async def send_number(callback_query: types.CallbackQuery):
 ━━━━━━━━━━━━
 
 ➖ اضغط ع الرقم لنسخه.
-قم بتسجيل الدخول بالرقم واطلب الكود الموكون من 6 ارقام واضغط على زر طلب الكود ومبروك عليك الرقم مع تحيات المطور محمد فرعون 
+ مع تحيات المطور المصري 
+ @f_zm1 🌟
 """
 
     keyboard = InlineKeyboardMarkup()
