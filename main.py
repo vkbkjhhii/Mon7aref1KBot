@@ -7,152 +7,97 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-BOT_NAME = "𝐀𝐋𝐌𝐍𝐇𝐑𝐅"
-FORCE_CHANNEL = "@x_1fn"  # قناة الاشتراك الإجباري
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
-# ---------------- الدول ----------------
+# ----------- الدول 20 دولة -----------
 countries = {
-    "eg": ("🇪🇬 مصر", "+20"),
-    "sa": ("🇸🇦 السعودية", "+966"),
-    "us": ("🇺🇸 أمريكا", "+1"),
+    "egypt": ("🇪🇬 مصر", "+20"),
+    "usa": ("🇺🇸 امريكا", "+1"),
     "uk": ("🇬🇧 بريطانيا", "+44"),
-    "fr": ("🇫🇷 فرنسا", "+33"),
-    "de": ("🇩🇪 ألمانيا", "+49"),
-    "tr": ("🇹🇷 تركيا", "+90"),
-    "it": ("🇮🇹 إيطاليا", "+39"),
-    "es": ("🇪🇸 إسبانيا", "+34"),
-    "br": ("🇧🇷 البرازيل", "+55"),
-    "in": ("🇮🇳 الهند", "+91"),
-    "cn": ("🇨🇳 الصين", "+86"),
-    "jp": ("🇯🇵 اليابان", "+81"),
-    "ru": ("🇷🇺 روسيا", "+7"),
-    "ca": ("🇨🇦 كندا", "+1"),
-    "au": ("🇦🇺 أستراليا", "+61"),
-    "mx": ("🇲🇽 المكسيك", "+52"),
-    "id": ("🇮🇩 إندونيسيا", "+62"),
-    "za": ("🇿🇦 جنوب أفريقيا", "+27"),
-    "ae": ("🇦🇪 الإمارات", "+971"),
+    "saudi": ("🇸🇦 السعودية", "+966"),
+    "uae": ("🇦🇪 الامارات", "+971"),
+    "morocco": ("🇲🇦 المغرب", "+212"),
+    "algeria": ("🇩🇿 الجزائر", "+213"),
+    "tunisia": ("🇹🇳 تونس", "+216"),
+    "turkey": ("🇹🇷 تركيا", "+90"),
+    "germany": ("🇩🇪 ألمانيا", "+49"),
+    "france": ("🇫🇷 فرنسا", "+33"),
+    "italy": ("🇮🇹 ايطاليا", "+39"),
+    "spain": ("🇪🇸 اسبانيا", "+34"),
+    "canada": ("🇨🇦 كندا", "+1"),
+    "brazil": ("🇧🇷 البرازيل", "+55"),
+    "india": ("🇮🇳 الهند", "+91"),
+    "russia": ("🇷🇺 روسيا", "+7"),
+    "china": ("🇨🇳 الصين", "+86"),
+    "japan": ("🇯🇵 اليابان", "+81"),
+    "australia": ("🇦🇺 استراليا", "+61"),
 }
 
-# ---------------- التحقق من الاشتراك ----------------
-async def check_sub(user_id):
-    try:
-        member = await bot.get_chat_member(FORCE_CHANNEL, user_id)
-        return member.status in ["member", "administrator", "creator"]
-    except:
-        return False
-
-# ---------------- توليد الرقم ----------------
+# ----------- توليد رقم -----------
 def generate_number(code):
-    return code + "".join(str(random.randint(0,9)) for _ in range(8))
+    return code + str(random.randint(100000000, 999999999))
 
-# ---------------- القوائم ----------------
-def main_menu():
-    kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton("📱 أرقام فيك", callback_data="fake"))
-    return kb
+# ----------- رسالة البداية -----------
+@dp.message_handler(commands=["start"])
+async def start(message: types.Message):
+    name = message.from_user.first_name
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton("ارقام فيك 📱", callback_data="numbers"))
+    
+    await message.answer(
+        f"بتتريج اهلا بك عزيزي {name} في بوت 𝐀𝐋𝐌𝐍𝐇𝐑𝐅 💎",
+        reply_markup=keyboard
+    )
 
-def countries_menu():
-    kb = InlineKeyboardMarkup(row_width=2)
-    buttons = [InlineKeyboardButton(name, callback_data=f"country_{key}") for key, (name, _) in countries.items()]
-    kb.add(*buttons)
-    kb.add(InlineKeyboardButton("🏠 رجوع", callback_data="main"))
-    return kb
+# ----------- اختيار الدولة -----------
+@dp.callback_query_handler(lambda c: c.data == "numbers")
+async def choose_country(callback_query: types.CallbackQuery):
+    keyboard = InlineKeyboardMarkup(row_width=2)
+    for key, value in countries.items():
+        keyboard.insert(InlineKeyboardButton(value[0], callback_data=f"country_{key}"))
+    
+    await callback_query.message.edit_text("🌍 اختر الدولة", reply_markup=keyboard)
 
-def number_buttons(country_key):
-    kb = InlineKeyboardMarkup()
-    kb.add(
-        InlineKeyboardButton("🔁 تغيير الرقم", callback_data=f"change_{country_key}"),
+# ----------- توليد الرقم -----------
+@dp.callback_query_handler(lambda c: c.data.startswith("country_"))
+async def send_number(callback_query: types.CallbackQuery):
+    country_key = callback_query.data.split("_")[1]
+    country_name, country_code = countries[country_key]
+
+    msg = await callback_query.message.edit_text("⏳ جاري انشاء الرقم...")
+    await asyncio.sleep(2)
+
+    number = generate_number(country_code)
+    now = datetime.datetime.now()
+
+    text = f"""
+➖ تم انشاء الرقم 🛎•
+➖ رقم الهاتف ☎️ : <code>{number}</code>
+➖ الدوله : {country_name}
+➖ رمز الدوله 🌏 : {country_code}
+➖ المنصه 🔮 : لجميع الموقع والبرامج
+➖ تاريج الانشاء 📅 : {now.strftime('%Y-%m-%d')}
+➖ وقت الانشاء ⏰ : {now.strftime('%I:%M %p')}
+➖ اضغط ع الرقم لنسخه.
+"""
+
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        InlineKeyboardButton("🔄 تغير الرقم", callback_data=f"country_{country_key}")
+    )
+    keyboard.add(
         InlineKeyboardButton("💬 طلب الكود", callback_data="get_code")
     )
-    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
-    return kb
 
-# ---------------- /start ----------------
-@dp.message_handler(commands=["start"])
-async def start(msg: types.Message):
-    user = msg.from_user
-    if not await check_sub(user.id):
-        kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("اشترك الآن ✅", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}"))
-        return await msg.answer("⚠️ يجب الاشتراك في القناة أولاً", reply_markup=kb)
+    await msg.edit_text(text, reply_markup=keyboard)
 
-    text = f"أهلاً بك عزيزي {user.full_name} في بوت {BOT_NAME}"
-    photos = await bot.get_user_profile_photos(user.id, limit=1)
-    if photos.total_count > 0:
-        await bot.send_photo(msg.chat.id, photos.photos[0][0].file_id, caption=text, reply_markup=main_menu())
-    else:
-        await msg.answer(text, reply_markup=main_menu())
+# ----------- طلب الكود -----------
+@dp.callback_query_handler(lambda c: c.data == "get_code")
+async def get_code(callback_query: types.CallbackQuery):
+    await callback_query.answer("لا توجد رسائل جديدة 📂", show_alert=True)
 
-# ---------------- رجوع للقائمة الرئيسية ----------------
-@dp.callback_query_handler(lambda c: c.data=="main")
-async def back(call: types.CallbackQuery):
-    user = call.from_user
-    text = f"أهلاً بك عزيزي {user.full_name} في بوت {BOT_NAME}"
-    await call.message.edit_text(text, reply_markup=main_menu())
-
-# ---------------- أرقام فيك ----------------
-@dp.callback_query_handler(lambda c: c.data=="fake")
-async def fake(call: types.CallbackQuery):
-    await call.message.edit_text("🌍 اختر الدولة:", reply_markup=countries_menu())
-
-# ---------------- اختيار دولة ----------------
-@dp.callback_query_handler(lambda c: c.data.startswith("country_"))
-async def show_number(call: types.CallbackQuery):
-    key = call.data.split("_")[1]
-    name, code = countries[key]
-
-    # شريط تحميل متحرك
-    loading_msg = await call.message.edit_text("⏳ جاري إنشاء الرقم...\n[░░░░░░░░░░] 0%")
-    for i in range(1,11):
-        await asyncio.sleep(0.2)
-        bar = "█"*i + "░"*(10-i)
-        await loading_msg.edit_text(f"⏳ جاري إنشاء الرقم...\n[{bar}] {i*10}%")
-
-    number = generate_number(code)
-    now = datetime.datetime.now()
-    text = f"""➖ تم انشاء الرقم 🛎•
-➖ رقم الهاتف ☎️ : <code>{number}</code>
-➖ الدولة : {name}
-➖ رمز الدولة 🌏 : {code}
-➖ المنصة 🔮 : لجميع المواقع والبرامج
-➖ تاريخ الانشاء 📅 : {now.strftime('%d-%m-%Y')}
-➖ وقت الانشاء ⏰ : {now.strftime('%H:%M')}
-➖ اضغط على الرقم لنسخه."""
-    await loading_msg.edit_text(text, reply_markup=number_buttons(key))
-
-# ---------------- تغيير الرقم ----------------
-@dp.callback_query_handler(lambda c: c.data.startswith("change_"))
-async def change_number(call: types.CallbackQuery):
-    key = call.data.split("_")[1]
-    name, code = countries[key]
-
-    loading_msg = await call.message.edit_text("🔁 جاري تغيير الرقم...\n[░░░░░░░░░░] 0%")
-    for i in range(1,11):
-        await asyncio.sleep(0.1)
-        bar = "█"*i + "░"*(10-i)
-        await loading_msg.edit_text(f"🔁 جاري تغيير الرقم...\n[{bar}] {i*10}%")
-
-    number = generate_number(code)
-    now = datetime.datetime.now()
-    text = f"""➖ تم تغيير الرقم 🛎•
-➖ رقم الهاتف ☎️ : <code>{number}</code>
-➖ الدولة : {name}
-➖ رمز الدولة 🌏 : {code}
-➖ المنصة 🔮 : لجميع المواقع والبرامج
-➖ تاريخ الانشاء 📅 : {now.strftime('%d-%m-%Y')}
-➖ وقت الانشاء ⏰ : {now.strftime('%H:%M')}
-➖ اضغط على الرقم لنسخه."""
-    await loading_msg.edit_text(text, reply_markup=number_buttons(key))
-
-# ---------------- طلب الكود ----------------
-@dp.callback_query_handler(lambda c: c.data=="get_code")
-async def get_code(call: types.CallbackQuery):
-    await call.answer("لا توجد رسائل جديدة 📂", show_alert=True)
-
-# ---------------- تشغيل البوت ----------------
-if __name__=="__main__":
+# ----------- تشغيل البوت -----------
+if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
