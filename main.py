@@ -2,14 +2,12 @@ import os
 import random
 import asyncio
 import datetime
-import json
 from urllib.parse import urlparse
-
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
-# ---------------- إعدادات البوت ----------------
+# ---------------- إعدادات ----------------
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 FORCE_CHANNEL = "@x_1fn"
 DEV_USERNAME = "@f_zm1"
@@ -91,8 +89,8 @@ async def start(msg: types.Message):
             InlineKeyboardButton("اشتركت الآن ✅", callback_data="check_sub"),
             InlineKeyboardButton("📢 القناة", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}")
         )
-        return await msg.answer("⚠️ يجب الاشتراك في القناة أولاً", reply_markup=kb)
-
+        await msg.answer("⚠️ يجب الاشتراك في القناة أولاً", reply_markup=kb)
+        return
     await send_welcome(msg)
 
 async def send_welcome(msg: types.Message):
@@ -206,9 +204,7 @@ async def dev_control(call: types.CallbackQuery):
     if call.from_user.username != DEV_USERNAME.replace("@",""):
         return await call.answer("❌ أنت لست المطور", show_alert=True)
     kb = InlineKeyboardMarkup()
-    kb.add(
-        InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main")
-    )
+    kb.add(InlineKeyboardButton("🏠 العودة للقائمة الرئيسية", callback_data="main"))
     await call.message.edit_text("👑 لوحة تحكم المطور", reply_markup=kb)
 
 # ---------------- Start Bot ----------------
