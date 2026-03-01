@@ -47,7 +47,7 @@ async def start(message: types.Message):
     keyboard.add(InlineKeyboardButton("ارقام فيك 📱", callback_data="numbers"))
     
     await message.answer(
-        f"بتتريج اهلا بك عزيزي {name} في بوت 𝐀𝐋𝐌𝐍𝐇𝐑𝐅 💎",
+        f" اهلا بك عزيزي {name} في بوت 𝐀𝐋𝐌𝐍𝐇𝐑𝐅 💎",
         reply_markup=keyboard
     )
 
