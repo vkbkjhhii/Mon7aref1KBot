@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # ضع توكن البوت هنا
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # ضع التوكن هنا
 CHANNEL = "@x_1fn"  # قناة الاشتراك الاجباري
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
@@ -14,7 +14,6 @@ dp = Dispatcher(bot)
 
 # ---------------- توليد usernames ----------------
 def generate_username(i):
-    # ممكن تغير الصيغة حسب رغبتك
     names = ["Shadow", "Falcon", "Tiger", "Phoenix", "Dragon", "Wolf", "Eagle", "Lion", "Ninja", "Ghost"]
     return f"<code>{random.choice(names)}_{i}</code>"
 
@@ -40,8 +39,16 @@ async def start(message: types.Message):
         return
 
     name = message.from_user.first_name
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(InlineKeyboardButton("⭐ يوزر مميز", callback_data="vip_start"))
+    # أزرار رئيسية + زر معلومات المستخدم تحتهم
+    keyboard = InlineKeyboardMarkup(row_width=2)
+    keyboard.add(
+        InlineKeyboardButton("ارقام فيك 📱", callback_data="numbers"),
+        InlineKeyboardButton("⭐ يوزر مميز", callback_data="vip_start")
+    )
+    keyboard.add(
+        InlineKeyboardButton("ℹ️ معلوماتك كمستخدم", callback_data="user_info")
+    )
+
     await message.answer(f"بتتريج اهلا بك عزيزي {name} في بوت 𝐀𝐋𝐌𝐍𝐇𝐑𝐅 💎", reply_markup=keyboard)
 
 # ---------------- توليد 20 يوزر مميز ----------------
@@ -55,22 +62,20 @@ async def vip_generate(callback_query: types.CallbackQuery):
         return
 
     msg = await callback_query.message.edit_text("⏳ جاري انشاء 20 يوزر مميز...")
-
-    # شريط تحميل متحرك
+    # شريط تحميل
     progress = ["🔹▫▫▫▫▫", "🔹🔹▫▫▫▫", "🔹🔹🔹▫▫▫", "🔹🔹🔹🔹▫▫", "🔹🔹🔹🔹🔹▫", "🔹🔹🔹🔹🔹🔹"]
     for p in progress:
         await asyncio.sleep(0.7)
         await msg.edit_text(f"⏳ جاري الانشاء:\n{p}")
 
-    # توليد 20 username حقيقي
-    users = [generate_username(i) for i in range(1, 21)]
+    users = [generate_username(i) for i in range(1,21)]
     users_text = "\n".join(users)
+    final_text = f"✅ تم انشاء 20 يوزر مميز ✨\n\n{users_text}\n\n🌟 استمتع باليوزرز المميزة 🌟"
 
-    # زرار معلومات المستخدم
-    keyboard = InlineKeyboardMarkup(row_width=1)
+    # زر معلومات المستخدم تحت اليوزرز
+    keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("ℹ️ معلوماتك كمستخدم", callback_data="user_info"))
 
-    final_text = f"✅ تم انشاء 20 يوزر مميز ✨\n\n{users_text}\n\n🌟 استمتع باليوزرز المميزة 🌟"
     await msg.edit_text(final_text, reply_markup=keyboard)
 
 # ---------------- زر معلومات المستخدم ----------------
@@ -85,7 +90,8 @@ async def user_info(callback_query: types.CallbackQuery):
 ➖ التاريخ: {now.strftime('%Y-%m-%d')}
 ➖ الوقت: {now.strftime('%I:%M %p')}
 """
-    await callback_query.answer(text, show_alert=True)
+    # يكتب في الشات نفسه وليس نافذة منبثقة
+    await callback_query.message.answer(text)
 
 # ---------------- تشغيل البوت ----------------
 if __name__ == "__main__":
