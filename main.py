@@ -10,6 +10,7 @@ import pytz
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 FORCE_CHANNEL = "@x_1fn"
+DEVELOPER_LINK = "https://t.me/YourDevUsername"  # ضع رابط التواصل مع المطور هنا
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
@@ -65,7 +66,10 @@ def main_menu():
         InlineKeyboardButton("ارقام فيك 📱", callback_data="numbers"),
         InlineKeyboardButton("يوزر مميز 👑", callback_data="vip_user"),
         InlineKeyboardButton("معلومات حسابك 📋", callback_data="my_info"),
-        InlineKeyboardButton("بوت اخر 🔗", url="https://t.me/ALMNHRF_Toobot?start=dd4c7ab7e035896f4bc454e9594d3b03992113")
+        InlineKeyboardButton("بوت اخر 🔗", url="https://t.me/ALMNHRF_Toobot?start=dd4c7ab7e035896f4bc454e9594d3b03992113"),
+    )
+    keyboard.add(
+        InlineKeyboardButton("تواصل مع المطور 💬", url=DEVELOPER_LINK)
     )
     return keyboard
 
@@ -99,6 +103,7 @@ async def choose_country(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup(row_width=2)
     for key, value in countries.items():
         keyboard.insert(InlineKeyboardButton(value[0], callback_data=f"country_{key}"))
+    # زر العودة للقائمة
     keyboard.add(InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home"))
     await callback_query.message.edit_text("🌍 اختر الدولة", reply_markup=keyboard)
 
@@ -125,7 +130,20 @@ async def send_number(callback_query: types.CallbackQuery):
 ➖ التاريخ : {now.strftime('%Y-%m-%d')}
 ➖ الوقت : {now.strftime('%H:%M:%S')}
 """
-    await msg.edit_text(text, reply_markup=back_keyboard)
+
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        InlineKeyboardButton("🔄 تغير الرقم", callback_data=f"country_{country_key}"),
+        InlineKeyboardButton("طلب كود 📂", callback_data="get_code")
+    )
+    keyboard.add(InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home"))
+
+    await msg.edit_text(text, reply_markup=keyboard)
+
+# ---------------- طلب كود ----------------
+@dp.callback_query_handler(lambda c: c.data == "get_code")
+async def get_code(callback_query: types.CallbackQuery):
+    await callback_query.answer("لم يتم الحصول على رسائل بعد 📂", show_alert=True)
 
 # ---------------- يوزر مميز ----------------
 @dp.callback_query_handler(lambda c: c.data == "vip_user")
@@ -138,10 +156,14 @@ async def vip_user(callback_query: types.CallbackQuery):
         await asyncio.sleep(0.5)
         await msg.edit_text(f"👑 تجهيز اليوزرات...\n{p}")
 
-    for _ in range(20):
+    # ارسال كل يوزر رسالة رسالة
+    for i in range(20):
         vip = generate_vip_username()
-        await callback_query.message.answer(f"✅ : {vip}", reply_markup=back_keyboard)
+        await callback_query.message.answer(f"✅ : {vip}")
         await asyncio.sleep(0.1)
+
+    # بعد اخر رسالة يظهر زر العودة للقائمة
+    await callback_query.message.answer("تم الانتهاء من توليد اليوزرات 👑", reply_markup=back_keyboard)
 
 # ---------------- معلومات حسابك ----------------
 @dp.callback_query_handler(lambda c: c.data == "my_info")
