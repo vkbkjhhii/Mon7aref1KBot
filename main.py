@@ -2,10 +2,9 @@ import os
 import random
 import asyncio
 import datetime
-import json
 import pytz
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputFile
 from aiogram.utils import executor
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -23,26 +22,26 @@ countries = {
     "uk": ("🇬🇧 بريطانيا", "+44"),
     "saudi": ("🇸🇦 السعودية", "+966"),
     "uae": ("🇦🇪 الامارات", "+971"),
+    "morocco": ("🇲🇦 المغرب", "+212"),
+    "algeria": ("🇩🇿 الجزائر", "+213"),
+    "tunisia": ("🇹🇳 تونس", "+216"),
+    "turkey": ("🇹🇷 تركيا", "+90"),
+    "germany": ("🇩🇪 ألمانيا", "+49"),
+    "france": ("🇫🇷 فرنسا", "+33"),
+    "italy": ("🇮🇹 ايطاليا", "+39"),
+    "spain": ("🇪🇸 اسبانيا", "+34"),
+    "canada": ("🇨🇦 كندا", "+1"),
+    "brazil": ("🇧🇷 البرازيل", "+55"),
+    "india": ("🇮🇳 الهند", "+91"),
+    "russia": ("🇷🇺 روسيا", "+7"),
+    "china": ("🇨🇳 الصين", "+86"),
+    "japan": ("🇯🇵 اليابان", "+81"),
+    "australia": ("🇦🇺 استراليا", "+61"),
 }
-
-# ---------------- الأزرار الديناميكية ----------------
-if os.path.exists("buttons.json"):
-    with open("buttons.json","r",encoding="utf-8") as f:
-        dynamic_buttons = json.load(f)
-else:
-    dynamic_buttons = []  # قائمة مطور لإضافة أزرار جديدة
-
-# ---------------- تحقق الاشتراك ----------------
-async def check_subscription(user_id):
-    try:
-        member = await bot.get_chat_member(FORCE_CHANNEL, user_id)
-        return member.status in ["member","administrator","creator"]
-    except:
-        return False
 
 # ---------------- توليد رقم ----------------
 def generate_number(code):
-    return code + str(random.randint(100000000,999999999))
+    return code + str(random.randint(100000000, 999999999))
 
 # ---------------- توليد يوزرات مميزة ----------------
 def generate_vip_username():
@@ -52,7 +51,7 @@ def generate_vip_username():
     suffix = random.choice(prefixes)
     return f"@{mid}_{nums}{suffix}"
 
-# ---------------- القوائم ----------------
+# ---------------- قوائم رئيسية ----------------
 def main_menu():
     keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
@@ -62,26 +61,28 @@ def main_menu():
         InlineKeyboardButton("بوت اخر 🔗", url="https://t.me/ALMNHRF_Toobot?start=dd4c7ab7e035896f4bc454e9594d3b03992113")
     )
     keyboard.add(
-        InlineKeyboardButton("تواصل مع المطور 💬", callback_data="contact_dev")
+        InlineKeyboardButton("تواصل مع المطور 💬", callback_data="contact_dev"),
+        InlineKeyboardButton("تحويل النص 📝", callback_data="text_convert")
     )
-    for b in dynamic_buttons:
-        if b.get("url"):
-            keyboard.add(InlineKeyboardButton(b["text"], url=b["url"]))
-        else:
-            keyboard.add(InlineKeyboardButton(b["text"], callback_data=b["callback"]))
     return keyboard
 
 back_keyboard = InlineKeyboardMarkup()
 back_keyboard.add(InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home"))
+
+# ---------------- تحقق الاشتراك ----------------
+async def check_subscription(user_id):
+    try:
+        member = await bot.get_chat_member(FORCE_CHANNEL, user_id)
+        return member.status in ["member","administrator","creator"]
+    except:
+        return False
 
 # ---------------- /start ----------------
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
     if not await check_subscription(message.from_user.id):
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(
-            InlineKeyboardButton("اشترك في القناة 📢", url=f"https://t.me/x_1fn")
-        )
+        keyboard.add(InlineKeyboardButton("اشترك في القناة 📢", url=f"https://t.me/x_1fn"))
         return await message.answer("⚠️ لازم تشترك في القناة الأول", reply_markup=keyboard)
     await message.answer(f"اهلا بك {message.from_user.first_name} في بوت 𝐀𝐋𝐌𝐍𝐇𝐑𝐅 💎", reply_markup=main_menu())
 
@@ -99,7 +100,7 @@ async def choose_country(callback_query: types.CallbackQuery):
     keyboard.add(InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home"))
     await callback_query.message.edit_text("🌍 اختر الدولة", reply_markup=keyboard)
 
-# ---------------- توليد الرقم ----------------
+# ---------------- توليد الرقم مع تغيره في نفس الرسالة ----------------
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
 async def send_number(callback_query: types.CallbackQuery):
     country_key = callback_query.data.split("_")[1]
@@ -137,14 +138,11 @@ async def get_code(callback_query: types.CallbackQuery):
 # ---------------- يوزر مميز ----------------
 @dp.callback_query_handler(lambda c: c.data=="vip_user")
 async def vip_user(callback_query: types.CallbackQuery):
-    msg=await callback_query.message.edit_text("🔄 جاري توليد 20 يوزر مميز...")
-    progress=["🟦⬜⬜⬜⬜⬜","🟦🟦⬜⬜⬜⬜","🟦🟦🟦⬜⬜⬜","🟦🟦🟦🟦⬜⬜",
-              "🟦🟦🟦🟦🟦⬜","🟦🟦🟦🟦🟦🟦","🟦🟦🟦🟦🟦🟦🟦"]
-    for p in progress:
-        await asyncio.sleep(0.5)
-        await msg.edit_text(f"👑 تجهيز اليوزرات...\n{p}")
+    loading_msg = await callback_query.message.answer("👑 تجهيز اليوزرات...\n🟦🟦🟦🟦🟦🟦🟦")
+    await asyncio.sleep(3)  # مدة التحميل
+    await loading_msg.delete()  # تختفي الرسالة بعد التحميل
     for i in range(20):
-        vip=generate_vip_username()
+        vip = generate_vip_username()
         await callback_query.message.answer(f"✅ : {vip}")
         await asyncio.sleep(0.1)
     await callback_query.message.answer("تم الانتهاء من توليد اليوزرات 👑", reply_markup=back_keyboard)
@@ -152,9 +150,10 @@ async def vip_user(callback_query: types.CallbackQuery):
 # ---------------- معلومات حسابك ----------------
 @dp.callback_query_handler(lambda c: c.data=="my_info")
 async def my_info(callback_query: types.CallbackQuery):
-    user=callback_query.from_user
-    tz=pytz.timezone("Africa/Cairo")
-    now=datetime.datetime.now(tz)
+    user = callback_query.from_user
+    tz = pytz.timezone("Africa/Cairo")
+    now = datetime.datetime.now(tz)
+
     text=f"""
 👤 الاسم: {user.first_name}
 📎 اليوزر: @{user.username if user.username else "لا يوجد"}
@@ -162,21 +161,41 @@ async def my_info(callback_query: types.CallbackQuery):
 📅 التاريخ: {now.strftime('%Y-%m-%d')}
 ⏰ الوقت: {now.strftime('%H:%M:%S')}
 """
-    msg=await callback_query.message.answer("جارِ تحميل المعلومات...")
-    typed=""
+
+    msg = await callback_query.message.answer("جارِ تحميل المعلومات...")
+    typed = ""
     for char in text:
-        typed+=char
+        typed += char
         await msg.edit_text(typed)
         await asyncio.sleep(0.03)
-    await msg.edit_reply_markup(reply_markup=back_keyboard)
+
+    # إرسال صورة البروفايل إذا موجودة
+    try:
+        photos = await bot.get_user_profile_photos(user.id)
+        if photos.total_count > 0:
+            file_id = photos.photos[0][-1].file_id
+            await bot.send_photo(callback_query.from_user.id, file_id)
+    except:
+        pass
+
+    await msg.edit_reply_markup(back_keyboard)
 
 # ---------------- تواصل مع المطور ----------------
 @dp.callback_query_handler(lambda c: c.data=="contact_dev")
 async def contact_dev(callback_query: types.CallbackQuery):
     await callback_query.message.answer("💬 بدأت الدردشة مع المطور")
     await callback_query.message.answer("✉️ أي رسالة ترسلها الآن ستصلك مباشرة للمطور")
-    # تسجيل أن المستخدم بدأ المحادثة
     dp.user_chatting_with_dev = callback_query.from_user.id
+
+# ---------------- تحويل النص ----------------
+@dp.callback_query_handler(lambda c: c.data=="text_convert")
+async def text_convert(callback_query: types.CallbackQuery):
+    keyboard = InlineKeyboardMarkup(row_width=2)
+    keyboard.add(
+        InlineKeyboardButton("ولد", callback_data="text_boy"),
+        InlineKeyboardButton("بنت", callback_data="text_girl"),
+    )
+    await callback_query.message.answer("اختار النوع:", reply_markup=keyboard)
 
 # ---------------- أي رسالة للمطور ----------------
 @dp.message_handler()
