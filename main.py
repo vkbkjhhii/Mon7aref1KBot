@@ -64,6 +64,7 @@ async def home(callback: types.CallbackQuery):
     await callback.message.edit_text("🏠 القائمة الرئيسية", reply_markup=main_menu())
 
 # ---------------- ارقام فيك ----------------
+# هذه الدالة و كل ارقام فيك تظل كما هي بدون أي تعديل
 def generate_number(code):
     return code + str(random.randint(100000000, 999999999))
 
@@ -129,14 +130,23 @@ async def get_code(callback: types.CallbackQuery):
     await callback.answer("📩 لم تستلم أي رسالة بعد", show_alert=True)
 
 # ---------------- يوزر مميز ----------------
-def generate_similar():
+def generate_user():
     chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZIl"
     return "@" + "".join(random.choice(chars) for _ in range(4))
 
 @dp.callback_query_handler(lambda c: c.data == "vip")
 async def vip(callback: types.CallbackQuery):
-    user_state[callback.from_user.id] = "vip"
-    await callback.message.edit_text("✍️ ارسل اليوزر اللي عايز تولد زيه", reply_markup=back_btn())
+    msg = await callback.message.edit_text("⏳ جاري التوليد...")
+    for p in ["▫▫▫▫▫","🔹▫▫▫▫","🔹🔹▫▫▫","🔹🔹🔹▫▫","🔹🔹🔹🔹▫","🔹🔹🔹🔹🔹"]:
+        await asyncio.sleep(0.5)
+        await msg.edit_text(f"⏳ جاري التوليد:\n{p}")
+    await msg.delete()
+
+    for _ in range(10):  # توليد 10 يوزرات
+        await callback.message.answer(generate_user())
+        await asyncio.sleep(0.3)
+
+    await callback.message.answer("✅ انتهى التوليد", reply_markup=back_btn())
 
 # ---------------- زخرفة ----------------
 @dp.callback_query_handler(lambda c: c.data == "decorate")
@@ -144,26 +154,11 @@ async def decorate(callback: types.CallbackQuery):
     user_state[callback.from_user.id] = "decorate"
     await callback.message.edit_text("✍️ ابعت الاسم وانا ازخرفه", reply_markup=back_btn())
 
-# ---------------- استقبال الرسائل حسب الوضع ----------------
 @dp.message_handler()
 async def handle(message: types.Message):
     state = user_state.get(message.from_user.id)
 
-    if state == "vip":
-        msg = await message.answer("⏳ جاري التوليد...")
-        for p in ["▫▫▫▫▫","🔹▫▫▫▫","🔹🔹▫▫▫","🔹🔹🔹▫▫","🔹🔹🔹🔹▫","🔹🔹🔹🔹🔹"]:
-            await asyncio.sleep(0.5)
-            await msg.edit_text(f"⏳ جاري التوليد:\n{p}")
-        await msg.delete()
-
-        for _ in range(10):
-            await message.answer("👑 " + generate_similar())
-            await asyncio.sleep(0.3)
-
-        await message.answer("✅ انتهى التوليد", reply_markup=back_btn())
-        user_state.pop(message.from_user.id)
-
-    elif state == "decorate":
+    if state == "decorate":
         msg = await message.answer("⏳ جاري الزخرفة...")
         for p in ["▫▫▫▫▫","🔹▫▫▫▫","🔹🔹▫▫▫","🔹🔹🔹▫▫","🔹🔹🔹🔹▫","🔹🔹🔹🔹🔹"]:
             await asyncio.sleep(0.5)
