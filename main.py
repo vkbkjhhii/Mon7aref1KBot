@@ -6,12 +6,12 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # ضع توكن البوت في Variables باسم BOT_TOKEN
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
-# ---------------- الدول 20 دولة ----------------
+# ---------------- الدول ----------------
 countries = {
     "egypt": ("🇪🇬 مصر", "+20"),
     "usa": ("🇺🇸 امريكا", "+1"),
@@ -35,11 +35,11 @@ countries = {
     "australia": ("🇦🇺 استراليا", "+61"),
 }
 
-# ---------------- توليد رقم عشوائي ----------------
+# ---------------- توليد رقم ----------------
 def generate_number(code):
     return code + str(random.randint(100000000, 999999999))
 
-# ---------------- رسالة البداية ----------------
+# ---------------- ستارت ----------------
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
     name = message.from_user.first_name
@@ -56,49 +56,55 @@ async def start(message: types.Message):
 async def choose_country(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup(row_width=2)
     for key, value in countries.items():
-        keyboard.insert(InlineKeyboardButton(value[0], callback_data=f"country_{key}"))
+        keyboard.insert(
+            InlineKeyboardButton(value[0], callback_data=f"country_{key}")
+        )
     
     await callback_query.message.edit_text("🌍 اختر الدولة", reply_markup=keyboard)
 
-# ---------------- توليد الرقم مع شريط تحميل ----------------
+# ---------------- توليد الرقم ----------------
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
 async def send_number(callback_query: types.CallbackQuery):
     country_key = callback_query.data.split("_")[1]
     country_name, country_code = countries[country_key]
 
-    # رسالة البداية للتحميل
-    msg = await callback_query.message.edit_text("🔹 جاري انشاء الرقم...")
+    msg = await callback_query.message.edit_text("⏳ جاري انشاء الرقم...")
 
-    # شريط تحميل متحرك
-    progress = ["🔹▫▫▫▫▫", "🔹🔹▫▫▫▫", "🔹🔹🔹▫▫▫", "🔹🔹🔹🔹▫▫", "🔹🔹🔹🔹🔹▫", "🔹🔹🔹🔹🔹🔹"]
+    progress = ["🔹▫▫▫▫▫", "🔹🔹▫▫▫▫", "🔹🔹🔹▫▫▫", 
+                "🔹🔹🔹🔹▫▫", "🔹🔹🔹🔹🔹▫", "🔹🔹🔹🔹🔹🔹"]
+
     for p in progress:
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.7)
         await msg.edit_text(f"⏳ إنشاء الرقم:\n{p}")
 
-    # بعد انتهاء التحميل
     number = generate_number(country_code)
     now = datetime.datetime.now()
 
-    text = f"""
-➖ تم انشاء الرقم 🛎•
-━━━━━━━━━━━━
+    text = f"""📱 𝐀𝐋𝐌𝐍𝐇𝐑𝐅 - رقم من سيرفر المنحرف 📱
+
+➖ تم انشاء الرقم 🛎
+
+──────────────
 
 ➖ رقم الهاتف ☎️ : <code>{number}</code>
 
-➖ الدوله : {country_name}
+➖ الدولة 🌍 : {country_name}
 
-➖ رمز الدوله 🌏 : {country_code}
-━━━━━━━━━━━━
+➖ رمز الدولة 🌏 : {country_code}
 
-➖ المنصه 🔮 : لجميع الموقع والبرامج
-━━━━━━━━━━━━
+──────────────
 
-➖ تاريج الانشاء 📅 : {now.strftime('%Y-%m-%d')}
+➖ المنصة 🔮 : لجميع المواقع والبرامج
+
+──────────────
+
+➖ تاريخ الانشاء 📅 : {now.strftime('%Y-%m-%d')}
 
 ➖ وقت الانشاء ⏰ : {now.strftime('%I:%M %p')}
-━━━━━━━━━━━━
 
-➖ اضغط ع الرقم لنسخه.
+──────────────
+
+➖ اضغط على الرقم لنسخه.
 """
 
     keyboard = InlineKeyboardMarkup()
@@ -108,6 +114,9 @@ async def send_number(callback_query: types.CallbackQuery):
     keyboard.add(
         InlineKeyboardButton("💬 طلب الكود", callback_data="get_code")
     )
+    keyboard.add(
+        InlineKeyboardButton("⭐ يوزر مميز", callback_data="vip_user")
+    )
 
     await msg.edit_text(text, reply_markup=keyboard)
 
@@ -116,6 +125,16 @@ async def send_number(callback_query: types.CallbackQuery):
 async def get_code(callback_query: types.CallbackQuery):
     await callback_query.answer("لا توجد رسائل جديدة 📂", show_alert=True)
 
-# ---------------- تشغيل البوت ----------------
+# ---------------- يوزر مميز ----------------
+@dp.callback_query_handler(lambda c: c.data == "vip_user")
+async def vip_user(callback_query: types.CallbackQuery):
+    user_name = callback_query.from_user.first_name
+    user_id = callback_query.from_user.id
+    await callback_query.answer(
+        f"⭐ يوزر مميز\n👤 الاسم: {user_name}\n🆔 ID: {user_id}\nمرحباً بك في سيرفر المنحرف",
+        show_alert=True
+    )
+
+# ---------------- تشغيل ----------------
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
