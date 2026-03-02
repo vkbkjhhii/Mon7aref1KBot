@@ -6,9 +6,10 @@ import string
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
+import pytz
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-FORCE_CHANNEL = "@x_1fn"  # الاشتراك الإجباري
+FORCE_CHANNEL = "@x_1fn"
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
@@ -45,26 +46,31 @@ countries = {
     "australia": ("🇦🇺 استراليا", "+61"),
 }
 
+# ---------------- توليد رقم ----------------
 def generate_number(code):
     return code + str(random.randint(100000000, 999999999))
 
-def generate_username():
-    # يوزرات مزخرفة عشوائية
-    length = random.randint(5, 8)
-    chars = string.ascii_letters + string.digits
-    fancy_chars = "★☆✦✧✩✪✫✬✭✮✯"
-    return "@" + ''.join(random.choice(chars + fancy_chars) for _ in range(length))
+# ---------------- توليد يوزرات مميزة ----------------
+def generate_vip_username():
+    prefixes = ["S", "X", "I", "W", "F"]
+    mid = random.choice(prefixes)
+    nums = str(random.randint(10,99))
+    suffix = random.choice(prefixes)
+    return f"@{mid}_{nums}{suffix}"
 
-# ---------------- القائمة الرئيسية ----------------
+# ---------------- القوائم ----------------
 def main_menu():
-    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard = InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         InlineKeyboardButton("ارقام فيك 📱", callback_data="numbers"),
         InlineKeyboardButton("يوزر مميز 👑", callback_data="vip_user"),
         InlineKeyboardButton("معلومات حسابك 📋", callback_data="my_info"),
-        InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home")
+        InlineKeyboardButton("بوت اخر 🔗", url="https://t.me/ALMNHRF_Toobot?start=dd4c7ab7e035896f4bc454e9594d3b03992113")
     )
     return keyboard
+
+back_keyboard = InlineKeyboardMarkup()
+back_keyboard.add(InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home"))
 
 # ---------------- /start ----------------
 @dp.message_handler(commands=["start"])
@@ -104,75 +110,61 @@ async def send_number(callback_query: types.CallbackQuery):
 
     msg = await callback_query.message.edit_text("🔹 جاري انشاء الرقم...")
 
-    progress = ["▰▱▱▱▱▱▱", "▰▰▱▱▱▱▱", "▰▰▰▱▱▱▱", "▰▰▰▰▱▱▱", "▰▰▰▰▰▱▱", "▰▰▰▰▰▰▱", "▰▰▰▰▰▰▰"]
+    progress = ["🟩⬜⬜⬜⬜", "🟩🟩⬜⬜⬜", "🟩🟩🟩⬜⬜", "🟩🟩🟩🟩⬜", "🟩🟩🟩🟩🟩"]
     for p in progress:
-        await asyncio.sleep(0.7)
+        await asyncio.sleep(0.5)
         await msg.edit_text(f"⏳ جاري الانشاء...\n{p}")
 
     number = generate_number(country_code)
-    now = datetime.datetime.now()
+    tz = pytz.timezone("Africa/Cairo")
+    now = datetime.datetime.now(tz)
 
     text = f"""
 ➖ رقم الهاتف ☎️ : <code>{number}</code>
 ➖ الدولة : {country_name}
 ➖ التاريخ : {now.strftime('%Y-%m-%d')}
-➖ الوقت : {now.strftime('%I:%M %p')}
+➖ الوقت : {now.strftime('%H:%M:%S')}
 """
-
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(
-        InlineKeyboardButton("🔄 تغير الرقم", callback_data=f"country_{country_key}"),
-        InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home")
-    )
-
-    await msg.edit_text(text, reply_markup=keyboard)
+    await msg.edit_text(text, reply_markup=back_keyboard)
 
 # ---------------- يوزر مميز ----------------
 @dp.callback_query_handler(lambda c: c.data == "vip_user")
 async def vip_user(callback_query: types.CallbackQuery):
     msg = await callback_query.message.edit_text("🔄 جاري توليد 20 يوزر مميز...")
 
-    # شريط تحميل احترافي
-    progress = [
-        "▰▱▱▱▱▱▱", "▰▰▱▱▱▱▱", "▰▰▰▱▱▱▱", "▰▰▰▰▱▱▱",
-        "▰▰▰▰▰▱▱", "▰▰▰▰▰▰▱", "▰▰▰▰▰▰▰"
-    ]
+    progress = ["🟦⬜⬜⬜⬜⬜", "🟦🟦⬜⬜⬜⬜", "🟦🟦🟦⬜⬜⬜", "🟦🟦🟦🟦⬜⬜",
+                "🟦🟦🟦🟦🟦⬜", "🟦🟦🟦🟦🟦🟦", "🟦🟦🟦🟦🟦🟦🟦"]
     for p in progress:
         await asyncio.sleep(0.5)
         await msg.edit_text(f"👑 تجهيز اليوزرات...\n{p}")
 
-    users = "\n".join(generate_username() for _ in range(20))
-
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home"))
-
-    await msg.edit_text(f"👑 اليوزرات المتاحة:\n\n{users}", reply_markup=keyboard)
+    for _ in range(20):
+        vip = generate_vip_username()
+        await callback_query.message.answer(f"✅ : {vip}", reply_markup=back_keyboard)
+        await asyncio.sleep(0.1)
 
 # ---------------- معلومات حسابك ----------------
 @dp.callback_query_handler(lambda c: c.data == "my_info")
 async def my_info(callback_query: types.CallbackQuery):
     user = callback_query.from_user
-    now = datetime.datetime.now()
+    tz = pytz.timezone("Africa/Cairo")
+    now = datetime.datetime.now(tz)
 
     text = f"""
 👤 الاسم: {user.first_name}
 📎 اليوزر: @{user.username if user.username else "لا يوجد"}
 🆔 الايدي: {user.id}
 📅 التاريخ: {now.strftime('%Y-%m-%d')}
-⏰ الوقت: {now.strftime('%I:%M %p')}
+⏰ الوقت: {now.strftime('%H:%M:%S')}
 """
 
     msg = await callback_query.message.edit_text("")
-
     typed = ""
     for char in text:
         typed += char
         await msg.edit_text(typed)
         await asyncio.sleep(0.03)
-
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton("🔙 العودة للقائمة", callback_data="back_home"))
-    await msg.edit_reply_markup(reply_markup=keyboard)
+    await msg.edit_reply_markup(reply_markup=back_keyboard)
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
