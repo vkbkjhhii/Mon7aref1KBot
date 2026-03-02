@@ -80,28 +80,35 @@ async def send_number(callback_query: types.CallbackQuery):
     now = datetime.datetime.now()
 
     text = f"""
-📱  - رقم من سيرفر المنحرف تم اختراق 
+╭━━━〔 📱 𝐅𝐀𝐊𝐄 𝐍𝐔𝐌𝐁𝐄𝐑 〕━━━╮
 
-➖ تم انشاء الرقم 🛎
+➖ تم انشاء الرقم 🛎•
 
-➖ رقم الهاتف ☎️ : <code>{number}</code>
 
-➖ الدولة 🌍 : {country_name}
+➖ رقم الهاتف ☎️ :
+<code>{number}</code>
 
-➖ رمز الدولة 🌏 : {country_code}
+➖ الدوله 🌍 :
+{country_name}
 
-➖ المنصة 🔮 : لجميع المواقع والبرامج
+➖ رمز الدوله 🌏 :
+{country_code}
 
-➖ تاريخ الانشاء 📅 : {now.strftime('%Y-%m-%d')}
 
-➖ وقت الانشاء ⏰ : {now.strftime('%I:%M %p')}
+➖ المنصه 🔮 :
+لجميع المواقع والبرامج
 
-➖ اضغط على الرقم لنسخه.
 
-مع تحيات المطور المصري 🌟
-@f_zm1
+➖ تاريخ الانشاء 📅 :
+{now.strftime('%Y-%m-%d')}
+
+➖ وقت الانشاء ⏰ :
+{now.strftime('%I:%M %p')}
+
+
+➖ اضغط ع الرقم لنسخه.
+
 """
-
     keyboard = InlineKeyboardMarkup()
     keyboard.add(
         InlineKeyboardButton("🔄 تغير الرقم", callback_data=f"country_{country_key}")
