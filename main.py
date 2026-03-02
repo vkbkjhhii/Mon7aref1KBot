@@ -57,7 +57,7 @@ def back_btn():
     kb.add(InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
     return kb
 
-# ---------------- بداية البوت ----------------
+# ---------------- البداية ----------------
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
     await message.answer("🏠 القائمة الرئيسية", reply_markup=main_menu())
@@ -155,14 +155,14 @@ async def vip(callback: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == "decorate")
 async def decorate(callback: types.CallbackQuery):
     user_state[callback.from_user.id] = "decorate"
-    await callback.message.edit_text("✍️ ابعت الاسم او الكلمة وانا ازخرفه", reply_markup=back_btn())
+    await callback.message.edit_text("✍️ ابعت الكلمة او الاسم اللي تحب ازخرفه:", reply_markup=None)
 
 @dp.message_handler()
 async def handle(message: types.Message):
     state = user_state.get(message.from_user.id)
 
     if state == "decorate":
-        msg = await message.answer("⏳ جاري الزخرفة...")
+        msg = await message.answer("⏳ جاري الزخرفة... هكر ستايل")
         hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
         for p in hacker_bar*3:
             await asyncio.sleep(0.3)
@@ -199,7 +199,7 @@ async def contact_dev(callback: types.CallbackQuery):
 @dp.message_handler()
 async def forward_to_dev(message: types.Message):
     if message.from_user.id != DEV_ID:
-        await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name}:\n{message.text}")
+        await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
