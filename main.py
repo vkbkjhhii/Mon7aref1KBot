@@ -58,7 +58,7 @@ async def choose_country(callback_query: types.CallbackQuery):
     for key, value in countries.items():
         keyboard.insert(InlineKeyboardButton(value[0], callback_data=f"country_{key}"))
     
-    await callback_query.message.edit_text("اختار الدوله اللي عاوزها 👽", reply_markup=keyboard)
+    await callback_query.message.edit_text("اختار الدوله اللي عاوزها ", reply_markup=keyboard)
 
 # ---------------- توليد الرقم مع شريط تحميل ----------------
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
@@ -116,7 +116,7 @@ async def send_number(callback_query: types.CallbackQuery):
 # ---------------- طلب الكود ----------------
 @dp.callback_query_handler(lambda c: c.data == "get_code")
 async def get_code(callback_query: types.CallbackQuery):
-    await callback_query.answer("لا توجد رسائل جديدة 📂", show_alert=True)
+    await callback_query.answer("لم احصل على رسائل sms جديده تحتوي علي كود الوتساب الخاص برقمك", show_alert=True)
 
 # ---------------- تشغيل البوت ----------------
 if __name__ == "__main__":
