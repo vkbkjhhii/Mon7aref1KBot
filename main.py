@@ -58,7 +58,7 @@ async def choose_country(callback_query: types.CallbackQuery):
     for key, value in countries.items():
         keyboard.insert(InlineKeyboardButton(value[0], callback_data=f"country_{key}"))
     
-    await callback_query.message.edit_text("🌍 اختر الدولة", reply_markup=keyboard)
+    await callback_query.message.edit_text("اختاࢪالدولة ☠", reply_markup=keyboard)
 
 # ---------------- توليد الرقم مع شريط تحميل ----------------
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
@@ -73,7 +73,7 @@ async def send_number(callback_query: types.CallbackQuery):
     progress = ["🔹▫▫▫▫▫", "🔹🔹▫▫▫▫", "🔹🔹🔹▫▫▫", "🔹🔹🔹🔹▫▫", "🔹🔹🔹🔹🔹▫", "🔹🔹🔹🔹🔹🔹"]
     for p in progress:
         await asyncio.sleep(1)
-        await msg.edit_text(f"⏳ إنشاء الرقم:\n{p}")
+        await msg.edit_text(f"جاࢪي\n{p}")
 
     # بعد انتهاء التحميل
     number = generate_number(country_code)
