@@ -67,13 +67,13 @@ async def send_number(callback_query: types.CallbackQuery):
     country_name, country_code = countries[country_key]
 
     # رسالة البداية للتحميل
-    msg = await callback_query.message.edit_text("🔹 جاري انشاء الرقم...")
+    msg = await callback_query.message.edit_text("🔹 جاري اختراق شركة الاتصالات الخاصة بدوله 👾...")
 
     # شريط تحميل متحرك
     progress = ["🔹▫▫▫▫▫", "🔹🔹▫▫▫▫", "🔹🔹🔹▫▫▫", "🔹🔹🔹🔹▫▫", "🔹🔹🔹🔹🔹▫", "🔹🔹🔹🔹🔹🔹"]
     for p in progress:
         await asyncio.sleep(1)
-        await msg.edit_text(f"جاري اختراق الرقم وجلبو اليك 😈:\n{p}")
+        await msg.edit_text(f"تم يتم الان اختراق  الشريحه لكي يصلك كود التفعيل 💬\n{p}")
 
     # بعد انتهاء التحميل
     number = generate_number(country_code)
