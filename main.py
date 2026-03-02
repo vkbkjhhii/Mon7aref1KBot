@@ -80,27 +80,40 @@ async def send_number(callback_query: types.CallbackQuery):
     now = datetime.datetime.now()
 
     text = f"""
+╭━━━〔 📱 𝐅𝐀𝐊𝐄 𝐍𝐔𝐌𝐁𝐄𝐑 〕━━━╮
+
 ➖ تم انشاء الرقم 🛎•
-━━━━━━━━━━━━
 
-➖ رقم الهاتف ☎️ : <code>{number}</code>
+━━━━━━━━━━━━━━━━
 
-➖ الدوله : {country_name}
+➖ رقم الهاتف ☎️ :
+<code>{number}</code>
 
-➖ رمز الدوله 🌏 : {country_code}
-━━━━━━━━━━━━
+➖ الدوله 🌍 :
+{country_name}
 
-➖ المنصه 🔮 : لجميع الموقع والبرامج
-━━━━━━━━━━━━
+➖ رمز الدوله 🌏 :
+{country_code}
 
-➖ تاريج الانشاء 📅 : {now.strftime('%Y-%m-%d')}
+━━━━━━━━━━━━━━━━
 
-➖ وقت الانشاء ⏰ : {now.strftime('%I:%M %p')}
-━━━━━━━━━━━━
+➖ المنصه 🔮 :
+لجميع المواقع والبرامج
+
+━━━━━━━━━━━━━━━━
+
+➖ تاريخ الانشاء 📅 :
+{now.strftime('%Y-%m-%d')}
+
+➖ وقت الانشاء ⏰ :
+{now.strftime('%I:%M %p')}
+
+━━━━━━━━━━━━━━━━
 
 ➖ اضغط ع الرقم لنسخه.
- مع تحيات المطور المصري 
- @f_zm1 🌟
+
+╰━━━〔 👑 مع تحيات المطور المصري 〕━━━╯
+@f_zm1 🌟
 """
 
     keyboard = InlineKeyboardMarkup()
