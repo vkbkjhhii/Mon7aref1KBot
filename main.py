@@ -46,6 +46,10 @@ def main_menu():
     kb.add(
         InlineKeyboardButton("زخرفة ✨", callback_data="decorate")
     )
+    kb.add(
+        InlineKeyboardButton("بوت آخر 🤖", url="https://t.me/ALMNHRF_Toobot"),
+        InlineKeyboardButton("تواصل مع المطور ☎️", callback_data="contact_dev")
+    )
     return kb
 
 def back_btn():
@@ -53,7 +57,7 @@ def back_btn():
     kb.add(InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
     return kb
 
-# ---------------- البداية ----------------
+# ---------------- بداية البوت ----------------
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
     await message.answer("🏠 القائمة الرئيسية", reply_markup=main_menu())
@@ -64,7 +68,6 @@ async def home(callback: types.CallbackQuery):
     await callback.message.edit_text("🏠 القائمة الرئيسية", reply_markup=main_menu())
 
 # ---------------- ارقام فيك ----------------
-# هذه الدالة و كل ارقام فيك تظل كما هي بدون أي تعديل
 def generate_number(code):
     return code + str(random.randint(100000000, 999999999))
 
@@ -82,8 +85,9 @@ async def send_number(callback: types.CallbackQuery):
     name, code = countries[key]
 
     msg = await callback.message.edit_text("⏳ جاري انشاء الرقم...")
-    for p in ["▫▫▫▫▫","🔹▫▫▫▫","🔹🔹▫▫▫","🔹🔹🔹▫▫","🔹🔹🔹🔹▫","🔹🔹🔹🔹🔹"]:
-        await asyncio.sleep(0.5)
+    hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
+    for p in hacker_bar*3:
+        await asyncio.sleep(0.3)
         await msg.edit_text(f"⏳ إنشاء الرقم:\n{p}")
 
     number = generate_number(code)
@@ -103,7 +107,6 @@ async def send_number(callback: types.CallbackQuery):
         InlineKeyboardButton("💬 طلب كود", callback_data="get_code")
     )
     kb.add(InlineKeyboardButton("🔙 العودة", callback_data="home"))
-
     await msg.edit_text(text, reply_markup=kb)
 
 @dp.callback_query_handler(lambda c: c.data.startswith("change_"))
@@ -121,7 +124,6 @@ async def change_number(callback: types.CallbackQuery):
 ➖ التاريخ : {now.strftime('%Y-%m-%d')}
 ➖ الوقت : {now.strftime('%H:%M')}
 """
-
     kb = callback.message.reply_markup
     await callback.message.edit_text(text, reply_markup=kb)
 
@@ -137,12 +139,13 @@ def generate_user():
 @dp.callback_query_handler(lambda c: c.data == "vip")
 async def vip(callback: types.CallbackQuery):
     msg = await callback.message.edit_text("⏳ جاري التوليد...")
-    for p in ["▫▫▫▫▫","🔹▫▫▫▫","🔹🔹▫▫▫","🔹🔹🔹▫▫","🔹🔹🔹🔹▫","🔹🔹🔹🔹🔹"]:
-        await asyncio.sleep(0.5)
+    hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
+    for p in hacker_bar*3:
+        await asyncio.sleep(0.3)
         await msg.edit_text(f"⏳ جاري التوليد:\n{p}")
     await msg.delete()
 
-    for _ in range(10):  # توليد 10 يوزرات
+    for _ in range(10):
         await callback.message.answer(generate_user())
         await asyncio.sleep(0.3)
 
@@ -152,7 +155,7 @@ async def vip(callback: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == "decorate")
 async def decorate(callback: types.CallbackQuery):
     user_state[callback.from_user.id] = "decorate"
-    await callback.message.edit_text("✍️ ابعت الاسم وانا ازخرفه", reply_markup=back_btn())
+    await callback.message.edit_text("✍️ ابعت الاسم او الكلمة وانا ازخرفه", reply_markup=back_btn())
 
 @dp.message_handler()
 async def handle(message: types.Message):
@@ -160,22 +163,23 @@ async def handle(message: types.Message):
 
     if state == "decorate":
         msg = await message.answer("⏳ جاري الزخرفة...")
-        for p in ["▫▫▫▫▫","🔹▫▫▫▫","🔹🔹▫▫▫","🔹🔹🔹▫▫","🔹🔹🔹🔹▫","🔹🔹🔹🔹🔹"]:
-            await asyncio.sleep(0.5)
+        hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
+        for p in hacker_bar*3:
+            await asyncio.sleep(0.3)
             await msg.edit_text(f"⏳ جاري الزخرفة:\n{p}")
         await msg.delete()
 
-        name = message.text.capitalize()
+        word = message.text.upper()
 
         styles = [
-            f"🅼🅾🅷🅰🅼🅼🅴🅳".replace("MOHAMMED", name.upper()),
-            f"𝗠𝗢𝗛𝗔𝗠𝗠𝗘𝗗".replace("MOHAMMED", name.upper()),
-            f"𝑴𝑶𝑯𝑨𝑴𝑴𝑬𝑫".replace("MOHAMMED", name.upper()),
-            f"𝐌𝐎𝐇𝐀𝐌𝐌𝐄𝐃".replace("MOHAMMED", name.upper()),
-            f"🅜🅞🅗🅐🅜🅜🅔🅓".replace("mohammed", name.lower()),
-            "".join([c+"̷" for c in name]),
-            "̧̘̞͎̯͈̣ͅ" + name,
-            "⸄" + "⸅⸄".join(list(name.lower())) + "⸅",
+            f"🅼🅾🅷🅰🅼🅼🅴🅳".replace("MOHAMMED", word),
+            f"𝗠𝗢𝗛𝗔𝗠𝗠𝗘𝗗".replace("MOHAMMED", word),
+            f"𝑴𝑶𝑯𝑨𝑴𝑴𝑬𝑫".replace("MOHAMMED", word),
+            f"𝐌𝐎𝐇𝐀𝐌𝐌𝐄𝐃".replace("MOHAMMED", word),
+            f"🅜🅞🅗🅐🅜🅜🅔🅓".replace("mohammed", word.lower()),
+            "".join([c+"̷" for c in word]),
+            "̧̘̞͎̯͈̣ͅ" + word,
+            "⸄" + "⸅⸄".join(list(word.lower())) + "⸅",
         ]
 
         for s in styles:
@@ -184,6 +188,18 @@ async def handle(message: types.Message):
 
         await message.answer("✅ تمت الزخرفة", reply_markup=back_btn())
         user_state.pop(message.from_user.id)
+
+# ---------------- تواصل مع المطور ----------------
+DEV_ID = 7771042305
+
+@dp.callback_query_handler(lambda c: c.data == "contact_dev")
+async def contact_dev(callback: types.CallbackQuery):
+    await callback.message.answer("📩 بدأت المحادثة مع المطور", reply_markup=back_btn())
+
+@dp.message_handler()
+async def forward_to_dev(message: types.Message):
+    if message.from_user.id != DEV_ID:
+        await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name}:\n{message.text}")
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
