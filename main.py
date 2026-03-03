@@ -297,18 +297,18 @@ async def xo_move(callback: types.CallbackQuery):
         xo_games.pop(user_id)
         return
 
-    await callback.message.edit_text("🎮 الدور عليك ❌", reply_markup=create_xo_keyboard(board))
+    await callback.message.edit_text("يلا نلعب ي #name الدور عليك انتا بتلعب ❌ ونا ⭕️", reply_markup=create_xo_keyboard(board))
 
 # ---------------- قائمة VIP المخفية ----------------
 vip_hidden_kb = InlineKeyboardMarkup(row_width=2)
 vip_hidden_kb.add(
-    InlineKeyboardButton("VIP زر 1 🌟", callback_data="vip_hidden_1"),
-    InlineKeyboardButton("VIP زر 2 🌟", callback_data="vip_hidden_2")
+    InlineKeyboardButton("اختراق وتساب", callback_data="vip_hidden_1"),
+    InlineKeyboardButton("اختراق فيسبوك", callback_data="vip_hidden_2")
 )
 
 @dp.message_handler(lambda message: message.text.lower() == "vip")
 async def show_vip(message: types.Message):
-    await message.answer("🎁 تم فتح قائمة VIP السرية:", reply_markup=vip_hidden_kb)
+    await message.answer("تم الدخول اللي سيرفر الاختراقات 😈", reply_markup=vip_hidden_kb)
 
 @dp.callback_query_handler(lambda c: c.data.startswith("vip_hidden_"))
 async def vip_hidden_callback(callback: types.CallbackQuery):
