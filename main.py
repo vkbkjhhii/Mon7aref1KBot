@@ -313,9 +313,9 @@ async def short_link_start(callback: types.CallbackQuery):
 
 @dp.message_handler(lambda message: user_state.get(message.from_user.id) == "short_link")
 async def handle_short_link(message: types.Message):
-    url = message.text.strip()
+    url = message.text.strip()  # يشيل أي مسافات قبل وبعد الرابط
 
-    if not url.startswith("https://"):
+    if not url.lower().startswith("https://"):
         await message.answer("❌ الرابط يجب أن يبدأ بـ https://")
         return
 
