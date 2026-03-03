@@ -214,7 +214,7 @@ DEV_ID = 7771042305
 
 @dp.callback_query_handler(lambda c: c.data == "contact_dev")
 async def contact_dev(callback: types.CallbackQuery):
-    await callback.message.answer("بدات المحادثه مع المطور محمد فرعونخ ضع رسلتك 💬")
+    await callback.message.answer("بدات المحادثه مع المطور محمد فرعون ضح رسالتك وسأقوم بعرضها علي سيدي المطور 🧾")
 
 @dp.message_handler(lambda message: message.from_user.id != DEV_ID)
 async def forward_to_dev(message: types.Message):
@@ -264,7 +264,7 @@ async def xo_move(callback: types.CallbackQuery):
     board = xo_games[user_id]
     idx = int(callback.data.split("_")[1])
     if board[idx]:
-        await callback.answer("المربع مش فاضي!", show_alert=True)
+        await callback.answer("المربع مش فاضي يغبي 🙄", show_alert=True)
         return
 
     board[idx] = "❌"
