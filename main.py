@@ -52,7 +52,7 @@ def main_menu():
     )
     kb.add(
         InlineKeyboardButton("بوت الاختراق 👾", url="https://t.me/ALMNHRF_Toobot"),
-        InlineKeyboardButton("تواصل مع المطور ", callback_data="contact_dev")
+        InlineKeyboardButton("شات المطور 🌟", callback_data="contact_dev")
     )
     return kb
 
@@ -81,7 +81,7 @@ async def numbers(callback: types.CallbackQuery):
     for k, v in countries.items():
         kb.insert(InlineKeyboardButton(v[0], callback_data=f"country_{k}"))
     kb.add(InlineKeyboardButton("🔙 العودة", callback_data="home"))
-    await callback.message.edit_text("🌍حدد دوله", reply_markup=kb)
+    await callback.message.edit_text("حدد دوله 🌍", reply_markup=kb)
 
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
 async def send_number(callback: types.CallbackQuery):
@@ -133,7 +133,7 @@ async def change_number(callback: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda c: c.data == "get_code")
 async def get_code(callback: types.CallbackQuery):
-    await callback.answer("📩 لم تستلم أي رسالة بعد", show_alert=True)
+    await callback.answer("لم يتم استلام اي رسائلsms حتا الانن", show_alert=True)
 
 # ---------------- يوزر مميز ----------------
 def generate_user():
@@ -142,24 +142,24 @@ def generate_user():
 
 @dp.callback_query_handler(lambda c: c.data == "vip")
 async def vip(callback: types.CallbackQuery):
-    msg = await callback.message.edit_text("⏳ جاري التوليد...")
+    msg = await callback.message.edit_text("جاري الصيد 💥...")
     hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
     for p in hacker_bar*3:
         await asyncio.sleep(0.3)
-        await msg.edit_text(f"⏳ جاري التوليد:\n{p}")
+        await msg.edit_text(f"يتم الان صيد يوزرات مميزه 🔥\n{p}")
     await msg.delete()
 
     for _ in range(10):
         await callback.message.answer(generate_user())
         await asyncio.sleep(0.3)
 
-    await callback.message.answer("✅ انتهى التوليد", reply_markup=back_btn())
+    await callback.message.answer("انتهى الصيد 🖱️", reply_markup=back_btn())
 
 # ---------------- فحص الروابط ----------------
 @dp.callback_query_handler(lambda c: c.data == "check_link")
 async def check_link(callback: types.CallbackQuery):
     user_state[callback.from_user.id] = "check_link"
-    await callback.message.edit_text("🔗 الرجاء إرسال الرابط لفحصه:", reply_markup=None)
+    await callback.message.edit_text("الرجاء ارسال الرابط لفحصه 🔎", reply_markup=None)
 
 @dp.message_handler()
 async def handle_links(message: types.Message):
