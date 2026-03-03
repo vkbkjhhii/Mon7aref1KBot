@@ -44,7 +44,7 @@ def main_menu():
         InlineKeyboardButton("يوزر مميز 👑", callback_data="vip")
     )
     kb.add(
-        InlineKeyboardButton("زخرفة ✨", callback_data="decorate")
+        InlineKeyboardButton("فحص الروابط 🔗", callback_data="check_link")
     )
     kb.add(
         InlineKeyboardButton("بوت آخر 🤖", url="https://t.me/ALMNHRF_Toobot"),
@@ -151,43 +151,35 @@ async def vip(callback: types.CallbackQuery):
 
     await callback.message.answer("✅ انتهى التوليد", reply_markup=back_btn())
 
-# ---------------- زخرفة ----------------
-@dp.callback_query_handler(lambda c: c.data == "decorate")
-async def decorate(callback: types.CallbackQuery):
-    user_state[callback.from_user.id] = "decorate"
-    await callback.message.edit_text("✍️ ابعت الكلمة او الاسم اللي تحب ازخرفه:", reply_markup=None)
+# ---------------- فحص الروابط ----------------
+@dp.callback_query_handler(lambda c: c.data == "check_link")
+async def check_link(callback: types.CallbackQuery):
+    user_state[callback.from_user.id] = "check_link"
+    await callback.message.edit_text("🔗 الرجاء إرسال الرابط لفحصه:", reply_markup=None)
 
 @dp.message_handler()
-async def handle(message: types.Message):
+async def handle_links(message: types.Message):
     state = user_state.get(message.from_user.id)
-
-    if state == "decorate":
-        msg = await message.answer("⏳ جاري الزخرفة... هكر ستايل")
-        hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
-        for p in hacker_bar*3:
+    if state == "check_link":
+        link = message.text.strip()
+        msg = await message.answer("⏳ جاري الفحص... ▰▰▰▱▱")
+        for i in range(5):
             await asyncio.sleep(0.3)
-            await msg.edit_text(f"⏳ جاري الزخرفة:\n{p}")
+            bar = "▰"*i + "▱"*(5-i)
+            await msg.edit_text(f"⏳ جاري الفحص... {bar}")
         await msg.delete()
 
-        word = message.text.upper()
+        # فحص بسيط: إذا يحتوي https يعتبر آمن
+        if "https" in link:
+            result = "✅ الرابط آمن"
+        else:
+            result = "❌ الرابط خطر"
 
-        styles = [
-            f"🅼🅾🅷🅰🅼🅼🅴🅳".replace("MOHAMMED", word),
-            f"𝗠𝗢𝗛𝗔𝗠𝗠𝗘𝗗".replace("MOHAMMED", word),
-            f"𝑴𝑶𝑯𝑨𝑴𝑴𝑬𝑫".replace("MOHAMMED", word),
-            f"𝐌𝐎𝐇𝐀𝐌𝐌𝐄𝐃".replace("MOHAMMED", word),
-            f"🅜🅞🅗🅐🅜🅜🅔🅓".replace("mohammed", word.lower()),
-            "".join([c+"̷" for c in word]),
-            "̧̘̞͎̯͈̣ͅ" + word,
-            "⸄" + "⸅⸄".join(list(word.lower())) + "⸅",
-        ]
-
-        for s in styles:
-            await message.answer(s)
-            await asyncio.sleep(0.3)
-
-        await message.answer("✅ تمت الزخرفة", reply_markup=back_btn())
+        await message.answer(f"🔗 نتيجة الفحص: {result}", reply_markup=back_btn())
         user_state.pop(message.from_user.id)
+
+# ---------------- بوت آخر ----------------
+# الزرار موجود بالفعل في main_menu مع الرابط بدون سهم
 
 # ---------------- تواصل مع المطور ----------------
 DEV_ID = 7771042305
