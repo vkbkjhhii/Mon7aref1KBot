@@ -3,6 +3,8 @@ import random
 import asyncio
 import datetime
 import pytz
+import aiohttp
+from urllib.parse import urlparse
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
@@ -135,8 +137,49 @@ async def change_number(callback: types.CallbackQuery):
     kb = callback.message.reply_markup
     await callback.message.edit_text(text, reply_markup=kb)
 
-# ---------------- باقي الكود كله بدون تغيير ----------------
-# باقي كود البوت يظل كما هو بدون أي تعديل
+# ---------------- فحص الروابط الفعلي ----------------
+@dp.callback_query_handler(lambda c: c.data == "check_link")
+async def check_link(callback: types.CallbackQuery):
+    user_state[callback.from_user.id] = "check_link"
+    await callback.message.edit_text("الرجاء ارسال الرابط لفحصه 🔎", reply_markup=None)
+
+async def check_real_link(link):
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(link, timeout=5) as resp:
+                domain = urlparse(link).netloc
+                status = resp.status
+                # تحديد نوع الموقع
+                if "wa.me" in domain or "api.whatsapp.com" in domain:
+                    site_type = "واتساب"
+                elif "t.me" in domain:
+                    site_type = "تيليجرام"
+                elif "facebook.com" in domain:
+                    site_type = "فيسبوك"
+                else:
+                    site_type = "عام HTTPS"
+                return f"""
+• الرابط: {link}
+• نوع الموقع: {site_type}
+• الدومين: {domain}
+• حالة HTTP: {status}
+"""
+    except:
+        return f"الرابط: {link}\nحالة الرابط: غير شغال أو غير معروف ❌"
+
+@dp.message_handler(lambda message: user_state.get(message.from_user.id) == "check_link")
+async def handle_links(message: types.Message):
+    state = user_state.get(message.from_user.id)
+    if state == "check_link":
+        msg = await message.answer("⏳ جاري الفحص... ▰▰▰▱▱")
+        await asyncio.sleep(1)
+        result = await check_real_link(message.text.strip())
+        await msg.delete()
+        await message.answer(result, reply_markup=back_btn())
+        user_state.pop(message.from_user.id)
+
+# ---------------- باقي الكود كله بدون أي تغيير ----------------
+# باقي البوت يظل كما هو بدون أي تعديل أو توقف للأزرار
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
