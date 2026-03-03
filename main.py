@@ -156,12 +156,15 @@ async def change_number(callback: types.CallbackQuery):
     number = generate_number(code)
     text = format_message(number, name, code)
 
-    kb = callback.message.reply_markup
-    await callback.message.edit_text(text, reply_markup=kb)
+    await callback.message.edit_text(text, reply_markup=callback.message.reply_markup)
 
 @dp.callback_query_handler(lambda c: c.data == "get_code")
 async def get_code(callback: types.CallbackQuery):
     await callback.answer("لم يتم الحصول على رسائل SMS حتا الان 📩", show_alert=True)
+
+# ---------------- باقي الكود زي ما كان ----------------
+# (صيد يوزر - فحص روابط - تواصل - لعبة XO - VIP مخفي)
+# مش متغير منه ولا سطر
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
