@@ -5,7 +5,6 @@ import datetime
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
-import aiohttp
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
@@ -54,8 +53,6 @@ def main_menu():
     kb.add(
         InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game")
     )
-    # ---------- زر تغيير الرابط الجديد ----------
-    kb.add(InlineKeyboardButton("تغيير الرابط 🚸", callback_data="short_link"))
     return kb
 
 def back_btn():
@@ -304,57 +301,6 @@ async def show_vip(message: types.Message):
 @dp.callback_query_handler(lambda c: c.data.startswith("vip_hidden_"))
 async def vip_hidden_callback(callback: types.CallbackQuery):
     await callback.answer(f"لقد ضغطت على {callback.data}", show_alert=True)
-
-# ---------------- زرار تغيير الرابط 🚸 ----------------
-@dp.callback_query_handler(lambda c: c.data == "short_link")
-async def short_link_start(callback: types.CallbackQuery):
-    user_state[callback.from_user.id] = "short_link"
-    await callback.message.answer("🚸 ارسل الرابط الذي تريد اختصاره (يجب أن يبدأ بـ https://)")
-
-@dp.message_handler(lambda message: user_state.get(message.from_user.id) == "short_link")
-async def handle_short_link(message: types.Message):
-    url = message.text.strip()  # يشيل أي مسافات قبل وبعد الرابط
-
-    if not url.lower().startswith("https://"):
-        await message.answer("❌ الرابط يجب أن يبدأ بـ https://")
-        return
-
-    # إرسال استيكر (يمكن تغييره لأي استيكر عندك)
-    await message.answer_sticker("CAACAgIAAxkBAAEBExampleStickerID")
-    await asyncio.sleep(2)
-
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://is.gd/create.php?format=simple&url={url}") as r:
-                isgd = await r.text()
-            async with session.get(f"https://tinyurl.com/api-create.php?url={url}") as r:
-                tiny = await r.text()
-            async with session.post("https://cleanuri.com/api/v1/shorten", data={"url": url}) as r:
-                data = await r.json()
-                clean = data.get("result_url", "❌ فشل")
-            async with session.get(f"https://da.gd/s?url={url}") as r:
-                dagd = await r.text()
-    except:
-        await message.answer("❌ حصل خطأ أثناء الاختصار حاول مرة أخرى")
-        user_state.pop(message.from_user.id, None)
-        return
-
-    result = f"""
-✅ روابطك المختصرة:
-
-1. {isgd}
-
-2. {tiny}
-
-3. {clean}
-
-4. {dagd}
-
-🔍 ملاحظة: جرب الروابط التي ستعمل معك
-"""
-
-    await message.answer(result, reply_markup=back_btn())
-    user_state.pop(message.from_user.id, None)
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
