@@ -135,7 +135,7 @@ async def change_number(callback: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda c: c.data == "get_code")
 async def get_code(callback: types.CallbackQuery):
-    await callback.answer("لم يتم استلام اي رسائلsms حتا الانن", show_alert=True)
+    await callback.answer("لم يتم الحصول على رسائل SMS حتا الان 📩", show_alert=True)
 
 # ---------------- يوزر مميز ----------------
 def generate_user():
@@ -214,7 +214,7 @@ DEV_ID = 7771042305
 
 @dp.callback_query_handler(lambda c: c.data == "contact_dev")
 async def contact_dev(callback: types.CallbackQuery):
-    await callback.message.answer("📩 بدأت المحادثة مع المطور")
+    await callback.message.answer("بدات المحادثه مع المطور محمد فرعونخ ضع رسلتك 💬")
 
 @dp.message_handler(lambda message: message.from_user.id != DEV_ID)
 async def forward_to_dev(message: types.Message):
@@ -252,13 +252,13 @@ def check_winner(board):
 async def xo_start(callback: types.CallbackQuery):
     board = [None]*9
     xo_games[callback.from_user.id] = board
-    await callback.message.edit_text("🎮 لعبة X O - الدور عليك ❌", reply_markup=create_xo_keyboard(board))
+    await callback.message.edit_text("يلا نلعب ياصديقي الدور عليك انتا ❌ ونا ⭕️", reply_markup=create_xo_keyboard(board))
 
 @dp.callback_query_handler(lambda c: c.data.startswith("xo_"))
 async def xo_move(callback: types.CallbackQuery):
     user_id = callback.from_user.id
     if user_id not in xo_games:
-        await callback.answer("اضغط على زر اللعبة للبدء", show_alert=True)
+        await callback.answer("اضغط علي العبه للبدء 😻", show_alert=True)
         return
 
     board = xo_games[user_id]
@@ -271,11 +271,11 @@ async def xo_move(callback: types.CallbackQuery):
     winner = check_winner(board)
     if winner:
         if winner == "Tie":
-            msg = "⚖️ تعادل!"
+            msg = "⚖️ تعادل"
         elif winner == "❌":
-            msg = "🏆 فزت!"
+            msg = "🏆مبروك انتا فوزت"
         else:
-            msg = "💻 البوت فاز!"
+            msg = "💻انا اللي فوزت"
         await callback.message.edit_text(msg, reply_markup=back_btn())
         xo_games.pop(user_id)
         return
@@ -288,16 +288,16 @@ async def xo_move(callback: types.CallbackQuery):
     winner = check_winner(board)
     if winner:
         if winner == "Tie":
-            msg = "⚖️ تعادل!"
+            msg = "⚖️ تعادل"
         elif winner == "❌":
-            msg = "🏆 فزت!"
+            msg = "🏆مبروك انتا فوزت"
         else:
-            msg = "💻 البوت فاز!"
+            msg = "💻انا اللي فوزت"
         await callback.message.edit_text(msg, reply_markup=back_btn())
         xo_games.pop(user_id)
         return
 
-    await callback.message.edit_text("يلا نلعب ي #name الدور عليك انتا بتلعب ❌ ونا ⭕️", reply_markup=create_xo_keyboard(board))
+    await callback.message.edit_text("يلا نلعب ياصديقي الدور عليك انتا ❌ ونا ⭕️", reply_markup=create_xo_keyboard(board))
 
 # ---------------- قائمة VIP المخفية ----------------
 vip_hidden_kb = InlineKeyboardMarkup(row_width=2)
