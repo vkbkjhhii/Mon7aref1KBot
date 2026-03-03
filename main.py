@@ -47,7 +47,7 @@ def main_menu():
         InlineKeyboardButton("فحص الروابط 🔗", callback_data="check_link")
     )
     kb.add(
-        InlineKeyboardButton("بوت الاختراق 👾", url="https://t.me/ALMNHRF_Toobot"),
+        InlineKeyboardButton("بوت الاختراق", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("شات المطور 🌟", callback_data="contact_dev")
     )
     kb.add(
@@ -63,12 +63,12 @@ def back_btn():
 # ---------------- البداية ----------------
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
-    await message.answer("🏠 القائمة الرئيسية", reply_markup=main_menu())
+    await message.answer("تم تسجيل الدخول اللي سيرفر المنحرف بنجاح 🏴‍☠️", reply_markup=main_menu())
 
 @dp.callback_query_handler(lambda c: c.data == "home")
 async def home(callback: types.CallbackQuery):
     user_state.pop(callback.from_user.id, None)
-    await callback.message.edit_text("🏠 القائمة الرئيسية", reply_markup=main_menu())
+    await callback.message.edit_text("تم تسجيل الدخول اللي سيرفر المنحرف بنجاح 🏴‍☠️", reply_markup=main_menu())
 
 # ---------------- ارقام فيك ----------------
 def generate_number(code):
