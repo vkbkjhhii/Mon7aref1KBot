@@ -162,26 +162,24 @@ async def check_link(callback: types.CallbackQuery):
 
 @dp.message_handler(lambda message: user_state.get(message.from_user.id) == "check_link")
 async def handle_links(message: types.Message):
-    state = user_state.get(message.from_user.id)
-    if state == "check_link":
-        link = message.text.strip()
-        msg = await message.answer("⏳ جاري الفحص... ▰▰▰▱▱")
-        for i in range(6):
-            await asyncio.sleep(0.5)
-            bar = "▰"*i + "▱"*(5-i)
-            await msg.edit_text(f"⏳ جاري الفحص... {bar}")
-        await msg.delete()
+    link = message.text.strip()
+    msg = await message.answer("⏳ جاري الفحص... ▰▰▰▱▱")
+    for i in range(6):
+        await asyncio.sleep(0.5)
+        bar = "▰"*i + "▱"*(5-i)
+        await msg.edit_text(f"⏳ جاري الفحص... {bar}")
+    await msg.delete()
 
-        if "wa.me" in link or "api.whatsapp.com" in link:
-            link_type = "واتساب"
-        elif "t.me" in link:
-            link_type = "تيليجرام"
-        elif "https" in link:
-            link_type = "عام HTTPS"
-        else:
-            link_type = "غير معروف"
+    if "wa.me" in link or "api.whatsapp.com" in link:
+        link_type = "واتساب"
+    elif "t.me" in link:
+        link_type = "تيليجرام"
+    elif "https" in link:
+        link_type = "عام HTTPS"
+    else:
+        link_type = "غير معروف"
 
-        result_text = f"""
+    result_text = f"""
 • الرابط: {link}
 
 • التصنيف: ✅ الرابط آمن
@@ -194,8 +192,8 @@ async def handle_links(message: types.Message):
 
 • مزود الخدمة: AS16509 Amazon.com, Inc.
 """
-        await message.answer(result_text, reply_markup=back_btn())
-        user_state.pop(message.from_user.id)
+    await message.answer(result_text, reply_markup=back_btn())
+    user_state.pop(message.from_user.id)
 
 # ---------------- تواصل مع المطور ----------------
 DEV_ID = 7771042305
@@ -204,14 +202,18 @@ DEV_ID = 7771042305
 async def contact_dev(callback: types.CallbackQuery):
     await callback.message.answer("بدات المحادثه مع المطور محمد فرعون ضح رسالتك وسأقوم بعرضها علي سيدي المطور 🧾")
 
-@dp.message_handler(lambda message: message.from_user.id != DEV_ID)
+# 🔥 التعديل هنا فقط
+@dp.message_handler(lambda message: message.from_user.id != DEV_ID and message.text and message.text.lower() != "vip")
 async def forward_to_dev(message: types.Message):
     state = user_state.get(message.from_user.id)
     if state == "check_link":
         return
-    await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
+    await bot.send_message(
+        DEV_ID,
+        f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}"
+    )
 
-# ---------------- لعبة X O ضد البوت ----------------
+# ---------------- لعبة X O ----------------
 xo_games = {}
 
 def create_xo_keyboard(board):
@@ -294,7 +296,7 @@ vip_hidden_kb.add(
     InlineKeyboardButton("اختراق فيسبوك", callback_data="vip_hidden_2")
 )
 
-@dp.message_handler(lambda message: message.text.lower() == "vip")
+@dp.message_handler(lambda message: message.text and message.text.lower() == "vip")
 async def show_vip(message: types.Message):
     await message.answer("تم الدخول اللي سيرفر الاختراقات 😈", reply_markup=vip_hidden_kb)
 
