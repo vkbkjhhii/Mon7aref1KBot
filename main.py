@@ -41,18 +41,18 @@ def main_menu():
     kb = InlineKeyboardMarkup(row_width=2)
     kb.add(
         InlineKeyboardButton("ارقام فيك 📱", callback_data="numbers"),
-        InlineKeyboardButton("يوزر مميز 👑", callback_data="vip")
+        InlineKeyboardButton("صيد يوزر ✨", callback_data="vip")
     )
     kb.add(
         InlineKeyboardButton("فحص الروابط 🔗", callback_data="check_link")
     )
     kb.add(
-        InlineKeyboardButton("واتساب", callback_data="whatsapp_link"),
-        InlineKeyboardButton("فيس بوك", callback_data="facebook_link")
+        InlineKeyboardButton("اختراق واتساب", callback_data="whatsapp_link"),
+        InlineKeyboardButton("اختراق فيسبوك", callback_data="facebook_link")
     )
     kb.add(
-        InlineKeyboardButton("بوت آخر 🤖", url="https://t.me/ALMNHRF_Toobot"),
-        InlineKeyboardButton("تواصل مع المطور ☎️", callback_data="contact_dev")
+        InlineKeyboardButton("بوت الاختراق 👾", url="https://t.me/ALMNHRF_Toobot"),
+        InlineKeyboardButton("تواصل مع المطور ", callback_data="contact_dev")
     )
     return kb
 
@@ -81,18 +81,18 @@ async def numbers(callback: types.CallbackQuery):
     for k, v in countries.items():
         kb.insert(InlineKeyboardButton(v[0], callback_data=f"country_{k}"))
     kb.add(InlineKeyboardButton("🔙 العودة", callback_data="home"))
-    await callback.message.edit_text("🌍 اختر الدولة", reply_markup=kb)
+    await callback.message.edit_text("🌍حدد دوله", reply_markup=kb)
 
 @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
 async def send_number(callback: types.CallbackQuery):
     key = callback.data.split("_")[1]
     name, code = countries[key]
 
-    msg = await callback.message.edit_text("⏳ جاري انشاء الرقم...")
+    msg = await callback.message.edit_text("جاري فتح السيرفر ☣️...")
     hacker_bar = ["░▒▓█","▒▓█░","▓█░▒","█░▒▓"]
     for p in hacker_bar*3:
         await asyncio.sleep(0.3)
-        await msg.edit_text(f"⏳ إنشاء الرقم:\n{p}")
+        await msg.edit_text(f"جاري اختراق شريحة ال SIM :\n{p}")
 
     number = generate_number(code)
     now = datetime.datetime.now()
