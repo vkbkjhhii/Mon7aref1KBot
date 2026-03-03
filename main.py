@@ -2,6 +2,7 @@ import os
 import random
 import asyncio
 import datetime
+from zoneinfo import ZoneInfo
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
@@ -75,7 +76,7 @@ def generate_number(code):
     return code + str(random.randint(100000000, 999999999))
 
 def format_message(number, name, code):
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(ZoneInfo("Africa/Cairo"))
     time_str = now.strftime("%I:%M:%S %p").replace("AM", "ص").replace("PM", "م")
 
     return f"""
