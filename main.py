@@ -137,7 +137,7 @@ async def change_number(callback: types.CallbackQuery):
     kb = callback.message.reply_markup
     await callback.message.edit_text(text, reply_markup=kb)
 
-# ---------------- فحص الروابط الفعلي ----------------
+# ---------------- فحص الروابط الفعلي بدون توقف الأزرار ----------------
 @dp.callback_query_handler(lambda c: c.data == "check_link")
 async def check_link(callback: types.CallbackQuery):
     user_state[callback.from_user.id] = "check_link"
@@ -149,7 +149,6 @@ async def check_real_link(link):
             async with session.get(link, timeout=5) as resp:
                 domain = urlparse(link).netloc
                 status = resp.status
-                # تحديد نوع الموقع
                 if "wa.me" in domain or "api.whatsapp.com" in domain:
                     site_type = "واتساب"
                 elif "t.me" in domain:
@@ -171,15 +170,16 @@ async def check_real_link(link):
 async def handle_links(message: types.Message):
     state = user_state.get(message.from_user.id)
     if state == "check_link":
-        msg = await message.answer("⏳ جاري الفحص... ▰▰▰▱▱")
-        await asyncio.sleep(1)
-        result = await check_real_link(message.text.strip())
-        await msg.delete()
-        await message.answer(result, reply_markup=back_btn())
-        user_state.pop(message.from_user.id)
+        await message.answer("⏳ جاري الفحص... ▰▰▰▱▱")
+        asyncio.create_task(process_link(message))
 
-# ---------------- باقي الكود كله بدون أي تغيير ----------------
-# باقي البوت يظل كما هو بدون أي تعديل أو توقف للأزرار
+async def process_link(message):
+    result = await check_real_link(message.text.strip())
+    await message.answer(result, reply_markup=back_btn())
+    user_state.pop(message.from_user.id)
+
+# ---------------- باقي البوت يظل كما هو ----------------
+# باقي الأزرار والوظائف مثل VIP ولعبة X O وكل حاجة تعمل بدون أي توقف
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
