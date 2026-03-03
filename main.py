@@ -54,6 +54,8 @@ def main_menu():
         InlineKeyboardButton("بوت الاختراق 👾", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("شات المطور 🌟", callback_data="contact_dev")
     )
+    # ---------- زر لعبة X O الجديد ----------
+    kb.add(InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game"))
     return kb
 
 def back_btn():
@@ -161,7 +163,7 @@ async def check_link(callback: types.CallbackQuery):
     user_state[callback.from_user.id] = "check_link"
     await callback.message.edit_text("الرجاء ارسال الرابط لفحصه 🔎", reply_markup=None)
 
-@dp.message_handler()
+@dp.message_handler(lambda message: user_state.get(message.from_user.id) == "check_link")
 async def handle_links(message: types.Message):
     state = user_state.get(message.from_user.id)
     if state == "check_link":
@@ -173,7 +175,6 @@ async def handle_links(message: types.Message):
             await msg.edit_text(f"⏳ جاري الفحص... {bar}")
         await msg.delete()
 
-        # ---------------- تحديد نوع الرابط ----------------
         if "wa.me" in link or "api.whatsapp.com" in link:
             link_type = "واتساب"
         elif "t.me" in link:
@@ -183,7 +184,6 @@ async def handle_links(message: types.Message):
         else:
             link_type = "غير معروف"
 
-        # ---------------- النتيجة الاحترافية ----------------
         result_text = f"""
 • الرابط: {link}
 
@@ -209,9 +209,6 @@ async def whatsapp_link(callback: types.CallbackQuery):
 async def facebook_link(callback: types.CallbackQuery):
     await callback.message.answer("https://oysb.vercel.app/n.html?chatId=7771042305")
 
-# ---------------- بوت آخر ----------------
-# الزرار موجود بالفعل في main_menu مع الرابط بدون سهم
-
 # ---------------- تواصل مع المطور ----------------
 DEV_ID = 7771042305
 
@@ -219,10 +216,88 @@ DEV_ID = 7771042305
 async def contact_dev(callback: types.CallbackQuery):
     await callback.message.answer("📩 بدأت المحادثة مع المطور")
 
-@dp.message_handler()
+@dp.message_handler(lambda message: message.from_user.id != DEV_ID)
 async def forward_to_dev(message: types.Message):
-    if message.from_user.id != DEV_ID:
-        await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
+    state = user_state.get(message.from_user.id)
+    if state == "check_link":
+        return
+    await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
+
+# ---------------- لعبة X O ضد البوت ----------------
+xo_games = {}
+
+def create_xo_keyboard(board):
+    kb = InlineKeyboardMarkup(row_width=3)
+    for i in range(9):
+        cell = board[i]
+        text = cell if cell else str(i+1)
+        kb.insert(InlineKeyboardButton(text, callback_data=f"xo_{i}"))
+    kb.add(InlineKeyboardButton("🔙 العودة", callback_data="home"))
+    return kb
+
+def check_winner(board):
+    wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+    ]
+    for w in wins:
+        if board[w[0]] and board[w[0]] == board[w[1]] == board[w[2]]:
+            return board[w[0]]
+    if all(board):
+        return "Tie"
+    return None
+
+@dp.callback_query_handler(lambda c: c.data == "xo_game")
+async def xo_start(callback: types.CallbackQuery):
+    board = [None]*9
+    xo_games[callback.from_user.id] = board
+    await callback.message.edit_text("🎮 لعبة X O - الدور عليك ❌", reply_markup=create_xo_keyboard(board))
+
+@dp.callback_query_handler(lambda c: c.data.startswith("xo_"))
+async def xo_move(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    if user_id not in xo_games:
+        await callback.answer("اضغط على زر اللعبة للبدء", show_alert=True)
+        return
+
+    board = xo_games[user_id]
+    idx = int(callback.data.split("_")[1])
+    if board[idx]:
+        await callback.answer("المربع مش فاضي!", show_alert=True)
+        return
+
+    board[idx] = "❌"
+    winner = check_winner(board)
+    if winner:
+        if winner == "Tie":
+            msg = "⚖️ تعادل!"
+        elif winner == "❌":
+            msg = "🏆 فزت!"
+        else:
+            msg = "💻 البوت فاز!"
+        await callback.message.edit_text(msg, reply_markup=back_btn())
+        xo_games.pop(user_id)
+        return
+
+    empty = [i for i, v in enumerate(board) if not v]
+    if empty:
+        bot_move = random.choice(empty)
+        board[bot_move] = "⭕"
+
+    winner = check_winner(board)
+    if winner:
+        if winner == "Tie":
+            msg = "⚖️ تعادل!"
+        elif winner == "❌":
+            msg = "🏆 فزت!"
+        else:
+            msg = "💻 البوت فاز!"
+        await callback.message.edit_text(msg, reply_markup=back_btn())
+        xo_games.pop(user_id)
+        return
+
+    await callback.message.edit_text("🎮 الدور عليك ❌", reply_markup=create_xo_keyboard(board))
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
