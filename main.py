@@ -6,7 +6,8 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+# ---------------- توكن البوت ----------------
+BOT_TOKEN = "PUT_YOUR_BOT_TOKEN_HERE"  # استبدل بالتوكن الحقيقي للبوت
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
@@ -197,12 +198,16 @@ async def handle_links(message: types.Message):
         await message.answer(result_text, reply_markup=back_btn())
         user_state.pop(message.from_user.id)
 
-# ---------------- تواصل مع المطور ----------------
+# ---------------- تواصل مع المطور (تم التحديث للزرار الجديد) ----------------
 DEV_ID = 7771042305
 
 @dp.callback_query_handler(lambda c: c.data == "contact_dev")
 async def contact_dev(callback: types.CallbackQuery):
-    await callback.message.answer("بدات المحادثه مع المطور محمد فرعون ضح رسالتك وسأقوم بعرضها علي سيدي المطور 🧾")
+    # رابط الصفحة المتحركة (استبدل بالرابط الحقيقي بعد الرفع)
+    url = "https://yourusername.vercel.app/faraon.html"
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton("فتح صفحة التواصل مع المطور 🖤", url=url))
+    await callback.message.answer("اضغط على الزرار للانتقال للصفحة المتحركة:", reply_markup=kb)
 
 @dp.message_handler(lambda message: message.from_user.id != DEV_ID)
 async def forward_to_dev(message: types.Message):
@@ -211,7 +216,7 @@ async def forward_to_dev(message: types.Message):
         return
     await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
 
-# ---------------- لعبة X O ضد البوت ----------------
+# ---------------- لعبة X O ----------------
 xo_games = {}
 
 def create_xo_keyboard(board):
@@ -302,6 +307,6 @@ async def show_vip(message: types.Message):
 async def vip_hidden_callback(callback: types.CallbackQuery):
     await callback.answer(f"لقد ضغطت على {callback.data}", show_alert=True)
 
-# ---------------- تشغيل ----------------
+# ---------------- تشغيل البوت ----------------
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
