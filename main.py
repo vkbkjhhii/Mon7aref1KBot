@@ -106,7 +106,7 @@ async def contact_dev(callback: types.CallbackQuery):
         "💎 نظام شحن عملات البوت\n\n"
         "لشراء العملات يرجى التواصل مع المطور مباشرة ⏳",
         reply_markup=InlineKeyboardMarkup().add(
-            InlineKeyboardButton("📩 تواصل مع المطور", url=f"https://t.me/{DEV_ID}")
+            InlineKeyboardButton("📩 تواصل مع المطور", url=f"https://t.me/f_zm1")
         )
     )
 
