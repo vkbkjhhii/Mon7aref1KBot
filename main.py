@@ -61,9 +61,9 @@ def back_btn():
 vip_hidden_kb = InlineKeyboardMarkup(row_width=3)
 
 buttons = [
-    "اختراق الهاتف كاملا","اختراق فيسبوك","اختراق وتساب",
-    "اختراق انستا","اختراق تليجرام","اختراق شبكه واي فاي",
-    "الهجوم علي هاتف","إزالة ملابس","الهجوم علي موقع"
+    "زر 1","زر 2","زر 3",
+    "زر 4","زر 5","زر 6",
+    "زر 7","زر 8","زر 9"
 ]
 
 for i, name in enumerate(buttons):
@@ -106,7 +106,7 @@ async def contact_dev(callback: types.CallbackQuery):
         "💎 نظام شحن عملات البوت\n\n"
         "لشراء العملات يرجى التواصل مع المطور مباشرة ⏳",
         reply_markup=InlineKeyboardMarkup().add(
-            InlineKeyboardButton("📩 تواصل مع المطور", url=f"https://t.me/f_zm1")
+            InlineKeyboardButton("📩 تواصل مع المطور", url=f"https://t.me/{DEV_ID}")
         )
     )
 
