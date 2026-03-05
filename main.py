@@ -51,7 +51,8 @@ def main_menu():
         InlineKeyboardButton("شات المطور 🌟", callback_data="contact_dev")
     )
     kb.add(
-        InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game")
+        InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game"),
+        InlineKeyboardButton("فيزا تجريبية 💳", callback_data="generate_card")  # الزرار الجديد
     )
     return kb
 
@@ -301,6 +302,27 @@ async def show_vip(message: types.Message):
 @dp.callback_query_handler(lambda c: c.data.startswith("vip_hidden_"))
 async def vip_hidden_callback(callback: types.CallbackQuery):
     await callback.answer(f"لقد ضغطت على {callback.data}", show_alert=True)
+
+# ---------------- زرار فيزا تجريبية جديد ----------------
+@dp.callback_query_handler(lambda c: c.data == "generate_card")
+async def generate_card(callback: types.CallbackQuery):
+    number = f"{random.randint(4000,4999)}-{random.randint(1000,9999)}-{random.randint(1000,9999)}-{random.randint(1000,9999)}"
+    cvv = random.randint(100,999)
+    expiry_month = random.randint(1,12)
+    expiry_year = random.randint(24,30)
+
+    text = f"""
+💳 بطاقة تجريبية
+رقم الفيزا: <code>{number}</code>
+CVV: <code>{cvv}</code>
+EXP: {expiry_month:02d}/{expiry_year}
+"""
+    kb = InlineKeyboardMarkup()
+    kb.add(
+        InlineKeyboardButton("🔄 توليد جديد", callback_data="generate_card"),
+        InlineKeyboardButton("🔙 العودة", callback_data="home")
+    )
+    await callback.message.edit_text(text, reply_markup=kb)
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
