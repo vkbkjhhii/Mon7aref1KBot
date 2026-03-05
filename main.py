@@ -198,7 +198,7 @@ async def handle_links(message: types.Message):
         user_state.pop(message.from_user.id)
 
 # ---------------- تواصل مع المطور ----------------
-DEV_ID =6437170958
+DEV_ID =7771042305
 
 @dp.callback_query_handler(lambda c: c.data == "contact_dev")
 async def contact_dev(callback: types.CallbackQuery):
