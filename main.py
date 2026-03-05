@@ -36,7 +36,7 @@ countries = {
     "australia": ("🇦🇺 استراليا", "+61"),
 }
 
-# ---------------- قوائم ----------------
+# ---------------- القائمة الرئيسية ----------------
 def main_menu():
     kb = InlineKeyboardMarkup(row_width=2)
     kb.add(
@@ -44,15 +44,15 @@ def main_menu():
         InlineKeyboardButton("صيد يوزر ✨", callback_data="vip")
     )
     kb.add(
-        InlineKeyboardButton("فحص الروابط 🔗", callback_data="check_link")
+        InlineKeyboardButton("فحص الروابط 🔗", callback_data="check_link"),
+        InlineKeyboardButton("توليد بيانات تجريبية 💳", callback_data="demo_card")
     )
     kb.add(
         InlineKeyboardButton("بوت الاختراق", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("شات المطور 🌟", callback_data="contact_dev")
     )
     kb.add(
-        InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game"),
-        InlineKeyboardButton("فيزا 💳", callback_data="generate_card")
+        InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game")
     )
     return kb
 
@@ -113,47 +113,70 @@ async def send_number(callback: types.CallbackQuery):
     kb.add(InlineKeyboardButton("🔙 العودة", callback_data="home"))
     await msg.edit_text(text, reply_markup=kb)
 
-# ---------------- توليد فيزا ----------------
-def generate_card():
-    card = str(random.randint(4000000000000000,4999999999999999))
-    cvv = str(random.randint(100,999))
-    month = random.randint(1,12)
-    year = random.randint(2025,2030)
-    value = random.randint(5,100)
+@dp.callback_query_handler(lambda c: c.data.startswith("change_"))
+async def change_number(callback: types.CallbackQuery):
+    key = callback.data.split("_")[1]
+    name, code = countries[key]
 
-    return f"""
-𝗣𝗮𝘀𝘀𝗲𝗱 ✅
-[-] Card Number : {card}
-[-] Expiry : {month:02d}/{year}
-[-] CVV : {cvv}
-[-] Bank : U.S. Bank
-[-] Card Type : VISA - DEBIT - VISA CLASSIC
-[-] Country : USA🇺🇸
-[-] Value : ${value}
-============================
-[-] by : BOT
+    number = generate_number(code)
+    now = datetime.datetime.now()
+
+    text = f"""
+➖ رقم الهاتف : <code>{number}</code>
+➖ الدولة : {name}
+➖ رمز الدولة : {code}
+➖ التاريخ : {now.strftime('%Y-%m-%d')}
+➖ الوقت : {now.strftime('%H:%M')}
 """
+    kb = callback.message.reply_markup
+    await callback.message.edit_text(text, reply_markup=kb)
 
-@dp.callback_query_handler(lambda c: c.data == "generate_card")
-async def card_generator(callback: types.CallbackQuery):
+@dp.callback_query_handler(lambda c: c.data == "get_code")
+async def get_code(callback: types.CallbackQuery):
+    await callback.answer("لم يتم الحصول على رسائل SMS حتا الان 📩", show_alert=True)
+
+# ---------------- توليد بيانات تجريبية ----------------
+def generate_demo_card():
+    card = "4111 " + str(random.randint(1000,9999)) + " " + str(random.randint(1000,9999)) + " " + str(random.randint(1000,9999))
+    month = random.randint(1,12)
+    year = random.randint(2026,2030)
+    cvv = random.randint(100,999)
+    value = random.randint(10,50)
+    return card, month, year, cvv, value
+
+@dp.callback_query_handler(lambda c: c.data == "demo_card")
+async def demo_card(callback: types.CallbackQuery):
 
     msg = await callback.message.edit_text("جاري الاتصال بالسيرفر 💳")
 
-    bar = ["▰▱▱▱▱","▰▰▱▱▱","▰▰▰▱▱","▰▰▰▰▱","▰▰▰▰▰"]
+    for i in range(1,11):
+        bar = "▓"*i + "░"*(10-i)
+        await asyncio.sleep(0.3)
+        await msg.edit_text(f"جاري التحميل...\n[{bar}]")
 
-    for i in bar:
-        await asyncio.sleep(0.6)
-        await msg.edit_text(f"جاري الفحص {i}")
+    card, month, year, cvv, value = generate_demo_card()
 
-    text = generate_card()
+    result = f"""
+💳 Demo Card Generated
+
+Card Number : {card}
+Expiry : {month}/{year}
+CVV : {cvv}
+
+Bank : Test Bank
+Country : 🌍 Demo
+Value : ${value}
+
+⚠️ هذه بيانات تجريبية فقط
+"""
 
     kb = InlineKeyboardMarkup()
     kb.add(
-        InlineKeyboardButton("🔄 توليد جديد", callback_data="generate_card"),
+        InlineKeyboardButton("🔄 توليد جديد", callback_data="demo_card"),
         InlineKeyboardButton("🔙 العودة", callback_data="home")
     )
 
-    await msg.edit_text(text, reply_markup=kb)
+    await msg.edit_text(result, reply_markup=kb)
 
 # ---------------- تشغيل ----------------
 if __name__ == "__main__":
