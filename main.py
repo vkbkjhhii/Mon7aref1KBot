@@ -50,6 +50,7 @@ def main_menu():
         InlineKeyboardButton("بوت الاختراق", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("شات المطور 🌟", callback_data="contact_dev")
     )
+    InlineKeyboardButton("ارقام اعع", callback_data="numbers")
     kb.add(
         InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game")
     )
