@@ -1,8 +1,8 @@
 import os
 import random
-import asyncio
 from datetime import datetime
 import pytz
+from urllib.parse import urlparse
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -13,22 +13,19 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
-user_state = {}
 DEV_ID = 7771042305
+user_state = {}
+xo_games = {}
 
 # ===============================
 # الوقت المصري
 # ===============================
 
 def egypt_time():
-
     tz = pytz.timezone("Africa/Cairo")
-
     now = datetime.now(tz)
-
     date = now.strftime("%Y-%m-%d")
     time = now.strftime("%I:%M %p")
-
     return date, time
 
 # ===============================
@@ -61,7 +58,7 @@ countries = {
 }
 
 # ===============================
-# توليد رقم واقعي الشكل
+# توليد رقم
 # ===============================
 
 def generate_number(country):
@@ -79,6 +76,16 @@ def generate_number(country):
         return countries[country][1] + str(random.randint(100000000,999999999))
 
 # ===============================
+# توليد يوزر
+# ===============================
+
+def generate_username():
+
+    names=["dark","ghost","king","wolf","shadow","zero"]
+
+    return random.choice(names)+str(random.randint(1000,9999))
+
+# ===============================
 # القائمة الرئيسية
 # ===============================
 
@@ -88,39 +95,30 @@ def main_menu():
 
     kb.add(
 
-        InlineKeyboardButton("ارقام فيك 📱",callback_data="numbers"),
-        InlineKeyboardButton("صيد يوزر ✨",callback_data="vip")
+        InlineKeyboardButton("ارقام فيك 📱",callback_data="numbers_menu"),
+        InlineKeyboardButton("توليد يوزر ✨",callback_data="generate_user")
 
     )
 
     kb.add(
 
-        InlineKeyboardButton("فحص الروابط 🔗",callback_data="check_link"),
-        InlineKeyboardButton("لعبة XO 🎮",callback_data="xo_game")
+        InlineKeyboardButton("فحص رابط 🔗",callback_data="scan_link"),
+        InlineKeyboardButton("لعبة XO 🎮",callback_data="xo_start")
 
     )
 
     kb.add(
 
-        InlineKeyboardButton("توليد باسورد 🔑",callback_data="pass"),
-        InlineKeyboardButton("معلوماتي 👤",callback_data="me")
+        InlineKeyboardButton("توليد Password 🔑",callback_data="gen_pass"),
+        InlineKeyboardButton("معلوماتي 👤",callback_data="my_info")
 
     )
 
     kb.add(
 
-        InlineKeyboardButton("شات المطور 💬",callback_data="contact_dev")
+        InlineKeyboardButton("التواصل مع المطور 💬",callback_data="dev_contact")
 
     )
-
-    return kb
-
-
-def back():
-
-    kb=InlineKeyboardMarkup()
-
-    kb.add(InlineKeyboardButton("🔙 رجوع",callback_data="home"))
 
     return kb
 
@@ -132,19 +130,7 @@ def back():
 async def start(message:types.Message):
 
     await message.answer(
-        "تم تسجيل الدخول لسيرفر المنحرف 🏴‍☠️",
-        reply_markup=main_menu()
-    )
-
-# ===============================
-# HOME
-# ===============================
-
-@dp.callback_query_handler(lambda c:c.data=="home")
-async def home(call:types.CallbackQuery):
-
-    await call.message.edit_text(
-        "القائمة الرئيسية",
+        "اهلا بك في البوت",
         reply_markup=main_menu()
     )
 
@@ -152,7 +138,7 @@ async def home(call:types.CallbackQuery):
 # ارقام فيك
 # ===============================
 
-@dp.callback_query_handler(lambda c:c.data=="numbers")
+@dp.callback_query_handler(lambda c:c.data=="numbers_menu")
 async def numbers(call:types.CallbackQuery):
 
     kb=InlineKeyboardMarkup(row_width=2)
@@ -163,10 +149,8 @@ async def numbers(call:types.CallbackQuery):
             InlineKeyboardButton(v[0],callback_data=f"country_{k}")
         )
 
-    kb.add(InlineKeyboardButton("🔙 رجوع",callback_data="home"))
-
     await call.message.edit_text(
-        "اختر الدولة 🌍",
+        "اختر الدولة",
         reply_markup=kb
     )
 
@@ -185,10 +169,9 @@ async def send_number(call:types.CallbackQuery):
 
     date,time=egypt_time()
 
-    server=random.choice(["EG-SERVER-1","EU-SERVER-3","US-SERVER-2"])
+    server=random.choice(["EG-SERVER","EU-SERVER","US-SERVER"])
 
     text=f"""
-
 📱 الرقم
 <code>{number}</code>
 
@@ -211,13 +194,9 @@ async def send_number(call:types.CallbackQuery):
     kb=InlineKeyboardMarkup()
 
     kb.add(
-
         InlineKeyboardButton("🔄 تغيير الرقم",callback_data=f"country_{key}"),
-        InlineKeyboardButton("📩 طلب كود",callback_data="sms")
-
+        InlineKeyboardButton("📩 طلب كود",callback_data="sms_code")
     )
-
-    kb.add(InlineKeyboardButton("🔙 رجوع",callback_data="home"))
 
     await call.message.edit_text(text,reply_markup=kb)
 
@@ -225,19 +204,129 @@ async def send_number(call:types.CallbackQuery):
 # طلب كود
 # ===============================
 
-@dp.callback_query_handler(lambda c:c.data=="sms")
+@dp.callback_query_handler(lambda c:c.data=="sms_code")
 async def sms(call:types.CallbackQuery):
 
-    await call.answer(
-        "📩 لم تصل أي رسالة SMS بعد",
-        show_alert=True
+    await call.answer("لم تصل أي رسالة SMS",show_alert=True)
+
+# ===============================
+# توليد يوزر
+# ===============================
+
+@dp.callback_query_handler(lambda c:c.data=="generate_user")
+async def user(call:types.CallbackQuery):
+
+    username=generate_username()
+
+    await bot.send_message(
+        call.from_user.id,
+        f"✨ Username\n\n<code>{username}</code>"
     )
+
+# ===============================
+# توليد باسورد
+# ===============================
+
+@dp.callback_query_handler(lambda c:c.data=="gen_pass")
+async def password(call:types.CallbackQuery):
+
+    chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789"
+
+    pwd="".join(random.choice(chars) for _ in range(12))
+
+    await bot.send_message(
+        call.from_user.id,
+        f"🔑 Password\n\n<code>{pwd}</code>"
+    )
+
+# ===============================
+# فحص رابط
+# ===============================
+
+@dp.callback_query_handler(lambda c:c.data=="scan_link")
+async def scan(call:types.CallbackQuery):
+
+    user_state[call.from_user.id]="link"
+
+    await bot.send_message(
+        call.from_user.id,
+        "ارسل الرابط لفحصه"
+    )
+
+@dp.message_handler(lambda m:user_state.get(m.from_user.id)=="link")
+async def check_link(message:types.Message):
+
+    url=message.text
+
+    domain=urlparse(url).netloc
+
+    if "facebook" in domain:
+        site="Facebook"
+
+    elif "whatsapp" in domain:
+        site="WhatsApp"
+
+    elif "telegram" in domain:
+        site="Telegram"
+
+    else:
+        site="Unknown"
+
+    text=f"""
+🔗 الرابط
+{url}
+
+🌐 الدومين
+{domain}
+
+📡 الموقع
+{site}
+
+🛡 الحالة
+آمن نسبيا
+"""
+
+    await bot.send_message(
+        message.from_user.id,
+        text
+    )
+
+    user_state.pop(message.from_user.id)
+
+# ===============================
+# تواصل المطور
+# ===============================
+
+@dp.callback_query_handler(lambda c:c.data=="dev_contact")
+async def dev(call:types.CallbackQuery):
+
+    user_state[call.from_user.id]="dev"
+
+    await bot.send_message(
+        call.from_user.id,
+        "اكتب رسالتك للمطور"
+    )
+
+@dp.message_handler(lambda m:user_state.get(m.from_user.id)=="dev")
+async def dev_msg(message:types.Message):
+
+    await bot.send_message(
+        DEV_ID,
+        f"رسالة من {message.from_user.id}\n\n{message.text}"
+    )
+
+    await message.delete()
+
+    await bot.send_message(
+        message.from_user.id,
+        "تم إرسال رسالتك إلى المطور"
+    )
+
+    user_state.pop(message.from_user.id)
 
 # ===============================
 # لعبة XO
 # ===============================
-
-xo_games={}
 
 def board_kb(board):
 
@@ -250,8 +339,6 @@ def board_kb(board):
         kb.insert(
             InlineKeyboardButton(cell,callback_data=f"xo_{i}")
         )
-
-    kb.add(InlineKeyboardButton("🔙 رجوع",callback_data="home"))
 
     return kb
 
@@ -271,7 +358,7 @@ def check(board):
 
     return None
 
-@dp.callback_query_handler(lambda c:c.data=="xo_game")
+@dp.callback_query_handler(lambda c:c.data=="xo_start")
 async def start_xo(call:types.CallbackQuery):
 
     board=[None]*9
@@ -301,24 +388,26 @@ async def move(call:types.CallbackQuery):
     board[idx]="❌"
 
     if check(board):
-        await call.message.edit_text("🏆 فزت!",reply_markup=back())
+
+        await call.message.edit_text("فزت")
+
         xo_games.pop(uid)
+
         return
 
     empty=[i for i,v in enumerate(board) if not v]
 
     if empty:
-        bot=random.choice(empty)
-        board[bot]="⭕"
+
+        bot_move=random.choice(empty)
+
+        board[bot_move]="⭕"
 
     result=check(board)
 
     if result=="Tie":
 
-        await call.message.edit_text(
-            "⚖️ تعادل\n\n🔄 حاول مرة أخرى",
-            reply_markup=back()
-        )
+        await call.message.edit_text("تعادل")
 
         xo_games.pop(uid)
 
@@ -326,81 +415,16 @@ async def move(call:types.CallbackQuery):
 
     if result=="⭕":
 
-        await call.message.edit_text(
-            "💻 البوت فاز",
-            reply_markup=back()
-        )
+        await call.message.edit_text("البوت فاز")
 
         xo_games.pop(uid)
 
         return
 
     await call.message.edit_text(
-        "الدور عليك ❌",
+        "الدور عليك",
         reply_markup=board_kb(board)
     )
-
-# ===============================
-# معلومات المستخدم
-# ===============================
-
-@dp.callback_query_handler(lambda c:c.data=="me")
-async def me(call:types.CallbackQuery):
-
-    user=call.from_user
-
-    text=f"""
-
-👤 الاسم
-{user.first_name}
-
-🆔 الايدي
-{user.id}
-
-🔗 اليوزر
-@{user.username}
-"""
-
-    await call.message.edit_text(text,reply_markup=back())
-
-# ===============================
-# توليد باسورد
-# ===============================
-
-@dp.callback_query_handler(lambda c:c.data=="pass")
-async def password(call:types.CallbackQuery):
-
-    chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789"
-
-    pwd="".join(random.choice(chars) for _ in range(12))
-
-    await call.message.edit_text(
-        f"🔑 الباسورد\n\n<code>{pwd}</code>",
-        reply_markup=back()
-    )
-
-# ===============================
-# تواصل المطور
-# ===============================
-
-@dp.callback_query_handler(lambda c:c.data=="contact_dev")
-async def contact(call:types.CallbackQuery):
-
-    user_state[call.from_user.id]="dev"
-
-    await call.message.answer("اكتب رسالتك للمطور")
-
-@dp.message_handler(lambda m:user_state.get(m.from_user.id)=="dev")
-async def dev_msg(message:types.Message):
-
-    await bot.send_message(
-        DEV_ID,
-        f"💬 رسالة من {message.from_user.id}\n\n{message.text}"
-    )
-
-    await message.answer("تم ارسال الرسالة")
-
-    user_state.pop(message.from_user.id)
 
 # ===============================
 # تشغيل البوت
@@ -408,7 +432,4 @@ async def dev_msg(message:types.Message):
 
 if __name__=="__main__":
 
-    executor.start_polling(
-        dp,
-        skip_updates=True
-    )
+    executor.start_polling(dp,skip_updates=True)
