@@ -6,14 +6,14 @@ def main_menu():
     
     # الصف الأول: 2 زرار كبار
     kb.add(
-        InlineKeyboardButton("ارقام فيك 👽", callback_data="numbers"),
+        InlineKeyboardButton("ارقام فيك ☎️", callback_data="numbers"),
         InlineKeyboardButton("صيد يوزر ✨", callback_data="vip")
     )
     
     # الصف الثاني: 2 زرار كبار
     kb.add(
         InlineKeyboardButton("فحص الروابط 🔎", callback_data="check_link"),
-        InlineKeyboardButton("Farm GPT 😈", url="https://t.me/ALMNHRF_Toobot")
+        InlineKeyboardButton("Farm GPT ", url="https://t.me/ALMNHRF_Toobot")
     )
     
     # الصف الثالث: 2 زرار كبار
@@ -23,8 +23,8 @@ def main_menu():
     )
 
     kb.add(
-    InlineKeyboardButton("توليد فيزا 💳", callback_data="generate_visa"),
-    InlineKeyboardButton("اختصار رابط 🔗", callback_data="short_link")
+    InlineKeyboardButton("💳 صيد فيزا", callback_data="generate_visa"),
+    InlineKeyboardButton("اختصار رابط🔗", callback_data="short_link")
     )
     
     return kb
