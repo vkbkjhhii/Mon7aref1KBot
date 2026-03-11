@@ -21,6 +21,8 @@ def main_menu():
         InlineKeyboardButton("المطور 🥷", callback_data="contact_dev"),
         InlineKeyboardButton("تحت الإصلاح", callback_data="xo_game")
     )
+    InlineKeyboardButton("صيد فيزا", callback_data="generate_visa"),
+InlineKeyboardButton("اختصار رابط🔗", callback_data="shorten_link")
     
     return kb
 
