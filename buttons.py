@@ -18,8 +18,8 @@ def main_menu():
     
     # الصف الثالث: 2 زرار كبار
     kb.add(
-        InlineKeyboardButton("المطور 🥷", callback_data="contact_dev"),
-        InlineKeyboardButton("تحت الإصلاح", callback_data="xo_game")
+        InlineKeyboardButton("المطور 🥷", callback_data="contact_dev"),)
+    
     )
     
     return kb
