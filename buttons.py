@@ -17,7 +17,9 @@ def main_menu():
     kb.add(
         InlineKeyboardButton("تحت الإصلاح ", callback_data="xo_game")
     )
-    return kb
+    kb.add(
+    InlineKeyboardButton("الزر الجديد", callback_data="new_btn")
+    )return kb
 
 def back_btn():
     kb = InlineKeyboardMarkup()
