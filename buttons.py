@@ -16,6 +16,9 @@ def main_menu():
     )
     kb.add(
         InlineKeyboardButton("تحت الإصلاح ", callback_data="xo_game")
+        kb.add(
+    InlineKeyboardButton("زر جديد 🔥", callback_data="my_new_button")
+        )
     )
     return kb
 
