@@ -2,22 +2,26 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # الكيبورد الرئيسي
 def main_menu():
-    kb = InlineKeyboardMarkup(row_width=3)
-    # الصف الأول
+    kb = InlineKeyboardMarkup(row_width=2)
+    
+    # الصف الأول: 2 زرار كبار
     kb.add(
         InlineKeyboardButton("ارقام فيك 👽", callback_data="numbers"),
-        InlineKeyboardButton("صيد يوزر ✨", callback_data="vip"),
-        InlineKeyboardButton("فحص الروابط 🔎", callback_data="check_link")
+        InlineKeyboardButton("صيد يوزر ✨", callback_data="vip")
     )
-    # الصف الثاني
+    
+    # الصف الثاني: 2 زرار كبار
     kb.add(
-        InlineKeyboardButton("Farm GPT 😈", url="https://t.me/ALMNHRF_Toobot"),
-        InlineKeyboardButton("المطور 🥷", callback_data="contact_dev")
+        InlineKeyboardButton("فحص الروابط 🔎", callback_data="check_link"),
+        InlineKeyboardButton("Farm GPT 😈", url="https://t.me/ALMNHRF_Toobot")
     )
-    # الصف الثالث
+    
+    # الصف الثالث: 2 زرار كبار
     kb.add(
-        InlineKeyboardButton("تحت الإصلاح ", callback_data="xo_game")
+        InlineKeyboardButton("المطور 🥷", callback_data="contact_dev"),
+        InlineKeyboardButton("تحت الإصلاح", callback_data="xo_game")
     )
+    
     return kb
 
 def back_btn():
