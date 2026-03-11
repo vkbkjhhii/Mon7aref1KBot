@@ -34,12 +34,12 @@ def register_handlers(dp, DEV_ID):
 
     @dp.message_handler(commands=["start"])
     async def start(message: types.Message):
-        await message.answer("تم تسجيل الدخول 🏴‍☠️", reply_markup=main_menu())
+        await message.answer("اهلا بك في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
 
     @dp.callback_query_handler(lambda c: c.data=="home")
     async def home(callback: types.CallbackQuery):
         user_state.pop(callback.from_user.id, None)
-        await callback.message.edit_text("تم تسجيل الدخول 🏴‍☠️", reply_markup=main_menu())
+        await callback.message.edit_text("اهلا بك في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
 
     # ---------- أرقام فيك ----------
     @dp.callback_query_handler(lambda c: c.data=="numbers")
@@ -53,11 +53,11 @@ def register_handlers(dp, DEV_ID):
     @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
     async def send_number(callback: types.CallbackQuery):
         key = callback.data.split("_")[1]
-        msg = await callback.message.edit_text("⏳ جاري توليد الرقم...")
+        msg = await callback.message.edit_text("يتم الان اختراق شريحة ال SIM")
         anim = ["▰▱▱▱▱","▰▰▱▱▱","▰▰▰▱▱","▰▰▰▰▱","▰▰▰▰▰"]
         for a in anim*2:
             await asyncio.sleep(0.3)
-            await msg.edit_text(f"⏳ جاري توليد الرقم... {a}")
+            await msg.edit_text(f"جاري سحب الرقم من السيرفر  {a}")
         number = random.choice(real_numbers[key])
         now = datetime.datetime.now(tz)
         text = f"""
@@ -122,7 +122,7 @@ def register_handlers(dp, DEV_ID):
     async def handle_links(message: types.Message):
         link = message.text.strip()
         if not (link.startswith("http://") or link.startswith("https://")):
-            await message.reply("❌ يمكنك إرسال الرابط فقط")
+            await message.reply("يمكنك ارسال رابط فقط ❌")
             return
         parsed = urlparse(link)
         domain = parsed.netloc
@@ -153,7 +153,7 @@ def register_handlers(dp, DEV_ID):
 
     @dp.message_handler(lambda message: user_state.get(message.from_user.id)=="to_dev")
     async def forward_to_dev(message: types.Message):
-        sent_msg = await message.answer("✅ تم إرسال رسالتك")
+        sent_msg = await message.answer("تم إرسال رسالتك اللي المطور محمد فرعون ✅")
         await message.delete()
         await dp.bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
         await asyncio.sleep(5)
