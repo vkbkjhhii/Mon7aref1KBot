@@ -19,13 +19,13 @@ def main_menu():
     )
     return kb
 
-# زر الرجوع للقائمة الرئيسية
+# زر العودة للقائمة الرئيسية
 def back_btn():
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
     return kb
 
-# دالة لإضافة زرار جديد بسهولة
+# دالة جاهزة لأي زر جديد
 def create_button(text, callback_data):
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton(text, callback_data=callback_data))
