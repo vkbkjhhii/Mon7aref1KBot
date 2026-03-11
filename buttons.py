@@ -13,10 +13,6 @@ def main_menu():
     kb.add(
         InlineKeyboardButton("بوت الاختراق", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("شات المطور 🌟", callback_data="contact_dev")
-    )
-    kb.add(
-        InlineKeyboardButton("لعبة X O 🎮", callback_data="xo_game")
-    )
     return kb
 
 def back_btn():
