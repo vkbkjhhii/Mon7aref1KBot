@@ -159,3 +159,36 @@ def register_handlers(dp, DEV_ID):
         await asyncio.sleep(5)
         await sent_msg.delete()
         user_state.pop(message.from_user.id)
+        import random
+import asyncio
+from aiogram import types
+
+@dp.callback_query_handler(lambda c: c.data == "generate_visa")
+async def generate_visa(callback_query: types.CallbackQuery):
+
+    # رسالة متحركة
+    msg = await callback_query.message.answer("💳 جاري توليد الفيزا...")
+    await asyncio.sleep(2)
+
+    # بيانات عشوائية
+    names = ["Paolo Bernhard", "John Carter", "Michael Smith"]
+    card = random.randint(4000000000000000,4999999999999999)
+    exp = f"{random.randint(1,12):02d}/{random.randint(26,30)}"
+    cvv = random.randint(100,999)
+    pin = random.randint(1000,9999)
+    balance = random.randint(10,500)
+    name = random.choice(names)
+
+    text = f"""
+========== 💳 Visa ==========
+
+🔢 رقم البطاقة: {card}
+👤 اسم صاحب الفيزاء : {name}
+📅 تاريخ الانتهاء: {exp}
+🔒 رمز(CVV): {cvv}
+🔑 الرقم السري (PIN): {pin}
+💵 الرصيد المتاح: ${balance}
+
+========== 💳 Visa ==========
+"""
+    await msg.edit_text(text)
