@@ -11,15 +11,13 @@ def main_menu():
         InlineKeyboardButton("فحص الروابط 🔎", callback_data="check_link")
     )
     kb.add(
-        InlineKeyboardButton("Farm GPT", url="https://t.me/ALMNHRF_Toobot"),
+        InlineKeyboardButton("Farm GPT 😈", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("المطور 🥷", callback_data="contact_dev")
     )
     kb.add(
         InlineKeyboardButton("تحت الإصلاح ", callback_data="xo_game")
     )
-    kb.add(
-    InlineKeyboardButton("الزر الجديد", callback_data="new_btn")
-    )return kb
+    return kb
 
 def back_btn():
     kb = InlineKeyboardMarkup()
