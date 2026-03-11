@@ -24,9 +24,3 @@ def back_btn():
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
     return kb
-
-# دالة جاهزة لأي زر جديد
-def create_button(text, callback_data):
-    kb = InlineKeyboardMarkup()
-    kb.add(InlineKeyboardButton(text, callback_data=callback_data))
-    return kb
