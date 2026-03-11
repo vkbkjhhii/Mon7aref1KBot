@@ -19,7 +19,6 @@ def main_menu():
     )
     return kb
 
-# زر العودة للقائمة الرئيسية
 def back_btn():
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
