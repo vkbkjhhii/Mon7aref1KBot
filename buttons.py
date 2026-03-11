@@ -11,7 +11,7 @@ def main_menu():
         InlineKeyboardButton("فحص الروابط 🔎", callback_data="check_link")
     )
     kb.add(
-        InlineKeyboardButton("Farm GPT 😈", url="https://t.me/ALMNHRF_Toobot"),
+        InlineKeyboardButton("Farm GPT", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("المطور 🥷", callback_data="contact_dev")
     )
     kb.add(
