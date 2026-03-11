@@ -7,6 +7,10 @@ def main_menu():
     # الصف الأول
     kb.add(
         InlineKeyboardButton("ارقام فيك 👽", callback_data="numbers"),
+        kb.add(
+    InlineKeyboardButton("زر 1 🔹", callback_data="btn1"),
+    InlineKeyboardButton("زر 2 🔹", callback_data="btn2")
+        )
         InlineKeyboardButton("صيد يوزر ✨", callback_data="vip")
     )
     
