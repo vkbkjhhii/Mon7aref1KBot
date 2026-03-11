@@ -101,11 +101,11 @@ def register_handlers(dp, DEV_ID):
 
     @dp.callback_query_handler(lambda c: c.data=="vip")
     async def vip(callback: types.CallbackQuery):
-        msg = await callback.message.edit_text("⏳ جاري توليد user مميز...")
+        msg = await callback.message.edit_text("جاي انشاء يوزر مميز 💥")
         anim = ["▰▱▱▱▱","▰▰▱▱▱","▰▰▰▱▱","▰▰▰▰▱","▰▰▰▰▰"]
         for a in anim*2:
             await asyncio.sleep(0.3)
-            await msg.edit_text(f"⏳ جاري توليد user مميز... {a}")
+            await msg.edit_text(f"جاري انشاء يوزر مميز 💥{a}")
         await msg.delete()
         for _ in range(10):
             await callback.message.answer(generate_user())
