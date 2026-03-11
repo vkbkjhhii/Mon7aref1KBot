@@ -158,20 +158,27 @@ def register_handlers(dp, DEV_ID):
         await dp.bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
         await asyncio.sleep(5)
         await sent_msg.delete()
-        user_state.pop(message.from_user.id)
-        import random
+        user_state.pop(message.from_user.id)import random
 import asyncio
+import requests
 from aiogram import types
 
+# -------- زرار توليد فيزا 💳 --------
 @dp.callback_query_handler(lambda c: c.data == "generate_visa")
 async def generate_visa(callback_query: types.CallbackQuery):
 
-    # رسالة متحركة
+    # رسالة متحركة أولًا
     msg = await callback_query.message.answer("💳 جاري توليد الفيزا...")
     await asyncio.sleep(2)
 
-    # بيانات عشوائية
-    names = ["Paolo Bernhard", "John Carter", "Michael Smith"]
+    names = [
+        "Paolo Bernhard",
+        "John Carter",
+        "Michael Smith",
+        "Daniel Brown",
+        "Robert Wilson"
+    ]
+
     card = random.randint(4000000000000000,4999999999999999)
     exp = f"{random.randint(1,12):02d}/{random.randint(26,30)}"
     cvv = random.randint(100,999)
@@ -192,3 +199,34 @@ async def generate_visa(callback_query: types.CallbackQuery):
 ========== 💳 Visa ==========
 """
     await msg.edit_text(text)
+
+
+# -------- زرار اختصار الرابط 🔗 --------
+@dp.callback_query_handler(lambda c: c.data == "short_link")
+async def short_link(callback_query: types.CallbackQuery):
+    await callback_query.message.answer("🔗 من فضلك، أرسل الرابط الذي تريد اختصاره:")
+
+
+# -------- استقبال الرابط بعد ارسال المستخدم --------
+@dp.message_handler()
+async def get_link(message: types.Message):
+    if not message.text.startswith("http"):
+        await message.reply("❌ يمكنك ارسال رابط فقط")
+        return
+
+    url = message.text
+    api = f"https://tinyurl.com/api-create.php?url={url}"
+    short = requests.get(api).text
+
+    text = f"""
+✅ روابطك المختصرة:
+
+1. {short}
+2. {short}
+3. {short}
+4. {short}
+
+🔍 ملاحظة: جرب الروابط التي ستعمل معك
+"""
+    await message.answer(text)
+        
