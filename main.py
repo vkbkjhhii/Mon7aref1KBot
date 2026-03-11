@@ -1,13 +1,16 @@
-from aiogram import Bot, Dispatcher, executor
-from config import BOT_TOKEN
+import os
+from aiogram import Bot, Dispatcher
+from aiogram.utils import executor
 from handlers import register_handlers
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+DEV_ID = 7771042305  # حط هنا ID المطور
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
-# تسجيل جميع الهاندلرز
-register_handlers(dp)
+# سجل كل handlers
+register_handlers(dp, DEV_ID)
 
-# تشغيل البوت
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
