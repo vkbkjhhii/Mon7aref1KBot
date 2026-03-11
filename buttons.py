@@ -30,6 +30,10 @@ def main_menu():
     kb.add(
         InlineKeyboardButton("زر جديد 🔥", callback_data="my_new_button")
     )
+    kb.add(
+    InlineKeyboardButton("زر 1 🔹", callback_data="btn1"),
+    InlineKeyboardButton("زر 2 🔹", callback_data="btn2")
+    )
 
     return kb
 
