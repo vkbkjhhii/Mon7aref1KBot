@@ -1,43 +1,37 @@
 from aiogram import types
-from aiogram.dispatcher import Dispatcher
 from buttons import main_menu, back_btn
-import random, datetime, asyncio
-from config import DEV_ID
+import random, datetime, asyncio, pytz
 from urllib.parse import urlparse
-import pytz
+from config import DEV_ID
 
 user_state = {}
 xo_games = {}
-xo_multi_games = {}  # لتخزين ألعاب متعددة المستخدمين
 
-# ---------- قوائم أرقام حقيقية لكل دولة ----------
+# أرقام حقيقية لكل دولة
 real_numbers = {
-    "مصر": ["01012345678", "01198765432", "01234567890"],
-    "امريكا": ["+12025550123", "+12025550987", "+12125551234"],
-    "بريطانيا": ["+447911123456", "+447912345678", "+447913456789"],
-    "السعودية": ["+966501234567", "+966512345678", "+966513456789"],
-    "الامارات": ["+971501234567", "+971512345678", "+971513456789"],
-    "المغرب": ["+212612345678", "+212612345679", "+212612345680"],
-    "الجزائر": ["+213550123456", "+213550123457", "+213550123458"],
-    "تونس": ["+21620123456", "+21620123457", "+21620123458"],
-    "تركيا": ["+905012345678", "+905012345679", "+905012345680"],
-    "ألمانيا": ["+4915123456789", "+4915123456790", "+4915123456791"],
-    "فرنسا": ["+33612345678", "+33612345679", "+33612345680"],
-    "إيطاليا": ["+393123456789", "+393123456780", "+393123456781"],
-    "إسبانيا": ["+34612345678", "+34612345679", "+34612345680"],
-    "كندا": ["+12041234567", "+12041234568", "+12041234569"],
-    "البرازيل": ["+5511998765432", "+5511998765433", "+5511998765434"],
-    "الهند": ["+919812345678", "+919812345679", "+919812345680"],
-    "روسيا": ["+79161234567", "+79161234568", "+79161234569"],
-    "الصين": ["+8613800138000", "+8613800138001", "+8613800138002"],
-    "اليابان": ["+819012345678", "+819012345679", "+819012345680"],
-    "استراليا": ["+61412345678", "+61412345679", "+61412345680"]
+    "مصر": ["01012345678","01198765432","01234567890"],
+    "امريكا": ["+12025550123","+12025550987","+12125551234"],
+    "بريطانيا": ["+447911123456","+447912345678","+447913456789"],
+    "السعودية": ["+966501234567","+966512345678","+966513456789"],
+    "الامارات": ["+971501234567","+971512345678","+971513456789"],
+    "المغرب": ["+212612345678","+212612345679","+212612345680"],
+    "الجزائر": ["+213550123456","+213550123457","+213550123458"],
+    "تونس": ["+21620123456","+21620123457","+21620123458"],
+    "تركيا": ["+905012345678","+905012345679","+905012345680"],
+    "ألمانيا": ["+4915123456789","+4915123456790","+4915123456791"],
+    "فرنسا": ["+33612345678","+33612345679","+33612345680"],
+    "إيطاليا": ["+393123456789","+393123456780","+393123456781"],
+    "إسبانيا": ["+34612345678","+34612345679","+34612345680"],
+    "كندا": ["+12041234567","+12041234568","+12041234569"],
+    "البرازيل": ["+5511998765432","+5511998765433","+5511998765434"],
+    "الهند": ["+919812345678","+919812345679","+919812345680"],
+    "روسيا": ["+79161234567","+79161234568","+79161234569"],
+    "الصين": ["+8613800138000","+8613800138001","+8613800138002"],
+    "اليابان": ["+819012345678","+819012345679","+819012345680"],
+    "استراليا": ["+61412345678","+61412345679","+61412345680"]
 }
 
-countries = {k: ("🇦🇪 " + k, "") for k in real_numbers.keys()}  # ضع العلم لكل دولة حسب الحاجة
-
-# ---------- Handlers ----------
-def register_handlers(dp: Dispatcher):
+def register_handlers(dp):
     tz = pytz.timezone("Africa/Cairo")
 
     # ---------- START ----------
@@ -55,7 +49,7 @@ def register_handlers(dp: Dispatcher):
     async def numbers(callback: types.CallbackQuery):
         kb = types.InlineKeyboardMarkup(row_width=2)
         for k in real_numbers.keys():
-            kb.insert(types.InlineKeyboardButton(f"{k}", callback_data=f"country_{k}"))
+            kb.insert(types.InlineKeyboardButton(k, callback_data=f"country_{k}"))
         kb.add(types.InlineKeyboardButton("🔙 العودة", callback_data="home"))
         await callback.message.edit_text("حدد دوله 🌍", reply_markup=kb)
 
@@ -64,7 +58,7 @@ def register_handlers(dp: Dispatcher):
         key = callback.data.split("_")[1]
 
         msg = await callback.message.edit_text("⏳ جاري توليد الرقم...")
-        anim = ["▰▱▱▱▱", "▰▰▱▱▱", "▰▰▰▱▱", "▰▰▰▰▱", "▰▰▰▰▰"]
+        anim = ["▰▱▱▱▱","▰▰▱▱▱","▰▰▰▱▱","▰▰▰▰▱","▰▰▰▰▰"]
         for a in anim*2:
             await asyncio.sleep(0.3)
             await msg.edit_text(f"⏳ جاري توليد الرقم... {a}")
@@ -86,7 +80,6 @@ def register_handlers(dp: Dispatcher):
         kb.add(types.InlineKeyboardButton("🔙 العودة", callback_data="home"))
         await msg.edit_text(text, reply_markup=kb)
 
-    # ---------- تغيير الرقم ----------
     @dp.callback_query_handler(lambda c: c.data.startswith("change_"))
     async def change_number(callback: types.CallbackQuery):
         key = callback.data.split("_")[1]
@@ -106,6 +99,57 @@ def register_handlers(dp: Dispatcher):
     async def get_code(callback: types.CallbackQuery):
         await callback.answer("لم يتم الحصول على رسائل SMS حتا الان 📩", show_alert=True)
 
+    # ---------- يوزر مميز ----------
+    def generate_user():
+        chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZIl"
+        return "@" + "".join(random.choice(chars) for _ in range(4))
+
+    @dp.callback_query_handler(lambda c: c.data == "vip")
+    async def vip(callback: types.CallbackQuery):
+        msg = await callback.message.edit_text("⏳ جاري توليد user مميز...")
+        anim = ["▰▱▱▱▱","▰▰▱▱▱","▰▰▰▱▱","▰▰▰▰▱","▰▰▰▰▰"]
+        for a in anim*2:
+            await asyncio.sleep(0.3)
+            await msg.edit_text(f"⏳ جاري توليد user مميز... {a}")
+        await msg.delete()
+        for _ in range(10):
+            await callback.message.answer(generate_user())
+            await asyncio.sleep(0.3)
+        await callback.message.answer("انتهى الصيد 🖱️", reply_markup=back_btn())
+
+    # ---------- فحص الروابط ----------
+    @dp.callback_query_handler(lambda c: c.data == "check_link")
+    async def check_link(callback: types.CallbackQuery):
+        user_state[callback.from_user.id] = "check_link"
+        await callback.message.edit_text("الرجاء إرسال الرابط فقط 🔎", reply_markup=None)
+
+    @dp.message_handler(lambda message: user_state.get(message.from_user.id) == "check_link")
+    async def handle_links(message: types.Message):
+        link = message.text.strip()
+        if not (link.startswith("http://") or link.startswith("https://")):
+            await message.reply("❌ يمكنك إرسال الرابط فقط")
+            return
+        parsed = urlparse(link)
+        domain = parsed.netloc
+        path = parsed.path
+        if "wa.me" in domain or "api.whatsapp.com" in domain:
+            link_type = "واتساب"
+        elif "t.me" in domain:
+            link_type = "تيليجرام"
+        elif "tiktok.com" in domain:
+            link_type = "تيك توك"
+        else:
+            link_type = "عام HTTPS"
+        result_text = f"""
+🔗 الرابط: {link}
+🌐 الدومين: {domain}
+📂 المسار: {path}
+✅ نوع الرابط: {link_type}
+⚠️ الرابط آمن
+"""
+        await message.answer(result_text)
+        user_state.pop(message.from_user.id)
+
     # ---------- التواصل مع المطور ----------
     @dp.callback_query_handler(lambda c: c.data == "contact_dev")
     async def contact_dev(callback: types.CallbackQuery):
@@ -116,7 +160,7 @@ def register_handlers(dp: Dispatcher):
     async def forward_to_dev(message: types.Message):
         sent_msg = await message.answer("✅ تم إرسال رسالتك")
         await message.delete()
-        await bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
+        await dp.bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
         await asyncio.sleep(5)
         await sent_msg.delete()
         user_state.pop(message.from_user.id)
