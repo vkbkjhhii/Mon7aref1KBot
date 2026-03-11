@@ -12,36 +12,42 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
 BOT_TOKEN=os.getenv("BOT_TOKEN")
+
 bot=Bot(token=BOT_TOKEN,parse_mode="HTML")
 dp=Dispatcher(bot)
 
 DEV_ID=7771042305
-user_state={}
-xo_games={}
-vip_users=set()
 
-# =====================
-# الوقت المصري
-# =====================
+user_state={}
+vip_users=set()
+xo_games={}
+waiting_player=None
+
+#====================
+# وقت مصر
+#====================
+
 def egypt_time():
+
     tz=pytz.timezone("Africa/Cairo")
     now=datetime.now(tz)
+
     date=now.strftime("%Y-%m-%d")
     time=now.strftime("%I:%M %p")
+
     return date,time
 
-# =====================
-# الدول (20 دولة)
-# =====================
+#====================
+# الدول
+#====================
+
 countries={
+
 "egypt":("🇪🇬 مصر","+20"),
-"usa":("🇺🇸 امريكا","+1"),
 "uk":("🇬🇧 بريطانيا","+44"),
-"saudi":("🇸🇦 السعودية","+966"),
+"usa":("🇺🇸 امريكا","+1"),
 "uae":("🇦🇪 الامارات","+971"),
-"morocco":("🇲🇦 المغرب","+212"),
-"algeria":("🇩🇿 الجزائر","+213"),
-"tunisia":("🇹🇳 تونس","+216"),
+"saudi":("🇸🇦 السعودية","+966"),
 "turkey":("🇹🇷 تركيا","+90"),
 "germany":("🇩🇪 ألمانيا","+49"),
 "france":("🇫🇷 فرنسا","+33"),
@@ -53,46 +59,126 @@ countries={
 "russia":("🇷🇺 روسيا","+7"),
 "china":("🇨🇳 الصين","+86"),
 "japan":("🇯🇵 اليابان","+81"),
-"australia":("🇦🇺 استراليا","+61")
+"australia":("🇦🇺 استراليا","+61"),
+"morocco":("🇲🇦 المغرب","+212"),
+"algeria":("🇩🇿 الجزائر","+213"),
+"tunisia":("🇹🇳 تونس","+216")
+
 }
 
-# =====================
+#====================
 # قائمة رئيسية
-# =====================
+#====================
+
 def main_menu():
+
     kb=InlineKeyboardMarkup(row_width=2)
+
     kb.add(
         InlineKeyboardButton("ارقام فيك 📱",callback_data="numbers"),
         InlineKeyboardButton("توليد يوزر ✨",callback_data="gen_user")
     )
+
     kb.add(
         InlineKeyboardButton("فحص رابط 🔗",callback_data="check_link"),
-        InlineKeyboardButton("لعبة XO 🎮",callback_data="xo_start")
+        InlineKeyboardButton("لعبة XO 🎮",callback_data="xo_menu")
     )
+
     kb.add(
         InlineKeyboardButton("توليد Password 🔑",callback_data="gen_pass"),
         InlineKeyboardButton("معلوماتي 👤",callback_data="my_info")
     )
+
     kb.add(
         InlineKeyboardButton("التواصل مع المطور 💬",callback_data="contact_dev")
     )
+
     return kb
 
-# =====================
+#====================
 # START
-# =====================
+#====================
+
 @dp.message_handler(commands=["start"])
 async def start(message:types.Message):
-    await message.answer("اهلا بك في البوت",reply_markup=main_menu())
 
-# =====================
+    await message.answer(
+        "اهلا بك في البوت",
+        reply_markup=main_menu()
+    )
+
+#====================
+# توليد Username
+#====================
+
+@dp.callback_query_handler(lambda c:c.data=="gen_user")
+async def gen_user(call:types.CallbackQuery):
+
+    msg=await call.message.edit_text("⚙️ جاري توليد اليوزرات")
+
+    for i in range(4):
+
+        await asyncio.sleep(0.5)
+
+        bar="▰"*(i+1)+"▱"*(3-i)
+
+        await msg.edit_text(f"⚙️ جاري توليد اليوزرات\n\n{bar}")
+
+    for _ in range(10):
+
+        username="@"+''.join(random.choices(string.ascii_uppercase,k=4))
+
+        await bot.send_message(call.from_user.id,username)
+
+#====================
+# Password
+#====================
+
+@dp.callback_query_handler(lambda c:c.data=="gen_pass")
+async def gen_pass(call:types.CallbackQuery):
+
+    msg=await call.message.edit_text("⚙️ جاري إنشاء Password")
+
+    for i in range(4):
+
+        await asyncio.sleep(0.5)
+
+        bar="▰"*(i+1)+"▱"*(3-i)
+
+        await msg.edit_text(f"⚙️ جاري إنشاء Password\n{bar}")
+
+    chars=string.ascii_letters+string.digits
+
+    for _ in range(5):
+
+        pwd=''.join(random.choices(chars,k=12))
+
+        await bot.send_message(call.from_user.id,f"<code>{pwd}</code>")
+
+#====================
 # ارقام فيك
-# =====================
-def generate_number_text(country_key):
-    name,code=countries[country_key]
-    number=str(random.randint(100000000,999999999))
+#====================
+
+egypt_prefix=["010","011","012","015"]
+
+def generate_number(country):
+
+    name,code=countries[country]
+
+    if country=="egypt":
+
+        prefix=random.choice(egypt_prefix)
+
+        number=prefix+str(random.randint(1000000,9999999))
+
+    else:
+
+        number=str(random.randint(100000000,999999999))
+
     date,time=egypt_time()
-    server=random.choice(["EG-SERVER","EU-SERVER","US-SERVER"])
+
+    server=random.choice(["EU-SERVER","EG-SERVER","US-SERVER"])
+
     text=f"""
 ➖ رقم الهاتف ☎️ : {code}{number}
 ➖ الدوله : {name}
@@ -103,203 +189,241 @@ def generate_number_text(country_key):
 ➖ تاريخ الانشاء 📅 : {date}
 ➖ وقت الانشاء ⏰ : {time}
 """
+
     return text
 
 @dp.callback_query_handler(lambda c:c.data=="numbers")
 async def numbers(call:types.CallbackQuery):
+
     kb=InlineKeyboardMarkup(row_width=2)
+
     for k,v in countries.items():
-        kb.insert(InlineKeyboardButton(v[0],callback_data=f"country_{k}"))
-    await call.message.edit_text("اختر الدولة 🌍",reply_markup=kb)
+
+        kb.insert(
+            InlineKeyboardButton(v[0],callback_data=f"country_{k}")
+        )
+
+    await call.message.edit_text("اختر الدولة",reply_markup=kb)
 
 @dp.callback_query_handler(lambda c:c.data.startswith("country_"))
 async def send_number(call:types.CallbackQuery):
-    country_key=call.data.split("_")[1]
-    text=generate_number_text(country_key)
+
+    key=call.data.split("_")[1]
+
+    text=generate_number(key)
+
     kb=InlineKeyboardMarkup()
+
     kb.add(
-        InlineKeyboardButton("🔄 تغيير الرقم",callback_data=f"change_number_{country_key}"),
-        InlineKeyboardButton("📩 طلب كود",callback_data="sms")
+        InlineKeyboardButton("🔄 تغيير الرقم",callback_data=f"change_{key}")
     )
-    kb.add(InlineKeyboardButton("🏠 القائمة الرئيسية",callback_data="home"))
+
+    kb.add(
+        InlineKeyboardButton("🏠 القائمة الرئيسية",callback_data="home")
+    )
+
     await call.message.edit_text(text,reply_markup=kb)
 
-@dp.callback_query_handler(lambda c:c.data.startswith("change_number_"))
-async def change_number(call:types.CallbackQuery):
-    country_key=call.data.split("_")[2]
-    text=generate_number_text(country_key)
+@dp.callback_query_handler(lambda c:c.data.startswith("change_"))
+async def change(call:types.CallbackQuery):
+
+    key=call.data.split("_")[1]
+
+    text=generate_number(key)
+
     kb=InlineKeyboardMarkup()
+
     kb.add(
-        InlineKeyboardButton("🔄 تغيير الرقم",callback_data=f"change_number_{country_key}"),
-        InlineKeyboardButton("📩 طلب كود",callback_data="sms")
+        InlineKeyboardButton("🔄 تغيير الرقم",callback_data=f"change_{key}")
     )
-    kb.add(InlineKeyboardButton("🏠 القائمة الرئيسية",callback_data="home"))
+
+    kb.add(
+        InlineKeyboardButton("🏠 القائمة الرئيسية",callback_data="home")
+    )
+
     await call.message.edit_text(text,reply_markup=kb)
 
-@dp.callback_query_handler(lambda c:c.data=="sms")
-async def sms(call:types.CallbackQuery):
-    await call.answer("لم تصل رسالة SMS",show_alert=True)
-
-# =====================
-# توليد Username
-# =====================
-@dp.callback_query_handler(lambda c:c.data=="gen_user")
-async def gen_user(call:types.CallbackQuery):
-    text="✨ Username List\n\n"
-    for _ in range(5):
-        username="@"+''.join(random.choices(string.ascii_uppercase,k=4))
-        text+=f"{username}\n"
-    await bot.send_message(call.from_user.id,text)
-
-# =====================
-# توليد Password
-# =====================
-@dp.callback_query_handler(lambda c:c.data=="gen_pass")
-async def gen_pass(call:types.CallbackQuery):
-    msg=await call.message.edit_text("⚙️ جاري إنشاء Password...")
-    for i in range(4):
-        await asyncio.sleep(0.5)
-        bar="▰"*(i+1)+"▱"*(3-i)
-        await msg.edit_text(f"⚙️ جاري إنشاء Password...\n{bar}")
-    chars=string.ascii_letters+string.digits
-    text="🔑 Password List\n\n"
-    for _ in range(5):
-        pwd=''.join(random.choices(chars,k=12))
-        text+=f"<code>{pwd}</code>\n"
-    await bot.send_message(call.from_user.id,text)
-
-# =====================
-# معلوماتي
-# =====================
-@dp.callback_query_handler(lambda c:c.data=="my_info")
-async def my_info(call:types.CallbackQuery):
-    user=call.from_user
-    photos=await bot.get_user_profile_photos(user.id,limit=1)
-    text=f"👤 الاسم: {user.first_name}\n🆔 ID: {user.id}\n🔗 Username: @{user.username}"
-    if photos.total_count>0:
-        await bot.send_photo(user.id,photos.photos[0][-1].file_id,caption=text)
-    else:
-        await bot.send_message(user.id,text)
-
-# =====================
+#====================
 # فحص روابط
-# =====================
-bad_domains=["phishing.com","malware.ru","hacklink.net"]
+#====================
+
+bad_domains=["phishing.com","malware.ru"]
 
 @dp.callback_query_handler(lambda c:c.data=="check_link")
 async def check_link(call:types.CallbackQuery):
+
     user_state[call.from_user.id]="link"
-    await bot.send_message(call.from_user.id,"أرسل الرابط لفحصه")
+
+    await call.message.edit_text("أرسل الرابط لفحصه")
 
 @dp.message_handler(lambda m:user_state.get(m.from_user.id)=="link")
-async def check_link_message(message:types.Message):
+async def check(message:types.Message):
+
     url=message.text
+
+    await message.delete()
+
     domain=urlparse(url).netloc
+
     try:
+
         ip=socket.gethostbyname(domain)
+
     except:
+
         ip="غير معروف"
-    if domain in bad_domains:
-        safe="خطير 🔴"
+
+    if "youtube" in domain:
+
+        site="يوتيوب"
+
+    elif "facebook" in domain:
+
+        site="فيسبوك"
+
+    elif "t.me" in domain:
+
+        site="تيليجرام"
+
     else:
+
+        site="موقع عام"
+
+    if domain in bad_domains:
+
+        safe="خطير 🔴"
+
+    else:
+
         safe="آمن 🟢"
+
     text=f"""
 • الرابط: {url}
 
-
 • التصنيف: {safe}
 
-
-• تفاصيل التصنيف: لقد قمنا بفحص الرابط وظهر أنه {safe}.
-
+• تفاصيل التصنيف: الرابط يفتح موقع {site}
 
 • معلومات IP: {ip}
 
-
 • مزود الخدمة: AS20940 Akamai International B.V.
 """
+
     await bot.send_message(message.from_user.id,text)
+
     user_state.pop(message.from_user.id)
 
-# =====================
-# التواصل مع المطور
-# =====================
-@dp.callback_query_handler(lambda c:c.data=="contact_dev")
-async def contact_dev(call:types.CallbackQuery):
-    user_state[call.from_user.id]="dev"
-    await bot.send_message(call.from_user.id,"اكتب رسالتك إلى المطور")
+#====================
+# معلوماتي
+#====================
 
-@dp.message_handler(lambda m:user_state.get(m.from_user.id)=="dev")
-async def forward_dev(message:types.Message):
-    await bot.send_message(DEV_ID,f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
-    await message.delete()
-    await bot.send_message(message.from_user.id,"تم إرسال رسالتك إلى المطور")
-    user_state.pop(message.from_user.id)
+@dp.callback_query_handler(lambda c:c.data=="my_info")
+async def my_info(call:types.CallbackQuery):
 
-# =====================
-# لعبة XO ضد البوت
-# =====================
-def create_xo_keyboard(board):
+    user=call.from_user
+
+    photos=await bot.get_user_profile_photos(user.id,limit=1)
+
+    text=f"""
+👤 الاسم : {user.first_name}
+🆔 ID : {user.id}
+🔗 Username : @{user.username}
+"""
+
+    if photos.total_count>0:
+
+        await bot.send_photo(user.id,photos.photos[0][-1].file_id,caption=text)
+
+    else:
+
+        await bot.send_message(user.id,text)
+
+#====================
+# لعبة XO
+#====================
+
+def xo_keyboard(board):
+
     kb=InlineKeyboardMarkup(row_width=3)
+
     for i,v in enumerate(board):
-        kb.insert(InlineKeyboardButton(v if v!=" " else "⬜",callback_data=f"xo_{i}"))
-    kb.add(InlineKeyboardButton("🏠 القائمة الرئيسية",callback_data="home"))
+
+        kb.insert(
+            InlineKeyboardButton(v if v!=" " else "⬜",callback_data=f"xo_{i}")
+        )
+
     return kb
 
-def check_winner(board):
-    wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
-    for w in wins:
-        if board[w[0]]!=" " and board[w[0]]==board[w[1]]==board[w[2]]:
-            return board[w[0]]
-    if all(c!=" " for c in board):
-        return "Tie"
-    return None
+@dp.callback_query_handler(lambda c:c.data=="xo_menu")
+async def xo_menu(call:types.CallbackQuery):
 
-@dp.callback_query_handler(lambda c:c.data=="xo_start")
-async def xo_start(call:types.CallbackQuery):
-    board=[" "]*9
-    xo_games[call.from_user.id]=board
-    await call.message.edit_text("ابدأ اللعب ❌ انت و ⭕️ البوت",reply_markup=create_xo_keyboard(board))
+    kb=InlineKeyboardMarkup()
 
-@dp.callback_query_handler(lambda c:c.data.startswith("xo_"))
-async def xo_move(call:types.CallbackQuery):
-    user_id=call.from_user.id
-    if user_id not in xo_games:
-        await call.answer("اضغط على ابدأ اللعبة أولاً",show_alert=True)
-        return
-    board=xo_games[user_id]
-    idx=int(call.data.split("_")[1])
-    if board[idx]!=" ":
-        await call.answer("المربع مش فاضي",show_alert=True)
-        return
-    board[idx]="❌"
-    winner=check_winner(board)
-    if winner:
-        msg="⚖️ تعادل" if winner=="Tie" else "🏆 انت فزت" if winner=="❌" else "💻 البوت فاز"
-        await call.message.edit_text(msg,reply_markup=None)
-        xo_games.pop(user_id)
-        return
-    empty=[i for i,v in enumerate(board) if v==" "]
-    if empty:
-        bot_choice=random.choice(empty)
-        board[bot_choice]="⭕"
-    winner=check_winner(board)
-    if winner:
-        msg="⚖️ تعادل" if winner=="Tie" else "🏆 انت فزت" if winner=="❌" else "💻 البوت فاز"
-        await call.message.edit_text(msg,reply_markup=None)
-        xo_games.pop(user_id)
-        return
-    await call.message.edit_text("ابدأ اللعب ❌ انت و ⭕️ البوت",reply_markup=create_xo_keyboard(board))
+    kb.add(
+        InlineKeyboardButton("اللعب ضد البوت",callback_data="xo_bot")
+    )
 
-# =====================
+    kb.add(
+        InlineKeyboardButton("اللعب ضد لاعب",callback_data="xo_player")
+    )
+
+    await call.message.edit_text("اختر نوع اللعب",reply_markup=kb)
+
+#====================
+# VIP
+#====================
+
+@dp.message_handler(commands=["vip"])
+async def vip_add(message:types.Message):
+
+    if message.from_user.id!=DEV_ID:
+        return
+
+    parts=message.text.split()
+
+    if len(parts)<2:
+        return
+
+    uid=int(parts[1])
+
+    vip_users.add(uid)
+
+    await message.reply("تم إضافة المستخدم VIP")
+
+#====================
+# لوحة المطور
+#====================
+
+@dp.message_handler(commands=["admin"])
+async def admin_panel(message:types.Message):
+
+    if message.from_user.id!=DEV_ID:
+        return
+
+    await message.answer(
+        f"""
+لوحة المطور
+
+عدد VIP : {len(vip_users)}
+"""
+    )
+
+#====================
 # القائمة الرئيسية
-# =====================
+#====================
+
 @dp.callback_query_handler(lambda c:c.data=="home")
 async def home(call:types.CallbackQuery):
-    await call.message.edit_text("القائمة الرئيسية",reply_markup=main_menu())
 
-# =====================
-# تشغيل البوت
-# =====================
+    await call.message.edit_text(
+        "القائمة الرئيسية",
+        reply_markup=main_menu()
+    )
+
+#====================
+# تشغيل
+#====================
+
 if __name__=="__main__":
+
     executor.start_polling(dp,skip_updates=True)
