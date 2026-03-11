@@ -34,12 +34,14 @@ def register_handlers(dp, DEV_ID):
 
     @dp.message_handler(commands=["start"])
     async def start(message: types.Message):
-        await message.answer("تم تسجيل الدخول 🏴‍☠️", reply_markup=main_menu())
+        await message.answer("ـ
+        اهلا بك في بـــﯡت المنحـــࢪف  ↜ 🇦🇱", reply_markup=main_menu())
 
     @dp.callback_query_handler(lambda c: c.data=="home")
     async def home(callback: types.CallbackQuery):
         user_state.pop(callback.from_user.id, None)
-        await callback.message.edit_text("تم تسجيل الدخول 🏴‍☠️", reply_markup=main_menu())
+        await callback.message.edit_text("
+        اهلا بك في بـــﯡت المنحـــࢪف  ↜ 🇦🇱", reply_markup=main_menu())
 
     # ---------- أرقام فيك ----------
     @dp.callback_query_handler(lambda c: c.data=="numbers")
@@ -53,17 +55,17 @@ def register_handlers(dp, DEV_ID):
     @dp.callback_query_handler(lambda c: c.data.startswith("country_"))
     async def send_number(callback: types.CallbackQuery):
         key = callback.data.split("_")[1]
-        msg = await callback.message.edit_text("⏳ جاري توليد الرقم...")
+        msg = await callback.message.edit_text("جاري اختراق شريحة الSIM")
         anim = ["▰▱▱▱▱","▰▰▱▱▱","▰▰▰▱▱","▰▰▰▰▱","▰▰▰▰▰"]
         for a in anim*2:
             await asyncio.sleep(0.3)
-            await msg.edit_text(f"⏳ جاري توليد الرقم... {a}")
+            await msg.edit_text(f"يتم الآن سحب الرقم من السيرفر {a}")
         number = random.choice(real_numbers[key])
         now = datetime.datetime.now(tz)
         text = f"""
 📱 رقم الهاتف: <code>{number}</code>
 🌍 الدولة: {key}
-🔢 رمز الدولة: {number[:3]}
+🔢 رمز الدولة:{number[:3]}
 🕒 التاريخ: {now.strftime('%Y-%m-%d')}
 ⏰ الوقت: {now.strftime('%H:%M')}
 """
