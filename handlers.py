@@ -149,7 +149,7 @@ def register_handlers(dp, DEV_ID):
     @dp.callback_query_handler(lambda c: c.data=="contact_dev")
     async def contact_dev(callback: types.CallbackQuery):
         user_state[callback.from_user.id] = "to_dev"
-        await callback.message.answer("✉️ اكتب رسالتك وسأقوم بعرضها على المطور")
+        await callback.message.answer("بدات المحادثه مع المطور ضع رسالتك الان 📩")
 
     @dp.message_handler(lambda message: user_state.get(message.from_user.id)=="to_dev")
     async def forward_to_dev(message: types.Message):
