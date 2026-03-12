@@ -17,6 +17,12 @@ def main_menu():
     kb.add(
         InlineKeyboardButton("تحت الإصلاح ", callback_data="xo_game")
     )
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+kb = InlineKeyboardMarkup(row_width=1)
+kb.add(
+    InlineKeyboardButton("📩 رسالة مؤقتة", callback_data="temp_msg")
+)
     return kb
 
 def back_btn():
