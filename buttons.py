@@ -17,6 +17,9 @@ def main_menu():
     kb.add(
         InlineKeyboardButton("تحت الإصلاح ", callback_data="xo_game")
     )
+    kb.add(
+    InlineKeyboardButton("📨 ارسال رسالة", callback_data="send_msg")
+    )
     return kb
 
 def back_btn():
