@@ -160,6 +160,3 @@ def register_handlers(dp, DEV_ID):
         await sent_msg.delete()
         user_state.pop(message.from_user.id)
         
-@dp.callback_query_handler(lambda c: c.data == "send_msg")
-async def send_msg(callback: types.CallbackQuery):
-    await callback.message.answer("📩 هذه رسالة من الزر الجديد")
