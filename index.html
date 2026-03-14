@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <title>التواصل مع المطور</title>
 <style>
-/* صفحة ثابتة الحجم */
+/* منع التكبير/التصغير */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* يمنع التكبير أو التصغير */
+    overflow: hidden;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: black;
 }
 
-/* خلفية ماتريكس متحركة */
+/* خلفية ماتريكس + جمجمة */
 canvas {
     position: absolute;
     top: 0;
@@ -78,6 +78,7 @@ button:hover {
     background: #00CC00;
 }
 
+/* رسائل النجاح / الخطأ */
 #ok {
     margin-top: 15px;
     font-weight: bold;
@@ -100,10 +101,9 @@ button:hover {
 </div>
 
 <script>
-// ----- خلفية ماتريكس احترافية -----
+// ----- خلفية ماتريكس مع جمجمة -----
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
-
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -114,22 +114,28 @@ const columns = canvas.width / fontSize;
 const drops = [];
 for(let x=0; x<columns; x++) drops[x] = Math.random() * canvas.height;
 
+// رسم ماتريكس + جمجمة
 function draw() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.fillStyle = "#0F0";
     ctx.font = fontSize + "px monospace";
 
     for(let i=0; i<drops.length; i++){
         const text = letters.charAt(Math.floor(Math.random() * letters.length));
         ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-
         if(drops[i]*fontSize > canvas.height && Math.random() > 0.975){
             drops[i] = 0;
         }
         drops[i]++;
     }
+
+    // رسم جمجمة خفيفة في الوسط
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = "#0F0";
+    ctx.font = "400px monospace";
+    ctx.fillText("☠", canvas.width/2 - 200, canvas.height/2 + 100);
+    ctx.globalAlpha = 1;
 }
 
 setInterval(draw, 50);
@@ -145,11 +151,13 @@ function send() {
     var msg = document.getElementById("msg").value.trim();
 
     if(!name){
+        document.getElementById("ok").style.color = "#FF5555";
         document.getElementById("ok").innerHTML = "🛑 لا يمكنك إرسال رسالة بدون كتابة الاسم!";
         return;
     }
 
     if(!msg){
+        document.getElementById("ok").style.color = "#FF5555";
         document.getElementById("ok").innerHTML = "🛑 الرجاء كتابة الرسالة!";
         return;
     }
@@ -164,7 +172,7 @@ function send() {
     .then(data => {
         if(data.ok){
             document.getElementById("ok").style.color = "#0F0";
-            document.getElementById("ok").innerHTML = "✅ تم إرسال الرسالة بنجاح";
+            document.getElementById("ok").innerHTML = "✅ تم إرسال رسالتك إلى المطور";
             document.getElementById("name").value = "";
             document.getElementById("msg").value = "";
         } else {
@@ -178,5 +186,6 @@ function send() {
     });
 }
 </script>
+
 </body>
 </html>
