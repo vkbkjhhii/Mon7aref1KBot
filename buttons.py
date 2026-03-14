@@ -15,9 +15,6 @@ def main_menu():
         InlineKeyboardButton("المطور 🥷", callback_data="contact_dev")
     )
     kb.add(
-        InlineKeyboardButton("تحت الإصلاح ", callback_data="xo_game")
-    )
-    kb.add(
     InlineKeyboardButton("📨 ارسال رسالة", callback_data="send_msg")
     )
     return kb
