@@ -1,83 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <title>التواصل مع المطور</title>
 
 <style>
-
-body{
-background:black;
-color:white;
-text-align:center;
-font-family:Arial;
+/* صفحة ثابتة الحجم */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
 }
 
-.box{
-margin-top:100px;
+/* خلفية متحركة ستايل هاكر */
+body {
+    background: black;
+    color: #00FF00;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
 }
 
-input,textarea{
-width:80%;
-padding:10px;
-margin:10px;
-border-radius:10px;
-border:none;
+/* خطوط خضراء متحركة */
+@keyframes matrix {
+    0% { background-position: 0 0; }
+    100% { background-position: 100% 100%; }
 }
 
-button{
-background:green;
-color:white;
-padding:10px;
-border:none;
-border-radius:10px;
-width:50%;
+body::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        #000 0,
+        #000 1px,
+        #0F0 2px,
+        #000 4px
+    );
+    z-index: 0;
+    animation: matrix 10s linear infinite;
 }
 
+/* صندوق المحتوى */
+.box {
+    position: relative;
+    z-index: 1;
+    background: rgba(0,0,0,0.85);
+    padding: 30px;
+    border-radius: 15px;
+    width: 400px;
+    box-shadow: 0 0 20px #0F0;
+}
+
+/* اسم البوت */
+h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #0F0;
+    text-shadow: 0 0 10px #0F0;
+}
+
+/* الحقول */
+input, textarea {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 1px solid #0F0;
+    background: black;
+    color: #0F0;
+    font-size: 16px;
+    resize: none;
+}
+
+/* زر الإرسال */
+button {
+    background: #0F0;
+    color: black;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    width: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #00CC00;
+}
+
+#ok {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 16px;
+}
 </style>
-
 </head>
 
 <body>
 
 <div class="box">
+    <h1>اسم البوت هنا</h1>
 
-<h2>التواصل مع المطور</h2>
-
-<input id="name" placeholder="اسمك">
-
-<br>
-
-<textarea id="msg" placeholder="اكتب رسالتك"></textarea>
-
-<br>
-
-<button onclick="send()">إرسال</button>
-
-<p id="ok"></p>
-
+    <input id="name" placeholder="اسمك" type="text">
+    <textarea id="msg" placeholder="اكتب رسالتك" rows="5"></textarea>
+    <br>
+    <button onclick="send()">إرسال</button>
+    <p id="ok"></p>
 </div>
 
 <script>
+function send() {
+    var name = document.getElementById("name").value.trim();
+    var msg = document.getElementById("msg").value.trim();
 
-function send(){
+    if(!name || !msg){
+        document.getElementById("ok").innerHTML = "🛑 الرجاء كتابة الاسم والرسالة";
+        return;
+    }
 
-var name=document.getElementById("name").value
+    var token = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"; // ضع توكن البوت هنا
+    var chat = "7771042305";     // ضع شات المطور هنا
 
-var msg=document.getElementById("msg").value
+    var text = "رسالة جديدة 📩\n\nالاسم: " + name + "\n\nالرسالة:\n" + msg;
 
-var token="PUT_TOKEN"
-
-var chat="PUT_ID"
-
-var text="رسالة جديدة\n\nالاسم: "+name+"\n\nالرسالة:\n"+msg
-
-fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text))
-
-document.getElementById("ok").innerHTML="تم إرسال الرسالة"
-
+    fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text))
+    .then(response => response.json())
+    .then(data => {
+        if(data.ok){
+            document.getElementById("ok").innerHTML = "✅ تم إرسال الرسالة بنجاح";
+            document.getElementById("name").value = "";
+            document.getElementById("msg").value = "";
+        } else {
+            document.getElementById("ok").innerHTML = "❌ فشل الإرسال، حاول مرة أخرى";
+        }
+    })
+    .catch(err => {
+        document.getElementById("ok").innerHTML = "⚠️ حدث خطأ، تأكد من الاتصال بالإنترنت";
+    });
 }
-
 </script>
 
 </body>
