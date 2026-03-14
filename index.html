@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>التواصل مع المطور</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
-/* منع التكبير/التصغير */
+/* صفحة ثابتة الحجم */
 html, body {
     margin: 0;
     padding: 0;
@@ -114,7 +115,6 @@ const columns = canvas.width / fontSize;
 const drops = [];
 for(let x=0; x<columns; x++) drops[x] = Math.random() * canvas.height;
 
-// رسم ماتريكس + جمجمة
 function draw() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -145,7 +145,7 @@ window.addEventListener("resize", () => {
     canvas.height = window.innerHeight;
 });
 
-// ----- إرسال الرسالة -----
+// ----- إرسال الرسالة للبوت -----
 function send() {
     var name = document.getElementById("name").value.trim();
     var msg = document.getElementById("msg").value.trim();
