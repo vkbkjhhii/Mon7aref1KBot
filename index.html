@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>التواصل مع المطور</title>
-
 <style>
 /* صفحة ثابتة الحجم */
 html, body {
@@ -11,11 +10,12 @@ html, body {
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* يمنع تكبير أو تصغير */
-    font-family: Arial, sans-serif;
+    overflow: hidden; /* يمنع التكبير أو التصغير */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: black;
 }
 
-/* خلفية متحركة ماتريكس */
+/* خلفية ماتريكس متحركة */
 canvas {
     position: absolute;
     top: 0;
@@ -27,45 +27,50 @@ canvas {
 .box {
     position: relative;
     z-index: 1;
-    background: rgba(0,0,0,0.85);
-    padding: 30px;
-    border-radius: 15px;
+    background: rgba(0,0,0,0.9);
+    padding: 40px 30px;
+    border-radius: 20px;
     width: 400px;
     text-align: center;
-    box-shadow: 0 0 20px #0F0;
+    box-shadow: 0 0 30px #0F0;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* اسم البوت */
 h1 {
-    margin-bottom: 20px;
-    font-size: 24px;
+    margin-bottom: 25px;
+    font-size: 28px;
     color: #0F0;
-    text-shadow: 0 0 10px #0F0;
+    text-shadow: 0 0 15px #0F0;
 }
 
 /* الحقول */
 input, textarea {
     width: 90%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 10px;
+    padding: 15px;
+    margin: 12px 0;
+    border-radius: 12px;
     border: 1px solid #0F0;
-    background: black;
+    background: #000;
     color: #0F0;
     font-size: 16px;
+    outline: none;
     resize: none;
 }
 
 /* زر الإرسال */
 button {
     background: #0F0;
-    color: black;
-    padding: 12px;
+    color: #000;
+    padding: 15px;
     border: none;
-    border-radius: 10px;
-    width: 50%;
+    border-radius: 12px;
+    width: 60%;
     cursor: pointer;
     font-weight: bold;
+    font-size: 16px;
     transition: 0.3s;
 }
 
@@ -74,19 +79,19 @@ button:hover {
 }
 
 #ok {
-    margin-top: 10px;
+    margin-top: 15px;
     font-weight: bold;
     font-size: 16px;
+    color: #FF5555;
 }
 </style>
 </head>
-
 <body>
+
 <canvas id="matrix"></canvas>
 
 <div class="box">
-    <h1>𝐀𝐋𝐌𝐍𝐇𝐑𝐅</h1>
-
+    <h1>اسم البوت هنا</h1>
     <input id="name" placeholder="اسمك" type="text">
     <textarea id="msg" placeholder="اكتب رسالتك" rows="5"></textarea>
     <br>
@@ -95,7 +100,7 @@ button:hover {
 </div>
 
 <script>
-// ----- خلفية ماتريكس -----
+// ----- خلفية ماتريكس احترافية -----
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 
@@ -150,7 +155,7 @@ function send() {
     }
 
     var token = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"; // ضع توكن البوت هنا
-    var chat = "8768225608";     // ضع شات المطور هنا
+    var chat = "7771042305";     // ضع شات المطور هنا
 
     var text = "رسالة جديدة 📩\n\nالاسم: " + name + "\n\nالرسالة:\n" + msg;
 
@@ -158,18 +163,20 @@ function send() {
     .then(response => response.json())
     .then(data => {
         if(data.ok){
+            document.getElementById("ok").style.color = "#0F0";
             document.getElementById("ok").innerHTML = "✅ تم إرسال الرسالة بنجاح";
             document.getElementById("name").value = "";
             document.getElementById("msg").value = "";
         } else {
+            document.getElementById("ok").style.color = "#FF5555";
             document.getElementById("ok").innerHTML = "❌ فشل الإرسال، حاول مرة أخرى";
         }
     })
     .catch(err => {
+        document.getElementById("ok").style.color = "#FF5555";
         document.getElementById("ok").innerHTML = "⚠️ حدث خطأ، تأكد من الاتصال بالإنترنت";
     });
 }
 </script>
-
 </body>
 </html>
