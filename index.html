@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>التواصل مع المطور</title>
+
+<style>
+
+body{
+background:black;
+color:white;
+text-align:center;
+font-family:Arial;
+}
+
+.box{
+margin-top:100px;
+}
+
+input,textarea{
+width:80%;
+padding:10px;
+margin:10px;
+border-radius:10px;
+border:none;
+}
+
+button{
+background:green;
+color:white;
+padding:10px;
+border:none;
+border-radius:10px;
+width:50%;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>التواصل مع المطور</h2>
+
+<input id="name" placeholder="اسمك">
+
+<br>
+
+<textarea id="msg" placeholder="اكتب رسالتك"></textarea>
+
+<br>
+
+<button onclick="send()">إرسال</button>
+
+<p id="ok"></p>
+
+</div>
+
+<script>
+
+function send(){
+
+var name=document.getElementById("name").value
+
+var msg=document.getElementById("msg").value
+
+var token="PUT_TOKEN"
+
+var chat="PUT_ID"
+
+var text="رسالة جديدة\n\nالاسم: "+name+"\n\nالرسالة:\n"+msg
+
+fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text))
+
+document.getElementById("ok").innerHTML="تم إرسال الرسالة"
+
+}
+
+</script>
+
+</body>
+</html>
