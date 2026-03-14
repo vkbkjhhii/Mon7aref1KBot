@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # الكيبورد الرئيسي
 def main_menu():
@@ -19,7 +19,10 @@ def main_menu():
     )
 
     kb.add(
-        InlineKeyboardButton("💬 تواصل مع المطور", url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
+        InlineKeyboardButton(
+            "💬 تواصل مع المطور",
+            web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
+        )
     )
 
     kb.add(
