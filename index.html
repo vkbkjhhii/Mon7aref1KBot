@@ -154,8 +154,8 @@ function send(){
     var msg=document.getElementById("msg").value
     if(name==""){ alert("اكتب اسمك أولا"); return; }
     if(msg==""){ alert("اكتب الرسالة"); return; }
-    var token="PUT_TOKEN"
-    var chat="PUT_CHAT_ID"
+    var token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"
+    var chat="7771042305"
     var text="📩 رسالة جديدة من الموقع\n\n👤 الاسم: "+name+"\n\n💬 الرسالة:\n"+msg
     fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text))
     document.getElementById("ok").innerHTML="✅ تم إرسال رسالتك"
