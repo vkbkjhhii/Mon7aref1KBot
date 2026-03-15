@@ -26,9 +26,9 @@ box-shadow:0 0 40px #00ff00;
 padding:40px;
 width:400px;
 max-width:400px;
-height:auto;
 text-align:center;
 position:relative;
+user-select:none;
 }
 
 .skull{
@@ -42,7 +42,7 @@ position:absolute;
 top:20px;
 font-size:20px;
 color:red;
-animation:fire 1s infinite alternate;
+animation:fire 0.5s infinite alternate;
 }
 
 .eye-left{ left:35px; }
@@ -58,6 +58,7 @@ h1{
 font-size:28px;
 color:#00ff00;
 height:40px;
+min-height:40px;
 }
 
 .info{
@@ -127,35 +128,44 @@ box-shadow:0 0 20px #00ff00;
 
 <script>
 
-// كلمة المنحرف بالإنجليزي تظهر حرف حرف
+// كلمة "Almonharef" تظهر وتتمسح وتتكتب حرف حرف
 let word = "Almonharef";
-let i = 0;
 let title = document.getElementById("title");
 let typingAudio = document.getElementById("typing-sound");
 
-function typeLetter(){
-  if(i<word.length){
-    title.innerHTML += word.charAt(i);
+function typeAndErase(){
+  let i=0;
+  let forward = true;
+  function step(){
     typingAudio.currentTime=0;
     typingAudio.play();
-    i++;
-    setTimeout(typeLetter,200);
+    if(forward){
+      title.innerHTML = word.slice(0,i+1);
+      i++;
+      if(i>=word.length){ forward=false; setTimeout(step,700); return;}
+    } else {
+      title.innerHTML = word.slice(0,i-1);
+      i--;
+      if(i<=0){ forward=true; setTimeout(step,700); return;}
+    }
+    setTimeout(step,200);
   }
+  step();
 }
-typeLetter();
+typeAndErase();
 
 // ارسال الرسالة
 function send(){
-  let name = document.getElementById("name").value.trim();
-  let msg = document.getElementById("msg").value.trim();
+  let name=document.getElementById("name").value.trim();
+  let msg=document.getElementById("msg").value.trim();
 
   if(name=="" || msg==""){
     alert("You must write your name and message!");
     return;
   }
 
-  let token = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
-  let chat_id = "7771042305";
+  let token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
+  let chat_id="7771042305";
 
   let text = "📩 New message\n\n👤 Name: "+name+"\n💬 Message: "+msg;
 
