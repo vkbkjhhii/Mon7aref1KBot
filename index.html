@@ -1,174 +1,171 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DARK WEB TERMINAL</title>
-
+<title>DARK HACKER TERMINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 
-body{
+html, body {
 margin:0;
+padding:0;
+width:100%;
+height:100%;
+overflow:hidden;
 background:#000;
-font-family:monospace;
-color:#00ff9f;
+font-family: monospace;
 display:flex;
 align-items:center;
 justify-content:center;
-height:100vh;
 }
 
 .container{
-background:rgba(0,0,0,0.9);
-border:2px solid #00ff9f;
-box-shadow:0 0 40px #00ff9f;
+background:rgba(0,0,0,0.95);
+border:2px solid #00ff00;
+box-shadow:0 0 40px #00ff00;
 padding:40px;
-width:90%;
-max-width:420px;
+width:400px;
+max-width:400px;
+height:auto;
 text-align:center;
-}
-
-h1{
-font-size:28px;
-color:#00ff9f;
-text-shadow:0 0 20px #00ff9f;
-height:40px;
+position:relative;
 }
 
 .skull{
 font-size:70px;
-margin-bottom:10px;
 position:relative;
+margin-bottom:20px;
 }
 
-.fire{
+.eye-left, .eye-right{
 position:absolute;
-top:18px;
-left:30px;
-font-size:15px;
+top:20px;
+font-size:20px;
+color:red;
+animation:fire 1s infinite alternate;
 }
 
-.fire2{
-position:absolute;
-top:18px;
-right:30px;
-font-size:15px;
+.eye-left{ left:35px; }
+.eye-right{ right:35px; }
+
+@keyframes fire{
+0%{color:orange;}
+50%{color:red;}
+100%{color:yellow;}
+}
+
+h1{
+font-size:28px;
+color:#00ff00;
+height:40px;
 }
 
 .info{
 margin-bottom:20px;
-color:#00ff9f;
+color:#00ff00;
 font-size:14px;
 }
 
 input,textarea{
-
 width:100%;
 padding:12px;
 margin:10px 0;
 background:black;
-border:1px solid #00ff9f;
-color:#00ff9f;
+border:1px solid #00ff00;
+color:#00ff00;
 font-size:15px;
-
 }
 
 button{
-
 width:100%;
 padding:12px;
-background:#00ff9f;
+background:#00ff00;
 border:none;
 color:black;
 font-size:18px;
 cursor:pointer;
-
+transition:.3s;
 }
 
 button:hover{
-
 background:black;
-color:#00ff9f;
-border:1px solid #00ff9f;
-box-shadow:0 0 20px #00ff9f;
-
+color:#00ff00;
+border:1px solid #00ff00;
+box-shadow:0 0 20px #00ff00;
 }
 
 </style>
 </head>
-
 <body>
 
+<!-- اصوات -->
 <audio autoplay loop>
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3">
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="typing-sound">
+<source src="https://www.soundjay.com/typing/typing-1.mp3" type="audio/mpeg">
 </audio>
 
 <div class="container">
 
-<div class="skull">
-☠
-<div class="fire">🔥</div>
-<div class="fire2">🔥</div>
+<div class="skull">☠
+<span class="eye-left">🔥</span>
+<span class="eye-right">🔥</span>
 </div>
 
 <h1 id="title"></h1>
 
-<div class="info">
-يمكنك التواصل مع المبرمج محمد فرعون
-</div>
+<div class="info">You can contact the programmer Mohamed Fraon</div>
 
-<input id="name" placeholder="اكتب اسمك">
+<input id="name" placeholder="Enter your name">
+<textarea id="msg" rows="4" placeholder="Enter your message"></textarea>
 
-<textarea id="msg" rows="4" placeholder="اكتب رسالتك"></textarea>
-
-<button onclick="send()">ارسال الرسالة</button>
+<button onclick="send()">Send Message</button>
 
 </div>
 
 <script>
 
-let word="المنحرف"
-let i=0
+// كلمة المنحرف بالإنجليزي تظهر حرف حرف
+let word = "Almonharef";
+let i = 0;
+let title = document.getElementById("title");
+let typingAudio = document.getElementById("typing-sound");
 
-function type(){
-
-if(i<word.length){
-document.getElementById("title").innerHTML+=word.charAt(i)
-i++
-setTimeout(type,200)
+function typeLetter(){
+  if(i<word.length){
+    title.innerHTML += word.charAt(i);
+    typingAudio.currentTime=0;
+    typingAudio.play();
+    i++;
+    setTimeout(typeLetter,200);
+  }
 }
+typeLetter();
 
-}
-
-type()
-
+// ارسال الرسالة
 function send(){
+  let name = document.getElementById("name").value.trim();
+  let msg = document.getElementById("msg").value.trim();
 
-let name=document.getElementById("name").value.trim()
-let msg=document.getElementById("msg").value.trim()
+  if(name=="" || msg==""){
+    alert("You must write your name and message!");
+    return;
+  }
 
-if(name=="" || msg==""){
-alert("يجب كتابة الاسم والرسالة")
-return
-}
+  let token = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
+  let chat_id = "7771042305";
 
-let token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"
-let chat_id="7771042305"
+  let text = "📩 New message\n\n👤 Name: "+name+"\n💬 Message: "+msg;
 
-let text="📩 رسالة جديدة\n\n👤 الاسم: "+name+"\n💬 الرسالة: "+msg
+  fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({chat_id:chat_id,text:text})
+  });
 
-fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-chat_id:chat_id,
-text:text
-})
-})
-
-alert("تم ارسال الرسالة")
-
+  alert("Message sent successfully!");
 }
 
 </script>
