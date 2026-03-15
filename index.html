@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>DARK HACKER TERMINAL</title>
+<title>المنحرف</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 
@@ -99,7 +99,7 @@ box-shadow:0 0 20px #00ff00;
 </head>
 <body>
 
-<!-- اصوات -->
+<!-- صوت الخلفية وكتابة الكيبورد -->
 <audio autoplay loop>
 <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3" type="audio/mpeg">
 </audio>
@@ -117,19 +117,19 @@ box-shadow:0 0 20px #00ff00;
 
 <h1 id="title"></h1>
 
-<div class="info">You can contact the programmer Mohamed Fraon</div>
+<div class="info">يمكنك التواصل مع المبرمج محمد فرعون</div>
 
-<input id="name" placeholder="Enter your name">
-<textarea id="msg" rows="4" placeholder="Enter your message"></textarea>
+<input id="name" placeholder="اكتب اسمك">
+<textarea id="msg" rows="4" placeholder="اكتب رسالتك"></textarea>
 
-<button onclick="send()">Send Message</button>
+<button onclick="send()">إرسال الرسالة</button>
 
 </div>
 
 <script>
 
-// كلمة "Almonharef" تظهر وتتمسح وتتكتب حرف حرف
-let word = "Almonharef";
+// كلمة "المنحرف" بالعربي تظهر وتتمسح وتتكتب تلقائي
+let word = "المنحرف";
 let title = document.getElementById("title");
 let typingAudio = document.getElementById("typing-sound");
 
@@ -142,11 +142,11 @@ function typeAndErase(){
     if(forward){
       title.innerHTML = word.slice(0,i+1);
       i++;
-      if(i>=word.length){ forward=false; setTimeout(step,700); return;}
+      if(i>=word.length){ forward=false; setTimeout(step,40000); return;} // تمسح بعد 40 ثانية
     } else {
       title.innerHTML = word.slice(0,i-1);
       i--;
-      if(i<=0){ forward=true; setTimeout(step,700); return;}
+      if(i<=0){ forward=true; setTimeout(step,200); return;}
     }
     setTimeout(step,200);
   }
@@ -160,14 +160,14 @@ function send(){
   let msg=document.getElementById("msg").value.trim();
 
   if(name=="" || msg==""){
-    alert("You must write your name and message!");
+    alert("يجب كتابة الاسم والرسالة قبل الإرسال!");
     return;
   }
 
-  let token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
-  let chat_id="7771042305";
+  let token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"; // ضع توكن البوت هنا
+  let chat_id="7771042305";   // ضع ID المطور هنا
 
-  let text = "📩 New message\n\n👤 Name: "+name+"\n💬 Message: "+msg;
+  let text = "📩 رسالة جديدة\n\n👤 الاسم: "+name+"\n💬 الرسالة: "+msg;
 
   fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
     method:"POST",
@@ -175,7 +175,7 @@ function send(){
     body:JSON.stringify({chat_id:chat_id,text:text})
   });
 
-  alert("Message sent successfully!");
+  alert("تم إرسال الرسالة إلى المطور");
 }
 
 </script>
