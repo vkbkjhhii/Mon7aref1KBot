@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>Hacker Bot</title>
+<style>
+body {
+    background: black;
+    color: #00ff00;
+    font-family: monospace;
+    text-align: center;
+    padding: 50px;
+}
+#box {
+    border: 1px solid #00ff00;
+    padding: 20px;
+    width: 80%;
+    margin: auto;
+    height: 200px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+</style>
+</head>
+<body>
+<h1>🤖 Hacker Bot</h1>
+<div id="box"></div>
+
+<script>
+const box = document.getElementById('box');
+const message = "> scanning user...\n> name: MOHAMED\n> ID: 123456\n> access granted...";
+let i = 0;
+function typeWriter() {
+    if(i < message.length){
+        box.innerHTML += message.charAt(i);
+        i++;
+        setTimeout(typeWriter, 50);
+    }
+}
+typeWriter();
+</script>
+</body>
+</html>
