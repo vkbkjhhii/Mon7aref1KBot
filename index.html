@@ -2,8 +2,9 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Devil Skull Contact</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hacker Face Contact</title>
+
 <style>
 body{
   margin:0; padding:0;
@@ -15,14 +16,12 @@ body{
 
 /* MATRIX BACKGROUND */
 canvas#matrix{
-  position:fixed;
-  top:0; left:0; z-index:-1;
+  position:fixed; top:0; left:0; z-index:-1;
 }
 
-/* BOX */
+/* الصندوق */
 .box{
-  width:400px;
-  padding:30px;
+  width:400px; padding:30px;
   background:rgba(0,0,0,0.95);
   border-radius:15px;
   text-align:center;
@@ -31,36 +30,20 @@ canvas#matrix{
   position:relative;
 }
 
-/* DEVIL SKULL */
+/* وجه الهاكر */
 .skull{
   position:relative;
   width:140px; height:140px;
   margin:0 auto 20px;
 }
-
-/* رأس الشيطان */
-.skull .head{
+.skull img{
   width:140px; height:140px;
-  background:#111;
-  border-radius:50%;
-  position:absolute;
-  top:0; left:0;
-  box-shadow:0 0 40px #00ff9f inset,0 0 20px red;
+  border-radius:15px;
+  box-shadow:0 0 20px #0f0;
+  display:block;
 }
 
-/* القرون */
-.skull .horn{
-  width:20px; height:60px;
-  background:#111;
-  border-radius:50%;
-  position:absolute;
-  top:-40px;
-  box-shadow:0 0 25px red;
-}
-.skull .horn.left{ left:10px; transform:rotate(-25deg);}
-.skull .horn.right{ right:10px; transform:rotate(25deg);}
-
-/* العيون النارية */
+/* عيون نار */
 .skull .eye{
   width:25px; height:25px;
   background:orange;
@@ -71,9 +54,10 @@ canvas#matrix{
 }
 .skull .eye.left{ left:35px; }
 .skull .eye.right{ right:35px; }
+
 @keyframes fire{
-  0%{ box-shadow:0 0 20px orange,0 0 40px red; transform:translateY(0);}
-  100%{ box-shadow:0 0 40px orange,0 0 80px red; transform:translateY(-5px);}
+  0%{ box-shadow:0 0 15px orange,0 0 35px red; transform:translateY(0);}
+  100%{ box-shadow:0 0 35px orange,0 0 60px red; transform:translateY(-3px);}
 }
 
 /* INPUTS */
@@ -108,14 +92,12 @@ h3{ margin-bottom:20px; text-shadow:0 0 10px #0f0; }
 <div class="box">
 
 <div class="skull">
-  <div class="head"></div>
-  <div class="horn left"></div>
-  <div class="horn right"></div>
+  <img src="hacker_face.png" alt="Hacker Face">
   <div class="eye left"></div>
   <div class="eye right"></div>
 </div>
 
-<h3>التواصل مع المنحرف</h3>
+<h3>تواصل مع المطور</h3>
 
 <input id="name" placeholder="اكتب اسمك">
 <textarea id="msg" placeholder="اكتب رسالتك"></textarea>
@@ -130,7 +112,7 @@ var c=document.getElementById("matrix");
 var ctx=c.getContext("2d");
 c.height=window.innerHeight;
 c.width=window.innerWidth;
-var letters="01アカサタナハマヤラワ0123456789";
+var letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 letters=letters.split("");
 var font_size=16;
 var columns=c.width/font_size;
@@ -157,7 +139,7 @@ function send(){
   if(msg==""){ alert("اكتب الرسالة"); return;}
   var token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"       // ضع هنا توكن البوت
   var chat="7771042305"      // ضع هنا Chat ID الخاص بك
-  var text="📩 رسالة جديدة من الموقع\n\n👤 الاسم: "+name+"\n\n💬 الرسالة:\n"+msg
+  var text="تم استلام رساله جديده من موقع البوت 📩\n\n👤 الاسم: "+name+"\n\n💬 الرسالة:\n"+msg
   fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text))
   document.getElementById("ok").innerHTML="✅ تم إرسال رسالتك"
   document.getElementById("msg").value=""
