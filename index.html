@@ -95,11 +95,22 @@ border:1px solid #00ff00;
 box-shadow:0 0 20px #00ff00;
 }
 
+/* وجه هكر أحمر في الوسط */
+.hacker-face{
+font-size:50px;
+color:red;
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%, -50%);
+pointer-events:none;
+opacity:0.3;
+}
+
 </style>
 </head>
 <body>
 
-<!-- صوت الخلفية وكتابة الكيبورد -->
 <audio autoplay loop>
 <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3" type="audio/mpeg">
 </audio>
@@ -111,8 +122,8 @@ box-shadow:0 0 20px #00ff00;
 <div class="container">
 
 <div class="skull">☠
-<span class="eye-left">💀</span>
-<span class="eye-right">💀</span>
+<span class="eye-left">🔥</span>
+<span class="eye-right">🔥</span>
 </div>
 
 <h1 id="title"></h1>
@@ -124,12 +135,14 @@ box-shadow:0 0 20px #00ff00;
 
 <button onclick="send()">إرسال الرسالة</button>
 
+<div class="hacker-face">😈</div>
+
 </div>
 
 <script>
 
-// كلمة "المنحرف" بالعربي تظهر وتتمسح وتتكتب تلقائي
-let word = "فرعون المنحرف";
+// كلمة "فرعون المنحرف" تظهر وتتمسح وتتكتب بسرعة أكبر
+let word = "المنحرف";
 let title = document.getElementById("title");
 let typingAudio = document.getElementById("typing-sound");
 
@@ -142,7 +155,7 @@ function typeAndErase(){
     if(forward){
       title.innerHTML = word.slice(0,i+1);
       i++;
-      if(i>=word.length){ forward=false; setTimeout(step,40000); return;} // تمسح بعد 40 ثانية
+      if(i>=word.length){ forward=false; setTimeout(step,20000); return;} // تمسح بعد 20 ثانية
     } else {
       title.innerHTML = word.slice(0,i-1);
       i--;
@@ -176,6 +189,10 @@ function send(){
   });
 
   alert("تم إرسال الرسالة إلى المطور");
+
+  // تمسح الاسم والرسالة بعد الإرسال
+  document.getElementById("name").value = "";
+  document.getElementById("msg").value = "";
 }
 
 </script>
