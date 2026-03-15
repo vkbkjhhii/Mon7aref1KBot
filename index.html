@@ -1,78 +1,149 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Interactive Hacker Face Contact</title>
+
+<title>Contact Developer</title>
 
 <style>
+
 body{
-  margin:0; padding:0;
-  background:black; color:#00ff9f;
-  font-family:monospace;
-  display:flex; justify-content:center; align-items:center;
-  height:100vh; overflow:hidden;
+margin:0;
+padding:0;
+background:black;
+font-family:monospace;
+color:#00ff9f;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+overflow:hidden;
 }
 
-canvas#matrix{
-  position:fixed; top:0; left:0; z-index:-1;
+/* خلفية Matrix */
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
 }
+
+/* الصندوق */
 
 .box{
-  width:420px; padding:30px;
-  background:rgba(0,0,0,0.95);
-  border-radius:15px;
-  text-align:center;
-  box-shadow:0 0 40px #00ff9f,0 0 20px #0f0 inset;
-  border:2px solid #0f0;
-  position:relative;
+
+width:400px;
+
+background:rgba(0,0,0,0.95);
+
+border:2px solid #00ff9f;
+
+border-radius:15px;
+
+padding:30px;
+
+text-align:center;
+
+box-shadow:0 0 40px #00ff9f;
+
 }
 
-/* Hacker Face */
-.skull{
-  position:relative;
-  width:140px; height:140px;
-  margin:0 auto 20px;
-}
+/* الجمجمة */
+
 .skull img{
-  width:140px; height:140px;
-  border-radius:15px;
-  box-shadow:0 0 20px #0f0;
-  display:block;
-  position:relative;
+
+width:120px;
+
+margin-bottom:10px;
+
+filter:drop-shadow(0 0 10px red);
+
 }
 
-/* Eyes dynamic */
-.skull .eye{
-  width:20px; height:20px;
-  background:orange;
-  border-radius:50%;
-  position:absolute;
-  top:50px;
-  box-shadow:0 0 30px orange,0 0 60px red;
-  transition: all 0.1s linear;
+/* العنوان */
+
+h2{
+
+margin-bottom:20px;
+
+text-shadow:0 0 10px #00ff9f;
+
 }
 
-/* Inputs & Button */
+/* الحقول */
+
 input,textarea{
-  width:90%; padding:12px; margin:10px 0;
-  border:none; border-radius:10px;
-  background:#111; color:#00ff9f;
-  outline:none; font-family:monospace;
-  box-shadow:0 0 5px #0f0;
+
+width:90%;
+
+padding:12px;
+
+margin:10px;
+
+border-radius:10px;
+
+border:none;
+
+background:#111;
+
+color:#00ff9f;
+
+font-size:15px;
+
+outline:none;
+
+box-shadow:0 0 5px #00ff9f;
+
 }
-textarea{ height:100px; }
+
+textarea{
+
+height:100px;
+
+}
+
+/* الزر */
 
 button{
-  width:95%; padding:12px; border:none; border-radius:10px;
-  background:#00ff9f; font-weight:bold; cursor:pointer;
-  box-shadow:0 0 15px #0f0;
-}
-button:hover{ background:#0f0; }
 
-#ok{ margin-top:10px; color:#00ff9f; font-weight:bold; }
-h3{ margin-bottom:20px; text-shadow:0 0 10px #0f0; }
+width:95%;
+
+padding:12px;
+
+border:none;
+
+border-radius:10px;
+
+background:#00ff9f;
+
+color:black;
+
+font-weight:bold;
+
+cursor:pointer;
+
+box-shadow:0 0 20px #00ff9f;
+
+}
+
+button:hover{
+
+background:#0f0;
+
+}
+
+#ok{
+
+margin-top:10px;
+
+}
+
 </style>
+
 </head>
 
 <body>
@@ -80,75 +151,117 @@ h3{ margin-bottom:20px; text-shadow:0 0 10px #0f0; }
 <canvas id="matrix"></canvas>
 
 <div class="box">
-  <div class="skull">
-    <img src="hacker_face.png" alt="Hacker Face">
-    <div class="eye left"></div>
-    <div class="eye right"></div>
-  </div>
 
-  <h3>تواصل مع المطور</h3>
+<div class="skull">
 
-  <input id="name" placeholder="اكتب اسمك">
-  <textarea id="msg" placeholder="اكتب رسالتك"></textarea>
-  <button onclick="send()">إرسال</button>
-  <p id="ok"></p>
+<img src="https://i.imgur.com/7QZ6F9D.png">
+
+</div>
+
+<h2>تواصل مع المطور</h2>
+
+<input id="name" placeholder="اكتب اسمك">
+
+<textarea id="msg" placeholder="اكتب رسالتك"></textarea>
+
+<button onclick="send()">إرسال الرسالة</button>
+
+<p id="ok"></p>
+
 </div>
 
 <script>
-/* MATRIX BACKGROUND */
+
+/* Matrix Effect */
+
 var c=document.getElementById("matrix");
+
 var ctx=c.getContext("2d");
+
 c.height=window.innerHeight;
+
 c.width=window.innerWidth;
-var letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+var letters="01";
+
 letters=letters.split("");
-var font_size=16;
+
+var font_size=14;
+
 var columns=c.width/font_size;
+
 var drops=[];
-for(var x=0;x<columns;x++) drops[x]=1;
+
+for(var x=0;x<columns;x++)
+
+drops[x]=1;
+
 function draw(){
+
 ctx.fillStyle="rgba(0,0,0,0.05)";
+
 ctx.fillRect(0,0,c.width,c.height);
+
 ctx.fillStyle="#0f0";
+
 ctx.font=font_size+"px monospace";
+
 for(var i=0;i<drops.length;i++){
-    var text=letters[Math.floor(Math.random()*letters.length)];
-    ctx.fillText(text,i*font_size,drops[i]*font_size);
-    if(drops[i]*font_size>c.height && Math.random()>0.975) drops[i]=0;
-    drops[i]++;
-}}
+
+var text=letters[Math.floor(Math.random()*letters.length)];
+
+ctx.fillText(text,i*font_size,drops[i]*font_size);
+
+if(drops[i]*font_size>c.height && Math.random()>0.975)
+
+drops[i]=0;
+
+drops[i]++;
+
+}
+
+}
+
 setInterval(draw,33);
 
-/* Eye follow mouse */
-document.addEventListener("mousemove", function(e){
-  var eyes = document.querySelectorAll(".eye");
-  eyes.forEach(function(eye){
-    var rect = eye.getBoundingClientRect();
-    var eyeX = rect.left + rect.width/2;
-    var eyeY = rect.top + rect.height/2;
-    var dx = e.clientX - eyeX;
-    var dy = e.clientY - eyeY;
-    var dist = Math.sqrt(dx*dx + dy*dy);
-    var maxMove = 8;
-    var moveX = dx/dist * maxMove;
-    var moveY = dy/dist * maxMove;
-    eye.style.transform = "translate("+moveX+"px,"+moveY+"px)";
-  });
-});
+/* ارسال الرسالة للبوت */
 
-/* SEND MESSAGE */
 function send(){
-  var name=document.getElementById("name").value
-  var msg=document.getElementById("msg").value
-  if(name==""){ alert("اكتب اسمك أولا"); return;}
-  if(msg==""){ alert("اكتب الرسالة"); return;}
-  var token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"       // ضع هنا توكن البوت
-  var chat="7771042305"      // ضع هنا Chat ID الخاص بك
-  var text="📩 رسالة جديدة من الموقع\n\n👤 الاسم: "+name+"\n\n💬 الرسالة:\n"+msg
-  fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text))
-  document.getElementById("ok").innerHTML="✅ تم إرسال رسالتك"
-  document.getElementById("msg").value=""
+
+var name=document.getElementById("name").value;
+
+var msg=document.getElementById("msg").value;
+
+if(name==""){
+
+alert("اكتب اسمك");
+
+return;
+
 }
+
+if(msg==""){
+
+alert("اكتب الرسالة");
+
+return;
+
+}
+
+var token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
+
+var chat="7771042305";
+
+var text="📩 رسالة جديدة من الموقع\n\n👤 الاسم: "+name+"\n\n💬 الرسالة:\n"+msg;
+
+fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text));
+
+document.getElementById("ok").innerHTML="تم إرسال الرسالة بنجاح";
+
+document.getElementById("msg").value="";
+
+}
+
 </script>
 
 </body>
