@@ -14,8 +14,8 @@ def main_menu():
     )
 
     kb.add(
-        InlineKeyboardButton("Farm GPT 😈", url="https://t.me/ALMNHRF_Toobot"),
-        InlineKeyboardButton("المطور 🥷", callback_data="contact_dev")
+        InlineKeyboardButton("بوت اختراق ☠️", url="https://t.me/ALMNHRF_Toobot"),
+        InlineKeyboardButton("دعم البوت ⚙️", callback_data="contact_dev")
     )
 
     kb.add(
