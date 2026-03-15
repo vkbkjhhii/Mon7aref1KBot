@@ -149,11 +149,11 @@ def register_handlers(dp, DEV_ID):
     @dp.callback_query_handler(lambda c: c.data=="contact_dev")
     async def contact_dev(callback: types.CallbackQuery):
         user_state[callback.from_user.id] = "to_dev"
-        await callback.message.answer("بدات المحادثه مع المطور ضع رسالتك الان 📩")
+        await callback.message.answer("تم فتح محادثه بينك وبين دعم البوت ضع رسالتك أو مشكلتك ⚙")
 
     @dp.message_handler(lambda message: user_state.get(message.from_user.id)=="to_dev")
     async def forward_to_dev(message: types.Message):
-        sent_msg = await message.answer("تم إرسال رسالتك اللي المطور محمد فرعون ✅")
+        sent_msg = await message.answer("تم ارسال رسالتك اللي مركز دعم البوت وجاري فحص الموضوع ✅")
         await message.delete()
         await dp.bot.send_message(DEV_ID, f"💬 رسالة من {message.from_user.first_name} ({message.from_user.id}):\n{message.text}")
         await asyncio.sleep(5)
