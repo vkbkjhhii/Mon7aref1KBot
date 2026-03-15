@@ -122,27 +122,27 @@ opacity:0.3;
 <div class="container">
 
 <div class="skull">☠
-<span class="eye-left">🔥</span>
-<span class="eye-right">🔥</span>
+<span class="eye-left">☠️</span>
+<span class="eye-right">☠️</span>
 </div>
 
 <h1 id="title"></h1>
 
-<div class="info">يمكنك التواصل مع المبرمج محمد فرعون</div>
+<div class="info">المبرمج المصري محمد فرعون 🥷</div>
 
 <input id="name" placeholder="اكتب اسمك">
 <textarea id="msg" rows="4" placeholder="اكتب رسالتك"></textarea>
 
 <button onclick="send()">إرسال الرسالة</button>
 
-<div class="hacker-face">😈</div>
+<div class="hacker-face">🏴‍☠️</div>
 
 </div>
 
 <script>
 
 // كلمة "فرعون المنحرف" تظهر وتتمسح وتتكتب بسرعة أكبر
-let word = "المنحرف";
+let word = "فرعون المنحرف";
 let title = document.getElementById("title");
 let typingAudio = document.getElementById("typing-sound");
 
@@ -188,7 +188,7 @@ function send(){
     body:JSON.stringify({chat_id:chat_id,text:text})
   });
 
-  alert("تم إرسال الرسالة إلى المطور");
+  alert(" 💻 تم إرسال الرسالة إلى المطور");
 
   // تمسح الاسم والرسالة بعد الإرسال
   document.getElementById("name").value = "";
