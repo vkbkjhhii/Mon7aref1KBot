@@ -20,13 +20,9 @@ def main_menu():
 
     kb.add(
         InlineKeyboardButton(
-            "💬 تواصل مع المطور",
+            "التواصل مع المطور 💻",
             web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
         )
-    )
-
-    kb.add(
-        InlineKeyboardButton("تحت الإصلاح", callback_data="xo_game")
     )
 
     return kb
