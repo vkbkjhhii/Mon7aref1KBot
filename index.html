@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>DARK TERMINAL</title>
+<title>DARK WEB TERMINAL</title>
 
 <style>
 
@@ -11,21 +11,13 @@ margin:0;
 background:#000;
 font-family:monospace;
 color:#00ff9f;
-overflow:hidden;
-}
-
-canvas{
-position:fixed;
-top:0;
-left:0;
-z-index:-1;
+display:flex;
+align-items:center;
+justify-content:center;
+height:100vh;
 }
 
 .container{
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
 background:rgba(0,0,0,0.9);
 border:2px solid #00ff9f;
 box-shadow:0 0 40px #00ff9f;
@@ -36,16 +28,36 @@ text-align:center;
 }
 
 h1{
+font-size:28px;
 color:#00ff9f;
-font-size:26px;
-text-shadow:0 0 15px #00ff9f;
-animation:glitch 1s infinite;
+text-shadow:0 0 20px #00ff9f;
+height:40px;
 }
 
 .skull{
-font-size:60px;
+font-size:70px;
 margin-bottom:10px;
-animation:shake 1s infinite;
+position:relative;
+}
+
+.fire{
+position:absolute;
+top:18px;
+left:30px;
+font-size:15px;
+}
+
+.fire2{
+position:absolute;
+top:18px;
+right:30px;
+font-size:15px;
+}
+
+.info{
+margin-bottom:20px;
+color:#00ff9f;
+font-size:14px;
 }
 
 input,textarea{
@@ -69,7 +81,6 @@ border:none;
 color:black;
 font-size:18px;
 cursor:pointer;
-transition:.3s;
 
 }
 
@@ -82,57 +93,32 @@ box-shadow:0 0 20px #00ff9f;
 
 }
 
-.terminal{
-text-align:left;
-font-size:12px;
-margin-bottom:15px;
-height:80px;
-overflow:hidden;
-color:#00ff9f;
-}
-
-@keyframes glitch{
-
-0%{text-shadow:2px 2px red;}
-25%{text-shadow:-2px -2px blue;}
-50%{text-shadow:2px -2px lime;}
-75%{text-shadow:-2px 2px red;}
-100%{text-shadow:2px 2px blue;}
-
-}
-
-@keyframes shake{
-
-0%{transform:rotate(0)}
-25%{transform:rotate(3deg)}
-50%{transform:rotate(-3deg)}
-75%{transform:rotate(2deg)}
-100%{transform:rotate(0)}
-
-}
-
 </style>
 </head>
 
 <body>
 
-<canvas id="matrix"></canvas>
+<audio autoplay loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3">
+</audio>
 
 <div class="container">
 
-<div class="skull">☠</div>
+<div class="skull">
+☠
+<div class="fire">🔥</div>
+<div class="fire2">🔥</div>
+</div>
 
-<h1>DARK TERMINAL</h1>
+<h1 id="title"></h1>
 
-<div class="terminal">
-> connecting to dark server...<br>
-> bypassing firewall...<br>
-> access granted...<br>
+<div class="info">
+يمكنك التواصل مع المبرمج محمد فرعون
 </div>
 
 <input id="name" placeholder="اكتب اسمك">
 
-<textarea id="msg" rows="4" placeholder="اكتب رسالتك للمطور"></textarea>
+<textarea id="msg" rows="4" placeholder="اكتب رسالتك"></textarea>
 
 <button onclick="send()">ارسال الرسالة</button>
 
@@ -140,15 +126,35 @@ color:#00ff9f;
 
 <script>
 
+let word="المنحرف"
+let i=0
+
+function type(){
+
+if(i<word.length){
+document.getElementById("title").innerHTML+=word.charAt(i)
+i++
+setTimeout(type,200)
+}
+
+}
+
+type()
+
 function send(){
 
-let name = document.getElementById("name").value
-let msg = document.getElementById("msg").value
+let name=document.getElementById("name").value.trim()
+let msg=document.getElementById("msg").value.trim()
 
-let token = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"
-let chat_id = "7771042305"
+if(name=="" || msg==""){
+alert("يجب كتابة الاسم والرسالة")
+return
+}
 
-let text = "📩 رسالة جديدة من الموقع\n\n👤 الاسم: "+name+"\n💬 الرسالة: "+msg
+let token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"
+let chat_id="7771042305"
+
+let text="📩 رسالة جديدة\n\n👤 الاسم: "+name+"\n💬 الرسالة: "+msg
 
 fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
 method:"POST",
@@ -164,47 +170,6 @@ text:text
 alert("تم ارسال الرسالة")
 
 }
-
-var canvas = document.getElementById("matrix");
-var ctx = canvas.getContext("2d");
-
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-
-var letters = "01HACKER010101";
-letters = letters.split("");
-
-var fontSize = 14;
-var columns = canvas.width/fontSize;
-
-var drops = [];
-for(var x=0;x<columns;x++)
-drops[x]=1;
-
-function draw(){
-
-ctx.fillStyle="rgba(0,0,0,0.05)";
-ctx.fillRect(0,0,canvas.width,canvas.height);
-
-ctx.fillStyle="#0F0";
-ctx.font=fontSize+"px monospace";
-
-for(var i=0;i<drops.length;i++){
-
-var text = letters[Math.floor(Math.random()*letters.length)];
-
-ctx.fillText(text,i*fontSize,drops[i]*fontSize);
-
-if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
-drops[i]=0;
-
-drops[i]++;
-
-}
-
-}
-
-setInterval(draw,33);
 
 </script>
 
