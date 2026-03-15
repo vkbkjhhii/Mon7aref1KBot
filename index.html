@@ -1,29 +1,18 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<title>Contact Developer</title>
+<title>DARK TERMINAL</title>
 
 <style>
 
 body{
 margin:0;
-padding:0;
-background:black;
+background:#000;
 font-family:monospace;
 color:#00ff9f;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
 overflow:hidden;
 }
-
-/* خلفية Matrix */
 
 canvas{
 position:fixed;
@@ -32,188 +21,181 @@ left:0;
 z-index:-1;
 }
 
-/* الصندوق */
-
-.box{
-
-width:400px;
-
-background:rgba(0,0,0,0.95);
-
+.container{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:rgba(0,0,0,0.9);
 border:2px solid #00ff9f;
-
-border-radius:15px;
-
-padding:30px;
-
-text-align:center;
-
 box-shadow:0 0 40px #00ff9f;
-
+padding:40px;
+width:90%;
+max-width:420px;
+text-align:center;
 }
 
-/* الجمجمة */
+h1{
+color:#00ff9f;
+font-size:26px;
+text-shadow:0 0 15px #00ff9f;
+animation:glitch 1s infinite;
+}
 
-.skull img{
-
-width:120px;
-
+.skull{
+font-size:60px;
 margin-bottom:10px;
-
-filter:drop-shadow(0 0 10px red);
-
+animation:shake 1s infinite;
 }
-
-/* العنوان */
-
-h2{
-
-margin-bottom:20px;
-
-text-shadow:0 0 10px #00ff9f;
-
-}
-
-/* الحقول */
 
 input,textarea{
 
-width:90%;
-
+width:100%;
 padding:12px;
-
-margin:10px;
-
-border-radius:10px;
-
-border:none;
-
-background:#111;
-
+margin:10px 0;
+background:black;
+border:1px solid #00ff9f;
 color:#00ff9f;
-
 font-size:15px;
 
-outline:none;
-
-box-shadow:0 0 5px #00ff9f;
-
 }
-
-textarea{
-
-height:100px;
-
-}
-
-/* الزر */
 
 button{
 
-width:95%;
-
+width:100%;
 padding:12px;
-
-border:none;
-
-border-radius:10px;
-
 background:#00ff9f;
-
+border:none;
 color:black;
-
-font-weight:bold;
-
+font-size:18px;
 cursor:pointer;
-
-box-shadow:0 0 20px #00ff9f;
+transition:.3s;
 
 }
 
 button:hover{
 
-background:#0f0;
+background:black;
+color:#00ff9f;
+border:1px solid #00ff9f;
+box-shadow:0 0 20px #00ff9f;
 
 }
 
-#ok{
+.terminal{
+text-align:left;
+font-size:12px;
+margin-bottom:15px;
+height:80px;
+overflow:hidden;
+color:#00ff9f;
+}
 
-margin-top:10px;
+@keyframes glitch{
+
+0%{text-shadow:2px 2px red;}
+25%{text-shadow:-2px -2px blue;}
+50%{text-shadow:2px -2px lime;}
+75%{text-shadow:-2px 2px red;}
+100%{text-shadow:2px 2px blue;}
+
+}
+
+@keyframes shake{
+
+0%{transform:rotate(0)}
+25%{transform:rotate(3deg)}
+50%{transform:rotate(-3deg)}
+75%{transform:rotate(2deg)}
+100%{transform:rotate(0)}
 
 }
 
 </style>
-
 </head>
 
 <body>
 
 <canvas id="matrix"></canvas>
 
-<div class="box">
+<div class="container">
 
-<div class="skull">
+<div class="skull">☠</div>
 
-<img src="https://i.imgur.com/7QZ6F9D.png">
+<h1>DARK TERMINAL</h1>
 
+<div class="terminal">
+> connecting to dark server...<br>
+> bypassing firewall...<br>
+> access granted...<br>
 </div>
-
-<h2>تواصل مع المطور</h2>
 
 <input id="name" placeholder="اكتب اسمك">
 
-<textarea id="msg" placeholder="اكتب رسالتك"></textarea>
+<textarea id="msg" rows="4" placeholder="اكتب رسالتك للمطور"></textarea>
 
-<button onclick="send()">إرسال الرسالة</button>
-
-<p id="ok"></p>
+<button onclick="send()">ارسال الرسالة</button>
 
 </div>
 
 <script>
 
-/* Matrix Effect */
+function send(){
 
-var c=document.getElementById("matrix");
+let name = document.getElementById("name").value
+let msg = document.getElementById("msg").value
 
-var ctx=c.getContext("2d");
+let token = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"
+let chat_id = "7771042305"
 
-c.height=window.innerHeight;
+let text = "📩 رسالة جديدة من الموقع\n\n👤 الاسم: "+name+"\n💬 الرسالة: "+msg
 
-c.width=window.innerWidth;
+fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+chat_id:chat_id,
+text:text
+})
+})
 
-var letters="01";
+alert("تم ارسال الرسالة")
 
-letters=letters.split("");
+}
 
-var font_size=14;
+var canvas = document.getElementById("matrix");
+var ctx = canvas.getContext("2d");
 
-var columns=c.width/font_size;
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
 
-var drops=[];
+var letters = "01HACKER010101";
+letters = letters.split("");
 
+var fontSize = 14;
+var columns = canvas.width/fontSize;
+
+var drops = [];
 for(var x=0;x<columns;x++)
-
 drops[x]=1;
 
 function draw(){
 
 ctx.fillStyle="rgba(0,0,0,0.05)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
 
-ctx.fillRect(0,0,c.width,c.height);
-
-ctx.fillStyle="#0f0";
-
-ctx.font=font_size+"px monospace";
+ctx.fillStyle="#0F0";
+ctx.font=fontSize+"px monospace";
 
 for(var i=0;i<drops.length;i++){
 
-var text=letters[Math.floor(Math.random()*letters.length)];
+var text = letters[Math.floor(Math.random()*letters.length)];
 
-ctx.fillText(text,i*font_size,drops[i]*font_size);
+ctx.fillText(text,i*fontSize,drops[i]*fontSize);
 
-if(drops[i]*font_size>c.height && Math.random()>0.975)
-
+if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
 drops[i]=0;
 
 drops[i]++;
@@ -223,44 +205,6 @@ drops[i]++;
 }
 
 setInterval(draw,33);
-
-/* ارسال الرسالة للبوت */
-
-function send(){
-
-var name=document.getElementById("name").value;
-
-var msg=document.getElementById("msg").value;
-
-if(name==""){
-
-alert("اكتب اسمك");
-
-return;
-
-}
-
-if(msg==""){
-
-alert("اكتب الرسالة");
-
-return;
-
-}
-
-var token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
-
-var chat="7771042305";
-
-var text="📩 رسالة جديدة من الموقع\n\n👤 الاسم: "+name+"\n\n💬 الرسالة:\n"+msg;
-
-fetch("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chat+"&text="+encodeURIComponent(text));
-
-document.getElementById("ok").innerHTML="تم إرسال الرسالة بنجاح";
-
-document.getElementById("msg").value="";
-
-}
 
 </script>
 
