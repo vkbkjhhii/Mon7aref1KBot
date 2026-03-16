@@ -24,11 +24,11 @@ def main_menu():
     # الصف الرابع: زرار التواصل مع المطور + الزرار الجديد GPT 😈
     kb.add(
         InlineKeyboardButton(
-            "التواصل مع المطور 💻",
+            "التواصل مع المطور",
             web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
         ),
         InlineKeyboardButton(
-            "GPT 😈",
+            "Farm GPT",
             web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/darkweb.html")
         )
     )
