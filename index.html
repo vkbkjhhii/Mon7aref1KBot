@@ -28,6 +28,8 @@ overflow:hidden;
 color:white;
 }
 
+/* خلفية المطر */
+
 canvas{
 position:fixed;
 top:0;
@@ -37,46 +39,79 @@ height:100%;
 z-index:-1;
 }
 
+/* الصندوق */
+
 .container{
-width:350px;
-background:rgba(0,0,0,0.8);
+
+width:360px;
+background:rgba(0,0,0,0.85);
 border:2px solid red;
 border-radius:15px;
 padding:25px;
 text-align:center;
-box-shadow:0 0 20px red;
+box-shadow:0 0 25px red;
+
 }
 
+/* صورة الهكر */
+
 .avatar{
+
 width:90px;
 height:90px;
 border-radius:50%;
 border:4px solid red;
+padding:6px;
+background:black;
+box-shadow:0 0 20px red;
 margin-bottom:10px;
+
 }
+
+/* العنوان */
 
 h1{
+
 margin-bottom:20px;
 height:35px;
+
 }
 
-input, textarea{
+/* زخرفة خانة الاسم */
+
+.nameInput{
 
 width:100%;
 margin:10px 0;
 padding:12px;
-border:none;
 border-radius:8px;
-background:rgba(255,255,255,0.1);
+border:2px solid;
+border-image:linear-gradient(90deg,#00ffcc,#00ff00)1;
+background:rgba(255,255,255,0.08);
 color:white;
 font-size:15px;
 
 }
 
-textarea{
+/* زخرفة الرسالة */
+
+.msgInput{
+
+width:100%;
+margin:10px 0;
+padding:12px;
+border-radius:8px;
+border:2px solid;
+border-image:linear-gradient(90deg,#ff0000,#ff6600)1;
+background:rgba(255,255,255,0.08);
+color:white;
+font-size:15px;
 height:100px;
 resize:none;
+
 }
+
+/* زر الإرسال */
 
 button{
 
@@ -90,18 +125,23 @@ color:black;
 font-size:18px;
 font-weight:bold;
 cursor:pointer;
-box-shadow:0 0 15px #00ff00;
+box-shadow:0 0 20px #00ff00;
+transition:0.3s;
 
 }
 
 button:hover{
-background:#00cc00;
+
+box-shadow:0 0 35px #00ff00;
+
 }
 
 .note{
+
 margin-top:12px;
 font-size:13px;
 opacity:0.8;
+
 }
 
 </style>
@@ -115,15 +155,17 @@ opacity:0.8;
 <div class="container">
 
 <img class="avatar"
-src="https://i.imgur.com/8RKXAIV.png">
+src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png">
 
 <h1 id="title"></h1>
 
 <input id="name"
+class="nameInput"
 type="text"
 placeholder="اكتب اسمك">
 
 <textarea id="message"
+class="msgInput"
 placeholder="اكتب رسالتك هنا..."></textarea>
 
 <button onclick="sendMessage()">
@@ -138,24 +180,20 @@ placeholder="اكتب رسالتك هنا..."></textarea>
 
 <script>
 
-/* ===================== */
-/* ضع بيانات البوت هنا */
-/* ===================== */
+/* بيانات البوت */
 
-const BOT_TOKEN = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
+const BOT_TOKEN="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
 
-const CHAT_ID = "7771042305";
-
-/* ===================== */
+const CHAT_ID="7771042305";
 
 /* ارسال الرسالة */
 
 function sendMessage(){
 
-let name = document.getElementById("name").value.trim();
-let message = document.getElementById("message").value.trim();
+let name=document.getElementById("name").value.trim();
+let message=document.getElementById("message").value.trim();
 
-if(name === "" || message === ""){
+if(name==""||message==""){
 
 alert("يجب كتابة الاسم والرسالة");
 
@@ -163,13 +201,12 @@ return;
 
 }
 
-let text =
-"📩 رسالة جديدة من الموقع\n\n"
-+"👤 الاسم: "+name+"\n\n"
-+"💬 الرسالة:\n"+message;
+let text=
+"📩 رسالة جديدة من الموقع\n\n"+
+"👤 الاسم: "+name+"\n\n"+
+"💬 الرسالة:\n"+message;
 
-let url =
-"https://api.telegram.org/bot"
+let url="https://api.telegram.org/bot"
 +BOT_TOKEN+
 "/sendMessage?chat_id="
 +CHAT_ID+
@@ -178,7 +215,7 @@ let url =
 
 fetch(url)
 
-.then(res => {
+.then(res=>{
 
 alert("تم إرسال رسالتك إلى المطور");
 
@@ -189,25 +226,26 @@ document.getElementById("message").value="";
 
 }
 
-/* ===================== */
-/* كتابة العنوان تدريجيا */
-/* ===================== */
+/* كتابة العنوان */
 
-const text = "التواصل مع المطور";
-let index = 0;
-let deleting = false;
-const title = document.getElementById("title");
+const text="المبرمج فرعون";
+
+let index=0;
+let deleting=false;
+
+const title=document.getElementById("title");
 
 function typeEffect(){
 
 if(!deleting){
 
-title.innerHTML = text.substring(0,index+1);
+title.innerHTML=text.substring(0,index+1);
+
 index++;
 
-if(index == text.length){
+if(index==text.length){
 
-deleting = true;
+deleting=true;
 
 setTimeout(typeEffect,1500);
 
@@ -219,12 +257,13 @@ return;
 
 else{
 
-title.innerHTML = text.substring(0,index-1);
+title.innerHTML=text.substring(0,index-1);
+
 index--;
 
-if(index == 0){
+if(index==0){
 
-deleting = false;
+deleting=false;
 
 }
 
@@ -236,33 +275,38 @@ setTimeout(typeEffect,120);
 
 typeEffect();
 
-/* ===================== */
 /* خلفية Matrix */
-/* ===================== */
 
-const canvas = document.getElementById("matrix");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("matrix");
 
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
+const ctx=canvas.getContext("2d");
 
-const letters = "python bot telegram def import class while True False";
-const matrix = letters.split("");
+canvas.height=window.innerHeight;
 
-const fontSize = 14;
-const columns = canvas.width/fontSize;
+canvas.width=window.innerWidth;
 
-const drops = [];
+const letters="python bot telegram import class while True False";
+
+const matrix=letters.split("");
+
+const fontSize=14;
+
+const columns=canvas.width/fontSize;
+
+const drops=[];
 
 for(let x=0;x<columns;x++)
+
 drops[x]=1;
 
 function draw(){
 
 ctx.fillStyle="rgba(0,0,0,0.05)";
+
 ctx.fillRect(0,0,canvas.width,canvas.height);
 
 ctx.fillStyle="#00ff00";
+
 ctx.font=fontSize+"px monospace";
 
 for(let i=0;i<drops.length;i++){
@@ -271,7 +315,8 @@ const text=matrix[Math.floor(Math.random()*matrix.length)];
 
 ctx.fillText(text,i*fontSize,drops[i]*fontSize);
 
-if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)
+
 drops[i]=0;
 
 drops[i]++;
