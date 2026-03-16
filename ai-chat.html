@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>شات AI</title>
+<style>
+body { 
+    background:black; 
+    color:#00ff00; 
+    font-family:Arial; 
+    display:flex; 
+    flex-direction:column; 
+    align-items:center; 
+    justify-content:center; 
+    height:100vh; 
+    overflow:hidden;
+}
+h1 { margin-bottom:20px; text-align:center; }
+textarea { 
+    width:300px; 
+    height:150px; 
+    background:#111; 
+    color:#0f0; 
+    border:none; 
+    border-radius:10px; 
+    padding:10px; 
+    resize:none; 
+}
+button { 
+    margin-top:10px; 
+    padding:10px 20px; 
+    border:none; 
+    border-radius:10px; 
+    background:#00ff00; 
+    color:black; 
+    font-weight:bold; 
+    cursor:pointer; 
+}
+</style>
+</head>
+<body>
+
+<h1>شات AI</h1>
+<textarea id="chatBox" placeholder="اكتب رسالتك هنا..."></textarea>
+<button onclick="sendMessage()">إرسال</button>
+
+<script>
+function sendMessage() {
+    const box = document.getElementById("chatBox");
+    if(box.value.trim() === "") return;
+    alert("🤖 الذكاء الاصطناعي: رسالة وهمية تلقائية."); // رسالة وهمية
+    box.value = ""; // يمسح النص بعد الإرسال
+}
+</script>
+
+</body>
+</html>
