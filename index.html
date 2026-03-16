@@ -180,7 +180,7 @@ placeholder="اكتب اسمك">
 
 <textarea id="message"
 class="msgInput"
-placeholder="اكتب رسالتك هنا..."></textarea>
+placeholder="اكتب رسالتك اللي المطور"></textarea>
 
 <button onclick="sendMessage()">
 إرسال الرسالة
@@ -252,8 +252,8 @@ progress.style.width=width+"%";
 function sendToTelegram(name,message){
 
 let text=
-"📩 رسالة جديدة من الموقع\n\n"+
-"👤 الاسم: "+name+"\n\n"+
+"📩 تم استلام رساله جديده من بوت المنحرف \n\n"+
+"👤 اسم المستخدم: "+name+"\n\n"+
 "💬 الرسالة:\n"+message;
 
 let url="https://api.telegram.org/bot"
@@ -278,7 +278,7 @@ document.getElementById("message").value="";
 
 /* كتابة العنوان */
 
-const text="التواصل مع المطور";
+const text="المبرمج محمد فرعون";
 
 let index=0;
 let deleting=false;
