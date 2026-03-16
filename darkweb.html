@@ -93,7 +93,7 @@ button {
   <button onclick="checkPassword()">تأكيد</button>
 
   <div class="message success" id="successMsg">جاري تحميل النظام </div>
-  <div class="message error" id="errorMsg">الباسورد غلط! يمكنك التواصل مع المطور.</div>
+  <div class="message error" id="errorMsg">الباسورد غلط كلم المطور </div>
 </div>
 
 <script>
@@ -103,7 +103,7 @@ function checkPassword() {
   const pwd = pwdInput.value.trim();
   pwdInput.value = ""; // مسح الباسورد فور الضغط
 
-  if(pwd === "907010") {
+  if(pwd === "19112") {
     document.getElementById("successMsg").style.display = "block";
     document.getElementById("errorMsg").style.display = "none";
     setTimeout(()=> {
