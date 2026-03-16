@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dark Web</title>
+<style>
+/* الخلفية والأسلوب العام */
+body {
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    background:black;
+    font-family:Arial, sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    color:#00ff00;
+}
+
+/* نص التحذير الكبير */
+h1 {
+    color:red;
+    font-size:24px;
+    margin-bottom:20px;
+    text-align:center;
+}
+
+/* صندوق الباسورد */
+input[type=password] {
+    width:200px;
+    padding:10px;
+    border-radius:5px;
+    border:none;
+    background:#111;
+    color:#0f0;
+    text-align:center;
+    font-size:18px;
+}
+
+/* زر الدخول */
+button {
+    margin-top:10px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#ff0000;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* كانفاس الـ Matrix */
+canvas {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<h1>⚠️ تحذير! أنت الآن داخل شبكة خطيرة…</h1>
+
+<input id="password" type="password" placeholder="ادخل الباسورد (5 أرقام)">
+<button onclick="checkPassword()">دخول</button>
+
+<script>
+// ******** Matrix background ********
+const canvas=document.getElementById("matrix");
+const ctx=canvas.getContext("2d");
+canvas.height=window.innerHeight;
+canvas.width=window.innerWidth;
+const letters="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const matrix=letters.split("");
+const fontSize=14;
+const columns=canvas.width/fontSize;
+const drops=[];
+for(let x=0;x<columns;x++) drops[x]=1;
+
+function draw(){
+    ctx.fillStyle="rgba(0,0,0,0.05)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#00ff00";
+    ctx.font=fontSize+"px monospace";
+    for(let i=0;i<drops.length;i++){
+        const text=matrix[Math.floor(Math.random()*matrix.length)];
+        ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+        if(drops[i]*fontSize>canvas.height && Math.random()>0.975) drops[i]=0;
+        drops[i]++;
+    }
+}
+setInterval(draw,33);
+
+// ******** تحقق الباسورد ********
+function checkPassword() {
+    const pass = document.getElementById("password").value;
+    if(pass==="12345"){ // الباسورد الصح
+        alert("✅ الباسورد صحيح! سيتم فتح الشات مع AI.");
+        window.location.href="ai-chat.html"; // صفحة الشات
+    } else {
+        alert("🚫 الباسورد غلط! لا يمكنك الوصول إلى فرعون.");
+    }
+}
+</script>
+
+</body>
+</html>
