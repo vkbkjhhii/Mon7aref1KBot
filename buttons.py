@@ -25,7 +25,7 @@ def main_menu():
             web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
         ),
         InlineKeyboardButton(
-            "دخول Dark Web 🕵️‍♂️",
+            "GPT 😈",
             web_app=WebAppInfo(url="https://vkbkjhhii.github.io/darkweb.html")  # الرابط للصفحة المخيفة
         )
     )
