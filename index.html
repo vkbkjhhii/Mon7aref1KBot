@@ -1,199 +1,286 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
+
 <meta charset="UTF-8">
-<title>المنحرف</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>التواصل مع المطور</title>
+
 <style>
 
-html, body {
+*{
 margin:0;
 padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body{
+background:black;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+overflow:hidden;
+color:white;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
 width:100%;
 height:100%;
-overflow:hidden;
-background:#000;
-font-family: monospace;
-display:flex;
-align-items:center;
-justify-content:center;
+z-index:-1;
 }
 
 .container{
-background:rgba(0,0,0,0.95);
-border:2px solid #00ff00;
-box-shadow:0 0 40px #00ff00;
-padding:40px;
-width:400px;
-max-width:400px;
+width:350px;
+background:rgba(0,0,0,0.8);
+border:2px solid red;
+border-radius:15px;
+padding:25px;
 text-align:center;
-position:relative;
-user-select:none;
+box-shadow:0 0 20px red;
 }
 
-.skull{
-font-size:70px;
-position:relative;
-margin-bottom:20px;
-}
-
-.eye-left, .eye-right{
-position:absolute;
-top:20px;
-font-size:20px;
-color:red;
-animation:fire 0.5s infinite alternate;
-}
-
-.eye-left{ left:35px; }
-.eye-right{ right:35px; }
-
-@keyframes fire{
-0%{color:orange;}
-50%{color:red;}
-100%{color:yellow;}
+.avatar{
+width:90px;
+height:90px;
+border-radius:50%;
+border:4px solid red;
+margin-bottom:10px;
 }
 
 h1{
-font-size:28px;
-color:#00ff00;
-height:40px;
-min-height:40px;
-}
-
-.info{
 margin-bottom:20px;
-color:#00ff00;
-font-size:14px;
+height:35px;
 }
 
-input,textarea{
+input, textarea{
+
 width:100%;
-padding:12px;
 margin:10px 0;
-background:black;
-border:1px solid #00ff00;
-color:#00ff00;
+padding:12px;
+border:none;
+border-radius:8px;
+background:rgba(255,255,255,0.1);
+color:white;
 font-size:15px;
+
+}
+
+textarea{
+height:100px;
+resize:none;
 }
 
 button{
+
 width:100%;
-padding:12px;
-background:#00ff00;
+padding:14px;
+margin-top:10px;
 border:none;
+border-radius:10px;
+background:#00ff00;
 color:black;
 font-size:18px;
+font-weight:bold;
 cursor:pointer;
-transition:.3s;
+box-shadow:0 0 15px #00ff00;
+
 }
 
 button:hover{
-background:black;
-color:#00ff00;
-border:1px solid #00ff00;
-box-shadow:0 0 20px #00ff00;
+background:#00cc00;
 }
 
-/* وجه هكر أحمر في الوسط */
-.hacker-face{
-font-size:50px;
-color:red;
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%, -50%);
-pointer-events:none;
-opacity:0.3;
+.note{
+margin-top:12px;
+font-size:13px;
+opacity:0.8;
 }
 
 </style>
+
 </head>
+
 <body>
 
-<audio autoplay loop>
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="typing-sound">
-<source src="https://www.soundjay.com/typing/typing-1.mp3" type="audio/mpeg">
-</audio>
+<canvas id="matrix"></canvas>
 
 <div class="container">
 
-<div class="skull">☠
-<span class="eye-left">☠️</span>
-<span class="eye-right">☠️</span>
-</div>
+<img class="avatar"
+src="https://i.imgur.com/8RKXAIV.png">
 
 <h1 id="title"></h1>
 
-<div class="info">ا最に彼女は 6 歳 ↝ 🇦🇱</div>
+<input id="name"
+type="text"
+placeholder="اكتب اسمك">
 
-<input id="name" placeholder="اكتب اسمك">
-<textarea id="msg" rows="4" placeholder="اكتب رسالتك"></textarea>
+<textarea id="message"
+placeholder="اكتب رسالتك هنا..."></textarea>
 
-<button onclick="send()">إرسال الرسالة</button>
+<button onclick="sendMessage()">
+إرسال الرسالة
+</button>
 
-<div class="hacker-face">🏴‍☠️</div>
+<div class="note">
+سيتم إرسال الرسالة مباشرة إلى المطور عبر التليجرام
+</div>
 
 </div>
 
 <script>
 
-// كلمة "فرعون المنحرف" تظهر وتتمسح وتتكتب بسرعة أكبر
-let word = "𝑭𝑹𝑨𝑶𝑵 𝑨𝑳𝑴𝑵𝑯𝑹𝑭";
-let title = document.getElementById("title");
-let typingAudio = document.getElementById("typing-sound");
+/* ===================== */
+/* ضع بيانات البوت هنا */
+/* ===================== */
 
-function typeAndErase(){
-  let i=0;
-  let forward = true;
-  function step(){
-    typingAudio.currentTime=0;
-    typingAudio.play();
-    if(forward){
-      title.innerHTML = word.slice(0,i+1);
-      i++;
-      if(i>=word.length){ forward=false; setTimeout(step,20000); return;} // تمسح بعد 20 ثانية
-    } else {
-      title.innerHTML = word.slice(0,i-1);
-      i--;
-      if(i<=0){ forward=true; setTimeout(step,200); return;}
-    }
-    setTimeout(step,200);
-  }
-  step();
+const BOT_TOKEN = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY";
+
+const CHAT_ID = "7771042305";
+
+/* ===================== */
+
+/* ارسال الرسالة */
+
+function sendMessage(){
+
+let name = document.getElementById("name").value.trim();
+let message = document.getElementById("message").value.trim();
+
+if(name === "" || message === ""){
+
+alert("يجب كتابة الاسم والرسالة");
+
+return;
+
 }
-typeAndErase();
 
-// ارسال الرسالة
-function send(){
-  let name=document.getElementById("name").value.trim();
-  let msg=document.getElementById("msg").value.trim();
+let text =
+"📩 رسالة جديدة من الموقع\n\n"
++"👤 الاسم: "+name+"\n\n"
++"💬 الرسالة:\n"+message;
 
-  if(name=="" || msg==""){
-    alert("يجب كتابة الاسم والرسالة قبل الإرسال!");
-    return;
-  }
+let url =
+"https://api.telegram.org/bot"
++BOT_TOKEN+
+"/sendMessage?chat_id="
++CHAT_ID+
+"&text="
++encodeURIComponent(text);
 
-  let token="8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"; // ضع توكن البوت هنا
-  let chat_id="7771042305";   // ضع ID المطور هنا
+fetch(url)
 
-  let text = "📩 رسالة جديدة\n\n👤 الاسم: "+name+"\n💬 الرسالة: "+msg;
+.then(res => {
 
-  fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({chat_id:chat_id,text:text})
-  });
+alert("تم إرسال رسالتك إلى المطور");
 
-  alert("تم ارسال رسالتك اللي المطور 👨‍💻");
+document.getElementById("name").value="";
+document.getElementById("message").value="";
 
-  // تمسح الاسم والرسالة بعد الإرسال
-  document.getElementById("name").value = "";
-  document.getElementById("msg").value = "";
+});
+
 }
+
+/* ===================== */
+/* كتابة العنوان تدريجيا */
+/* ===================== */
+
+const text = "التواصل مع المطور";
+let index = 0;
+let deleting = false;
+const title = document.getElementById("title");
+
+function typeEffect(){
+
+if(!deleting){
+
+title.innerHTML = text.substring(0,index+1);
+index++;
+
+if(index == text.length){
+
+deleting = true;
+
+setTimeout(typeEffect,1500);
+
+return;
+
+}
+
+}
+
+else{
+
+title.innerHTML = text.substring(0,index-1);
+index--;
+
+if(index == 0){
+
+deleting = false;
+
+}
+
+}
+
+setTimeout(typeEffect,120);
+
+}
+
+typeEffect();
+
+/* ===================== */
+/* خلفية Matrix */
+/* ===================== */
+
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+
+const letters = "python bot telegram def import class while True False";
+const matrix = letters.split("");
+
+const fontSize = 14;
+const columns = canvas.width/fontSize;
+
+const drops = [];
+
+for(let x=0;x<columns;x++)
+drops[x]=1;
+
+function draw(){
+
+ctx.fillStyle="rgba(0,0,0,0.05)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle="#00ff00";
+ctx.font=fontSize+"px monospace";
+
+for(let i=0;i<drops.length;i++){
+
+const text=matrix[Math.floor(Math.random()*matrix.length)];
+
+ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+
+if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+drops[i]=0;
+
+drops[i]++;
+
+}
+
+}
+
+setInterval(draw,33);
 
 </script>
 
