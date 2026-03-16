@@ -14,7 +14,7 @@ def main_menu():
     )
 
     kb.add(
-        InlineKeyboardButton("بوت اختراق ☠️", url="https://t.me/ALMNHRF_Toobot"),
+        InlineKeyboardButton("BOT 2", url="https://t.me/ALMNHRF_Toobot"),
         InlineKeyboardButton("دعم البوت ⚙️", callback_data="contact_dev")
     )
 
