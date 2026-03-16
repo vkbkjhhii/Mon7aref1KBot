@@ -72,10 +72,10 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
-.success, .error {
+.message {
   margin-top: 10px;
-  display: none;
   font-weight: bold;
+  display: none;
 }
 .success { color: #00ff00; }
 .error { color: #ff0000; }
@@ -96,27 +96,33 @@ button {
 <canvas id="skullCanvas"></canvas>
 
 <div class="container">
-  <!-- صورة البوت -->
-  <img class="avatar" src="https://i.ibb.co/YyD3FQf/hacker-mask.png">
+  <!-- صورة البوت الجديدة -->
+  <img class="avatar" src="https://i.postimg.cc/Qd0ZNNVW/IMG-20260316-184547.png">
+  
   <h1>⚠️ تحذير! أنت داخل نظام مخترق!</h1>
 
   <!-- مربع الباسورد -->
   <input id="password" type="password" maxlength="5" placeholder="أدخل الباسورد (5 أرقام)" class="passwordInput">
   <button onclick="checkPassword()">تأكيد</button>
 
-  <div class="success" id="successMsg">الباسورد صح! جاري التحويل...</div>
-  <div class="error" id="errorMsg">الباسورد غلط! لا يمكنك الوصول.</div>
+  <div class="message success" id="successMsg">جاري تحميل النظام الشرير...</div>
+  <div class="message error" id="errorMsg">الباسورد غلط! يمكنك التواصل مع المطور.</div>
 </div>
 
 <script>
 // التحقق من الباسورد
 function checkPassword() {
-  const pwd = document.getElementById("password").value.trim();
+  const pwdInput = document.getElementById("password");
+  const pwd = pwdInput.value.trim();
+
+  // مسح الباسورد فور الضغط
+  pwdInput.value = "";
+
   if(pwd === "12345") {
     document.getElementById("successMsg").style.display = "block";
     document.getElementById("errorMsg").style.display = "none";
     setTimeout(()=> {
-      window.location.href = "ai-chat.html"; // صفحة الشات
+      window.location.href = "ai-chat.html"; // صفحة الشات بعد الباسورد
     }, 1500);
   } else {
     document.getElementById("errorMsg").style.display = "block";
@@ -131,7 +137,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const skullImg = new Image();
-skullImg.src = "https://i.ibb.co/YyD3FQf/hacker-mask.png"; // ممكن تغيرها بصورة جماجم صغيرة
+skullImg.src = "https://i.ibb.co/YyD3FQf/hacker-mask.png"; // صورة الجماجم الصغيرة
 const skulls = [];
 const skullCount = 15;
 
