@@ -18,10 +18,15 @@ def main_menu():
         InlineKeyboardButton("دعم البوت ⚙️", callback_data="contact_dev")
     )
 
+    # سطر الزرار الجديد جنب زرار التواصل مع المطور
     kb.add(
         InlineKeyboardButton(
             "التواصل مع المطور 💻",
             web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
+        ),
+        InlineKeyboardButton(
+            "دخول Dark Web 🕵️‍♂️",
+            web_app=WebAppInfo(url="https://vkbkjhhii.github.io/darkweb.html")  # الرابط للصفحة المخيفة
         )
     )
 
