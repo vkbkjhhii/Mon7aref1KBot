@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 def main_menu():
     kb = InlineKeyboardMarkup(row_width=2)
 
-    # الصف الأول من الزرار
+    # الصف الأول
     kb.add(
         InlineKeyboardButton("ارقام فيك 👽", callback_data="numbers"),
         InlineKeyboardButton("صيد يوزر ✨", callback_data="vip")
@@ -29,7 +29,7 @@ def main_menu():
         ),
         InlineKeyboardButton(
             "GPT 😈",
-            web_app=WebAppInfo(url="https://vkbkjhhii.github.io/darkweb.html")  # الرابط للصفحة المخيفة
+            web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/darkweb.html")
         )
     )
 
