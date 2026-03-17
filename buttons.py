@@ -33,12 +33,6 @@ def main_menu():
         )
     )
 
-    # ✅ الصف الخامس: الزرين الجديدين في الشاشة الرئيسية
-    kb.add(
-        InlineKeyboardButton("اختصار الرابط 🔗", callback_data="short_link"),
-        InlineKeyboardButton("فيز عشوائية 💳", callback_data="random_visa")
-    )
-
     # زر قسم الاختراق
     kb.add(
         InlineKeyboardButton("قسم الاختراق", callback_data="far3od_menu")
