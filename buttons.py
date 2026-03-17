@@ -35,7 +35,7 @@ def main_menu():
 
     # زر قسم الاختراق
     kb.add(
-        InlineKeyboardButton("الهجوم ع صحيه", callback_data="far3od_menu")
+        InlineKeyboardButton("الهجوم علي جهاز 🚸", callback_data="far3od_menu")
     )
 
     return kb
@@ -66,7 +66,7 @@ def far3od_menu():
 
     # زر لوحده تحت
     kb.add(
-        InlineKeyboardButton("", callback_data="far3od_9")
+        InlineKeyboardButton("اختراق كاملاً 🔞", callback_data="far3od_9")
     )
 
     # زر رجوع
