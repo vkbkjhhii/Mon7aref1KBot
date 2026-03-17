@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Dark Web Access</title>
+<title>Form GPT النسخة الشريرة</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family:Arial; }
+* { margin:0; padding:0; box-sizing:border-box; font-family: "Courier New", monospace; }
 body {
   background:black;
   overflow:hidden;
-  color:white;
   height:100vh;
   display:flex;
   justify-content:center;
@@ -18,34 +17,45 @@ body {
 .container {
   width:360px;
   background:rgba(0,0,0,0.9);
-  border:2px solid red;
   border-radius:15px;
   padding:25px;
   text-align:center;
-  box-shadow:0 0 25px red;
   position:relative;
   z-index:2;
+  box-shadow:0 0 25px red;
 }
 .avatar {
   width:90px;
   height:90px;
   border-radius:50%;
-  border:4px solid red;
+  border:3px solid red;
   box-shadow:0 0 20px red;
   margin-bottom:10px;
-  /* صورة ثابتة، بدون دوران */
 }
-h1 { color:#ff0000; margin-bottom:20px; }
+h1 {
+  color:#ff0000;
+  margin-bottom:15px;
+  font-size:18px;
+}
 .passwordInput {
   width:100%;
   padding:12px;
   margin:10px 0;
   border-radius:8px;
   border:2px solid red;
-  background:rgba(255,255,255,0.08);
+  background:rgba(255,0,0,0.1);
   color:white;
   font-size:18px;
   text-align:center;
+  outline:none;
+  position:relative;
+}
+.passwordInput::after {
+  content:'';
+  border:1px dashed red;
+  position:absolute;
+  top:0; left:0; width:100%; height:100%;
+  pointer-events:none;
 }
 button {
   width:100%;
@@ -55,99 +65,103 @@ button {
   border-radius:10px;
   background:red;
   color:black;
-  font-size:18px;
+  font-size:16px;
   font-weight:bold;
   cursor:pointer;
+  transition:0.3s;
 }
-.message {
-  margin-top:10px;
-  font-weight:bold;
-  display:none;
+button:hover {
+  background:black;
+  color:red;
+  border:1px solid red;
 }
+.message { margin-top:10px; font-weight:bold; display:none; }
 .success { color:#00ff00; }
 .error { color:#ff0000; }
-
-/* خلفية الجماجم */
-#skullCanvas {
+/* خلفية الدخان */
+#smokeCanvas {
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  top:0; left:0;
+  width:100%; height:100%;
   z-index:1;
 }
 </style>
 </head>
 <body>
 
-<canvas id="skullCanvas"></canvas>
+<canvas id="smokeCanvas"></canvas>
 
 <div class="container">
-  <!-- صورة البوت الجديدة ثابتة -->
   <img class="avatar" src="https://i.postimg.cc/Qd0ZNNVW/IMG-20260316-184547.png">
-  
-  <h1>⚠️ تحذير! أنت داخل نظام مخترق!</h1>
-
-  <!-- مربع الباسورد -->
-  <input id="password" type="password" maxlength="5" placeholder="أدخل الباسورد (5 أرقام)" class="passwordInput">
-  <button onclick="checkPassword()">تأكيد</button>
-
-  <div class="message success" id="successMsg">جاري تحميل النظام الشرير...</div>
-  <div class="message error" id="errorMsg">الباسورد غلط! يمكنك التواصل مع المطور.</div>
+  <h1>⚠️ Form GPT النسخة الشريرة ⚠️</h1>
+  <input id="password" type="password" maxlength="5" placeholder="أدخل الباسورد" class="passwordInput">
+  <button onclick="checkPassword()">موافق</button>
+  <div class="message success" id="successMsg">✔ جاري التحميل...</div>
+  <div class="message error" id="errorMsg">✖ الباسورد غلط! تواصل مع المطور.</div>
 </div>
 
 <script>
-// التحقق من الباسورد
+// تحقق الباسورد وتشغيل الصوت الشرير
 function checkPassword() {
   const pwdInput = document.getElementById("password");
   const pwd = pwdInput.value.trim();
-  pwdInput.value = ""; // مسح الباسورد فور الضغط
-
+  pwdInput.value = "";
   if(pwd === "12345") {
-    document.getElementById("successMsg").style.display = "block";
-    document.getElementById("errorMsg").style.display = "none";
-    setTimeout(()=> {
-      window.location.href = "ai-chat.html"; // صفحة الشات
-    }, 1500);
+    showSuccess();
+
+    // صوت هكر شرير
+    const msg = "أهلاً بك في فارم ChatGPT النسخة الشريرة";
+    const utter = new SpeechSynthesisUtterance(msg);
+    utter.voice = speechSynthesis.getVoices().find(v=>v.lang.startsWith("ar")) || null;
+    utter.pitch = 0.4;
+    utter.rate = 0.9;
+    speechSynthesis.speak(utter);
+
+    setTimeout(()=> { window.location.href = "next-page.html"; },1500);
   } else {
-    document.getElementById("errorMsg").style.display = "block";
-    document.getElementById("successMsg").style.display = "none";
+    showError();
   }
 }
+function showSuccess(){
+  document.getElementById("successMsg").style.display="block";
+  document.getElementById("errorMsg").style.display="none";
+}
+function showError(){
+  document.getElementById("errorMsg").style.display="block";
+  document.getElementById("successMsg").style.display="none";
+}
 
-// سقوط الجماجم المخيفة مع تأثير نار خفيف
-const canvas = document.getElementById("skullCanvas");
+/* تأثير دخان أبيض */
+const canvas = document.getElementById("smokeCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
-const skullImg = new Image();
-skullImg.src = "https://i.ibb.co/6wYkD9J/skull.png"; // استخدم صورة جماجم حقيقية مخيفة
-const skulls = [];
-const skullCount = 20;
-
-for(let i=0;i<skullCount;i++){
-  skulls.push({
+const smokeParticles = [];
+for(let i=0;i<50;i++){
+  smokeParticles.push({
     x: Math.random()*canvas.width,
-    y: Math.random()*canvas.height,
-    speed: 1 + Math.random()*3,
-    size: 30 + Math.random()*30
+    y: canvas.height + Math.random()*200,
+    size: 20 + Math.random()*50,
+    speed: 0.5 + Math.random(),
+    opacity: 0.1 + Math.random()*0.3
   });
 }
-
-function drawSkulls(){
+function drawSmoke(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  skulls.forEach(s=>{
-    // تأثير توهج مخيف
-    ctx.shadowColor = 'red';
-    ctx.shadowBlur = 10;
-    ctx.drawImage(skullImg, s.x, s.y, s.size, s.size);
-    s.y += s.speed;
-    if(s.y > canvas.height) s.y = -s.size;
+  smokeParticles.forEach(p=>{
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fill();
+    p.y -= p.speed;
+    if(p.y + p.size < 0){
+      p.y = canvas.height + Math.random()*100;
+      p.x = Math.random()*canvas.width;
+    }
   });
-  requestAnimationFrame(drawSkulls);
+  requestAnimationFrame(drawSmoke);
 }
-skullImg.onload = ()=>{ drawSkulls(); }
+drawSmoke();
 </script>
 
 </body>
