@@ -6,85 +6,21 @@
 <title>Form GPT النسخة الشريرة</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family: "Courier New", monospace; }
-body {
-  background:black;
-  overflow:hidden;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-.container {
-  width:360px;
-  background:rgba(0,0,0,0.9);
-  border-radius:15px;
-  padding:25px;
-  text-align:center;
-  position:relative;
-  z-index:2;
-  box-shadow:0 0 25px red;
-}
-.avatar {
-  width:90px;
-  height:90px;
-  border-radius:50%;
-  border:3px solid red;
-  box-shadow:0 0 20px red;
-  margin-bottom:10px;
-}
-h1 {
-  color:#ff0000;
-  margin-bottom:15px;
-  font-size:18px;
-}
-.passwordInput {
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border-radius:8px;
-  border:2px solid red;
-  background:rgba(255,0,0,0.1);
-  color:white;
-  font-size:18px;
-  text-align:center;
-  outline:none;
-  position:relative;
-}
-.passwordInput::after {
-  content:'';
-  border:1px dashed red;
-  position:absolute;
-  top:0; left:0; width:100%; height:100%;
-  pointer-events:none;
-}
-button {
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  border:none;
-  border-radius:10px;
-  background:red;
-  color:black;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
-  transition:0.3s;
-}
-button:hover {
-  background:black;
-  color:red;
-  border:1px solid red;
-}
+body { background:black; overflow:hidden; height:100vh; display:flex; justify-content:center; align-items:center; position:relative; }
+.container { width:360px; background:rgba(0,0,0,0.9); border-radius:15px; padding:25px; text-align:center; z-index:2; box-shadow:0 0 25px red; position:relative; }
+.avatar { width:90px; height:90px; border-radius:50%; border:3px solid red; box-shadow:0 0 20px red; margin-bottom:10px; }
+h1 { color:#ff0000; margin-bottom:15px; font-size:18px; }
+.passwordInput { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:2px solid red; background:rgba(255,0,0,0.1); color:white; font-size:18px; text-align:center; outline:none; }
+button { width:100%; padding:14px; margin-top:10px; border:none; border-radius:10px; background:red; color:black; font-size:16px; font-weight:bold; cursor:pointer; transition:0.3s; }
+button:hover { background:black; color:red; border:1px solid red; }
+.contactBtn { width:50%; padding:10px; margin-top:10px; background:#111; color:#00ff00; border:1px solid #00ff00; border-radius:8px; font-size:14px; cursor:pointer; }
+.contactBtn:hover { background:#00ff00; color:black; }
 .message { margin-top:10px; font-weight:bold; display:none; }
 .success { color:#00ff00; }
 .error { color:#ff0000; }
-/* خلفية الدخان */
-#smokeCanvas {
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  z-index:1;
-}
+#smokeCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; }
+#footerMsg { position:absolute; bottom:5px; width:100%; text-align:center; color:#888; font-size:12px; animation:fadeMsg 3s infinite; }
+@keyframes fadeMsg { 0%,100%{opacity:0;} 50%{opacity:1;} }
 </style>
 </head>
 <body>
@@ -96,54 +32,48 @@ button:hover {
   <h1>⚠️ Form GPT النسخة الشريرة ⚠️</h1>
   <input id="password" type="password" maxlength="5" placeholder="أدخل الباسورد" class="passwordInput">
   <button onclick="checkPassword()">موافق</button>
+  <button class="contactBtn" onclick="window.open('https://vkbkjhhii.github.io/Mon7aref1KBot/', '_blank')">التواصل مع المطور</button>
   <div class="message success" id="successMsg">✔ جاري التحميل...</div>
   <div class="message error" id="errorMsg">✖ الباسورد غلط! تواصل مع المطور.</div>
 </div>
 
+<div id="footerMsg">تم التطوير بواسطة إيه فراول</div>
+
 <script>
-// تحقق الباسورد وتشغيل الصوت الشرير
+// التحقق من الباسورد وتشغيل صوت هكر شرير
 function checkPassword() {
   const pwdInput = document.getElementById("password");
   const pwd = pwdInput.value.trim();
   pwdInput.value = "";
   if(pwd === "12345") {
     showSuccess();
-
-    // صوت هكر شرير
     const msg = "أهلاً بك في فارم ChatGPT النسخة الشريرة";
     const utter = new SpeechSynthesisUtterance(msg);
     utter.voice = speechSynthesis.getVoices().find(v=>v.lang.startsWith("ar")) || null;
     utter.pitch = 0.4;
     utter.rate = 0.9;
     speechSynthesis.speak(utter);
-
     setTimeout(()=> { window.location.href = "next-page.html"; },1500);
   } else {
     showError();
   }
 }
-function showSuccess(){
-  document.getElementById("successMsg").style.display="block";
-  document.getElementById("errorMsg").style.display="none";
-}
-function showError(){
-  document.getElementById("errorMsg").style.display="block";
-  document.getElementById("successMsg").style.display="none";
-}
+function showSuccess(){ document.getElementById("successMsg").style.display="block"; document.getElementById("errorMsg").style.display="none"; }
+function showError(){ document.getElementById("errorMsg").style.display="block"; document.getElementById("successMsg").style.display="none"; }
 
-/* تأثير دخان أبيض */
+// دخان سينمائي مخيف
 const canvas = document.getElementById("smokeCanvas");
 const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 const smokeParticles = [];
-for(let i=0;i<50;i++){
+for(let i=0;i<60;i++){
   smokeParticles.push({
     x: Math.random()*canvas.width,
     y: canvas.height + Math.random()*200,
-    size: 20 + Math.random()*50,
-    speed: 0.5 + Math.random(),
-    opacity: 0.1 + Math.random()*0.3
+    size: 20 + Math.random()*40,
+    speed: 0.2 + Math.random()*1,
+    opacity: 0.1 + Math.random()*0.3,
+    drift: (Math.random()-0.5)*0.5
   });
 }
 function drawSmoke(){
@@ -151,13 +81,11 @@ function drawSmoke(){
   smokeParticles.forEach(p=>{
     ctx.beginPath();
     ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
-    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.ellipse(p.x,p.y,p.size,p.size/2,0,0,2*Math.PI);
     ctx.fill();
     p.y -= p.speed;
-    if(p.y + p.size < 0){
-      p.y = canvas.height + Math.random()*100;
-      p.x = Math.random()*canvas.width;
-    }
+    p.x += p.drift;
+    if(p.y + p.size < 0){ p.y = canvas.height + Math.random()*100; p.x = Math.random()*canvas.width; }
   });
   requestAnimationFrame(drawSmoke);
 }
