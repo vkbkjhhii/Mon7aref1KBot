@@ -168,16 +168,15 @@ def register_handlers(dp, DEV_ID):
     # فتح قائمة فرعود
     @dp.callback_query_handler(lambda c: c.data == "far3od_menu")
     async def open_far3od(callback: types.CallbackQuery):
-        await callback.message.edit_text("💰 اختر من القائمة:", reply_markup=far3od_menu())
+        await callback.message.edit_text("مجال الاختراق 💀", reply_markup=far3od_menu())
 
 
     # رسالة الزر المدفوع
-    paid_text = """🚫 هذا الزر مدفوع
+    paid_text = """هذا القسم مدفوع 💰
 
-💰 لا يمكنك الوصول إلى هذا الزر
-إلا بعد شراء عملات البوت
+لا يمكنك الحصول على هاذا القسم الا بعد الدفع
 
-👇 الشراء من هنا
+الشراء من هنا 💎
 """
 
     # زر الشراء
@@ -185,7 +184,7 @@ def register_handlers(dp, DEV_ID):
         kb = InlineKeyboardMarkup()
         kb.add(
             InlineKeyboardButton(
-                "💳 الشراء من هنا",
+                "شراء عملاة البوت",
                 web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
             )
         )
