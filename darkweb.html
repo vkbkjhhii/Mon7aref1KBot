@@ -33,7 +33,11 @@ body {
   border:4px solid red;
   box-shadow:0 0 20px red;
   margin-bottom:10px;
-  /* صورة ثابتة، بدون دوران */
+  animation:rotate 3s linear infinite;
+}
+@keyframes rotate {
+  0% { transform:rotate(0deg);}
+  100% { transform:rotate(360deg);}
 }
 h1 { color:#ff0000; margin-bottom:20px; }
 .passwordInput {
@@ -83,7 +87,7 @@ button {
 <canvas id="skullCanvas"></canvas>
 
 <div class="container">
-  <!-- صورة البوت الجديدة ثابتة -->
+  <!-- صورة البوت الجديدة -->
   <img class="avatar" src="https://i.postimg.cc/Qd0ZNNVW/IMG-20260316-184547.png">
   
   <h1>⚠️ تحذير! أنت داخل نظام مخترق!</h1>
@@ -101,13 +105,16 @@ button {
 function checkPassword() {
   const pwdInput = document.getElementById("password");
   const pwd = pwdInput.value.trim();
-  pwdInput.value = ""; // مسح الباسورد فور الضغط
+
+  // مسح الباسورد فور الضغط
+  pwdInput.value = "";
 
   if(pwd === "12345") {
     document.getElementById("successMsg").style.display = "block";
     document.getElementById("errorMsg").style.display = "none";
     setTimeout(()=> {
-      window.location.href = "ai-chat.html"; // صفحة الشات
+      // تحويل مباشر لصفحة الشات
+      window.location.href = "ai-chat.html";
     }, 1500);
   } else {
     document.getElementById("errorMsg").style.display = "block";
@@ -115,32 +122,29 @@ function checkPassword() {
   }
 }
 
-// سقوط الجماجم المخيفة مع تأثير نار خفيف
+// سقوط الجماجم
 const canvas = document.getElementById("skullCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const skullImg = new Image();
-skullImg.src = "https://i.ibb.co/6wYkD9J/skull.png"; // استخدم صورة جماجم حقيقية مخيفة
+skullImg.src = "https://i.ibb.co/YyD3FQf/hacker-mask.png"; // صورة الجماجم الصغيرة
 const skulls = [];
-const skullCount = 20;
+const skullCount = 15;
 
 for(let i=0;i<skullCount;i++){
   skulls.push({
     x: Math.random()*canvas.width,
     y: Math.random()*canvas.height,
     speed: 1 + Math.random()*3,
-    size: 30 + Math.random()*30
+    size: 20 + Math.random()*20
   });
 }
 
 function drawSkulls(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   skulls.forEach(s=>{
-    // تأثير توهج مخيف
-    ctx.shadowColor = 'red';
-    ctx.shadowBlur = 10;
     ctx.drawImage(skullImg, s.x, s.y, s.size, s.size);
     s.y += s.speed;
     if(s.y > canvas.height) s.y = -s.size;
