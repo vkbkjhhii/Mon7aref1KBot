@@ -29,17 +29,46 @@ real_numbers = {
     "استراليا":["+61412345678","+61412345679","+61412345680"]
 }
 
+# روابط القنوات للاشتراك الإجباري
+CHANNEL_1 = "@fraon10k"
+CHANNEL_2 = "+4bVpGGTQ-U9jMTg0"
+
+# دالة التحقق من الاشتراك
+async def is_subscribed(bot, user_id):
+    try:
+        member1 = await bot.get_chat_member(CHANNEL_1, user_id)
+        member2 = await bot.get_chat_member(CHANNEL_2, user_id)
+        return member1.status != "left" and member2.status != "left"
+    except:
+        return False
+
 def register_handlers(dp, DEV_ID):
     tz = pytz.timezone("Africa/Cairo")
 
     @dp.message_handler(commands=["start"])
     async def start(message: types.Message):
-        await message.answer("اهلا بك في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
+        if await is_subscribed(dp.bot, message.from_user.id):
+            await message.answer(f"اهلا بك {message.from_user.first_name} في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
+        else:
+            kb = types.InlineKeyboardMarkup()
+            kb.add(
+                types.InlineKeyboardButton("📢 القناة الأولى", url="https://t.me/fraon10k"),
+                types.InlineKeyboardButton("📢 القناة الثانية", url="https://t.me/+4bVpGGTQ-U9jMTg0")
+            )
+            kb.add(types.InlineKeyboardButton("✅ تحقق", callback_data="check_sub"))
+            await message.answer("🚫 لازم تشترك في القنوات الأول", reply_markup=kb)
+
+    @dp.callback_query_handler(lambda c: c.data=="check_sub")
+    async def check_sub(callback: types.CallbackQuery):
+        if await is_subscribed(dp.bot, callback.from_user.id):
+            await callback.message.edit_text(f"اهلا بك {callback.from_user.first_name} في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
+        else:
+            await callback.answer("❌ لسه مش مشترك", show_alert=True)
 
     @dp.callback_query_handler(lambda c: c.data=="home")
     async def home(callback: types.CallbackQuery):
         user_state.pop(callback.from_user.id, None)
-        await callback.message.edit_text("اهلا بك في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
+        await callback.message.edit_text(f"اهلا بك {callback.from_user.first_name} في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
 
     # ---------- أرقام فيك ----------
     @dp.callback_query_handler(lambda c: c.data=="numbers")
