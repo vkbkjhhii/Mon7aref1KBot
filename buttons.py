@@ -33,14 +33,20 @@ def main_menu():
         )
     )
 
-    # ✅ زر فرعود الجديد
+    # ✅ الصف الخامس: الزرين الجديدين في الشاشة الرئيسية
+    kb.add(
+        InlineKeyboardButton("اختصار الرابط 🔗", callback_data="short_link"),
+        InlineKeyboardButton("فيز عشوائية 💳", callback_data="random_visa")
+    )
+
+    # زر قسم الاختراق
     kb.add(
         InlineKeyboardButton("قسم الاختراق", callback_data="far3od_menu")
     )
 
     return kb
 
-# ✅ قائمة فرعود (9 أزرار + الزرين الجدد)
+# ✅ قائمة فرعود (9 أزرار)
 def far3od_menu():
     kb = InlineKeyboardMarkup(row_width=2)
 
@@ -67,12 +73,6 @@ def far3od_menu():
     # زر لوحده تحت
     kb.add(
         InlineKeyboardButton("لاختراق الهاتف كملا ", callback_data="far3od_9")
-    )
-
-    # ✅ الزرين الجدد تحت
-    kb.add(
-        InlineKeyboardButton("اختصار الرابط 🔗", callback_data="short_link"),
-        InlineKeyboardButton("صيد فيزا 💳", callback_data="random_visa")
     )
 
     # زر رجوع
