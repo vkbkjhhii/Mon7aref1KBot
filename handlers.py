@@ -160,3 +160,40 @@ def register_handlers(dp, DEV_ID):
         await sent_msg.delete()
         user_state.pop(message.from_user.id)
         
+    # ---------- فرعود (الأزرار المدفوعة) ----------
+
+    from buttons import far3od_menu
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+
+    # فتح قائمة فرعود
+    @dp.callback_query_handler(lambda c: c.data == "far3od_menu")
+    async def open_far3od(callback: types.CallbackQuery):
+        await callback.message.edit_text("💰 اختر من القائمة:", reply_markup=far3od_menu())
+
+
+    # رسالة الزر المدفوع
+    paid_text = """🚫 هذا الزر مدفوع
+
+💰 لا يمكنك الوصول إلى هذا الزر
+إلا بعد شراء عملات البوت
+
+👇 الشراء من هنا
+"""
+
+    # زر الشراء
+    def buy_kb():
+        kb = InlineKeyboardMarkup()
+        kb.add(
+            InlineKeyboardButton(
+                "💳 الشراء من هنا",
+                web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
+            )
+        )
+        return kb
+
+
+    # كل الأزرار المدفوعة
+    @dp.callback_query_handler(lambda c: c.data.startswith("far3od_"))
+    async def paid_buttons(callback: types.CallbackQuery):
+        await callback.answer()
+        await callback.message.answer(paid_text, reply_markup=buy_kb())
