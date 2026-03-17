@@ -8,7 +8,6 @@
 body {
   margin:0;
   padding:0;
-  overflow:hidden;
   background:black;
   color:red;
   font-family:"Courier New", monospace;
@@ -17,7 +16,7 @@ body {
   align-items:center;
   flex-direction:column;
   height:100vh;
-  position:relative;
+  overflow:hidden;
 }
 .container {
   z-index:2;
@@ -73,7 +72,7 @@ button:hover { background:black; color:red; border:1px solid red; }
 .error { color:#ff0000; }
 #footerMsg { color:#888; font-size:12px; margin-top:15px; animation:fadeMsg 3s infinite; }
 @keyframes fadeMsg {0%,100%{opacity:0;}50%{opacity:1;}}
-#codeArea { color:red; text-align:left; font-family:"Courier New", monospace; font-size:14px; white-space:pre; overflow:hidden; height:200px; width:100%; margin-top:20px; }
+#codeArea { color:red; text-align:left; font-family:"Courier New", monospace; font-size:14px; white-space:pre; overflow:hidden; width:100%; height:200px; margin-top:20px;}
 </style>
 </head>
 <body>
@@ -102,7 +101,6 @@ function checkPassword(){
   if(pwd === "12345"){
     showSuccess();
     playHackerVoice();
-    // افتح الصفحة التالية بعد 1.5 ثانية
     setTimeout(()=>{ window.location.href="next-page.html"; },1500);
   } else {
     showError();
@@ -135,7 +133,7 @@ def hack_system():
     print("Bypassing security...")
     time.sleep(0.5)
     print("System compromised!")
-    
+
 hack_system()
 `;
 const codeArea = document.getElementById("codeArea");
