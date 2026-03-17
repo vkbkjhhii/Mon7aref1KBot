@@ -196,3 +196,107 @@ def register_handlers(dp, DEV_ID):
     async def paid_buttons(callback: types.CallbackQuery):
         await callback.answer()
         await callback.message.answer(paid_text, reply_markup=buy_kb())
+import random, string, asyncio
+from aiogram import types
+
+# ----------------- زر اختصار الرابط -----------------
+@dp.callback_query_handler(lambda c: c.data=="short_link")
+async def ask_long_link(callback: types.CallbackQuery):
+    user_state[callback.from_user.id] = "awaiting_long_link"
+    await callback.message.answer(
+        "📎 أرسل الرابط الطويل الذي تريد اختصاره:"
+    )
+
+@dp.message_handler(lambda message: user_state.get(message.from_user.id)=="awaiting_long_link")
+async def generate_short_links(message: types.Message):
+    long_link = message.text.strip()
+    
+    # التحقق من الرابط
+    if not (long_link.startswith("http://") or long_link.startswith("https://")):
+        await message.reply("❌ يمكنك ارسال الرابط فقط يبدأ بـ http:// أو https://")
+        return
+    
+    # توليد 3-4 روابط مختصرة عشوائية
+    short_links = []
+    for _ in range(4):
+        suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+        short_links.append(f"https://short.ly/{suffix}")
+    
+    # رسالة النتيجة
+    text = "✅ روابطك المختصرة:\n\n"
+    for i, sl in enumerate(short_links, start=1):
+        text += f"{i}. {sl}\n"
+    
+    text += f"\n🔗 الرابط الأصلي يفتح نفس الموقع:\n{long_link}"
+    
+    await message.reply(text)
+    user_state.pop(message.from_user.id)
+
+# ----------------- زر فيز عشوائية -----------------
+# توليد اسم عشوائي
+def random_name():
+    first_names = ["Ahmed", "Mohamed", "Ali", "Omar", "John", "David", "Chris", "Adam"]
+    last_names = ["Hassan", "Mahmoud", "Ibrahim", "Smith", "Johnson", "Brown", "Davis"]
+    return random.choice(first_names) + " " + random.choice(last_names)
+
+# توليد رقم فيزا (يبدأ بـ 4)
+def generate_visa():
+    return "4" + "".join([str(random.randint(0,9)) for _ in range(15)])
+
+# التاريخ
+def generate_expiry():
+    month = str(random.randint(1,12)).zfill(2)
+    year = str(random.randint(25,30))
+    return f"{month}/{year}"
+
+# CVV
+def generate_cvv():
+    return str(random.randint(100,999))
+
+# PIN
+def generate_pin():
+    return str(random.randint(1000,9999))
+
+# رصيد
+def generate_balance():
+    return random.randint(10,500)
+
+# ---------- الزر ----------
+@dp.callback_query_handler(lambda c: c.data=="random_visa")
+async def random_visa(callback: types.CallbackQuery):
+    msg = await callback.message.edit_text("⏳ توليد البطاقة: ▰▱▱▱▱ 20%")
+
+    anim = [
+        "⏳ توليد البطاقة: ▰▱▱▱▱ 20%",
+        "⏳ توليد البطاقة: ▰▰▱▱▱ 40%",
+        "⏳ توليد البطاقة: ▰▰▰▱▱ 60%",
+        "⏳ توليد البطاقة: ▰▰▰▰▱ 80%",
+        "⏳ توليد البطاقة: ▰▰▰▰▰ 100%"
+    ]
+
+    for a in anim:
+        await asyncio.sleep(0.4)
+        await msg.edit_text(a)
+
+    # توليد البيانات
+    number = generate_visa()
+    name = random_name()
+    expiry = generate_expiry()
+    cvv = generate_cvv()
+    pin = generate_pin()
+    balance = generate_balance()
+
+    text = f"""
+========== 💳 Visa ==========
+
+🔢 رقم البطاقة: <code>{number}</code>
+👤 اسم صاحب الفيزاء : {name}
+📅 تاريخ الانتهاء: {expiry}
+🔒 رمز(CVV): {cvv}
+🔑 الرقم السري (PIN): {pin}
+💵 الرصيد المتاح: ${balance}
+
+========== 💳 Visa ==========
+"""
+
+    await msg.edit_text(text)
