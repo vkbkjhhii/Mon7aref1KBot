@@ -86,14 +86,14 @@ button {
   <!-- صورة البوت الجديدة ثابتة -->
   <img class="avatar" src="https://i.postimg.cc/Qd0ZNNVW/IMG-20260316-184547.png">
   
-  <h1>تحذير هاذا Farm Chat GPT النسخه الشريره 👾 </h1>
+  <h1>⚠️ تحذير! أنت داخل نظام مخترق!</h1>
 
   <!-- مربع الباسورد -->
   <input id="password" type="password" maxlength="5" placeholder="أدخل الباسورد (5 أرقام)" class="passwordInput">
   <button onclick="checkPassword()">تأكيد</button>
 
-  <div class="message success" id="successMsg">جاري تحميل النظام </div>
-  <div class="message error" id="errorMsg">الباسورد غلط كلم المطور </div>
+  <div class="message success" id="successMsg">جاري تحميل النظام الشرير...</div>
+  <div class="message error" id="errorMsg">الباسورد غلط! يمكنك التواصل مع المطور.</div>
 </div>
 
 <script>
@@ -103,7 +103,7 @@ function checkPassword() {
   const pwd = pwdInput.value.trim();
   pwdInput.value = ""; // مسح الباسورد فور الضغط
 
-  if(pwd === "19112") {
+  if(pwd === "12345") {
     document.getElementById("successMsg").style.display = "block";
     document.getElementById("errorMsg").style.display = "none";
     setTimeout(()=> {
