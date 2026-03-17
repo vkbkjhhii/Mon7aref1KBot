@@ -46,33 +46,33 @@ def far3od_menu():
     kb = InlineKeyboardMarkup(row_width=2)
 
     kb.add(
-        InlineKeyboardButton("زرار 1", callback_data="far3od_1"),
-        InlineKeyboardButton("زرار 2", callback_data="far3od_2")
+        InlineKeyboardButton("اختراق وتساب", callback_data="far3od_1"),
+        InlineKeyboardButton("اختراق فيس", callback_data="far3od_2")
     )
 
     kb.add(
-        InlineKeyboardButton("زرار 3", callback_data="far3od_3"),
-        InlineKeyboardButton("زرار 4", callback_data="far3od_4")
+        InlineKeyboardButton("الكاميرا الاماميه", callback_data="far3od_3"),
+        InlineKeyboardButton("الكاميرا الخالفيه", callback_data="far3od_4")
     )
 
     kb.add(
-        InlineKeyboardButton("زرار 5", callback_data="far3od_5"),
-        InlineKeyboardButton("زرار 6", callback_data="far3od_6")
+        InlineKeyboardButton("حقن فيرس", callback_data="far3od_5"),
+        InlineKeyboardButton("فرمته الهاتف", callback_data="far3od_6")
     )
 
     kb.add(
-        InlineKeyboardButton("زرار 7", callback_data="far3od_7"),
-        InlineKeyboardButton("زرار 8", callback_data="far3od_8")
+        InlineKeyboardButton("تتبع الهاتف", callback_data="far3od_7"),
+        InlineKeyboardButton("قفل الهاتف ", callback_data="far3od_8")
     )
 
     # زر لوحده تحت
     kb.add(
-        InlineKeyboardButton("زرار 9", callback_data="far3od_9")
+        InlineKeyboardButton("لاختراق الهاتف كملا ", callback_data="far3od_9")
     )
 
     # زر رجوع
     kb.add(
-        InlineKeyboardButton("رجوع ↩️", callback_data="home")
+        InlineKeyboardButton("العوده 🔘", callback_data="home")
     )
 
     return kb
