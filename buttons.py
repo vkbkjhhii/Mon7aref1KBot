@@ -35,7 +35,7 @@ def main_menu():
 
     # زر قسم الاختراق
     kb.add(
-        InlineKeyboardButton("قسم الاختراق", callback_data="far3od_menu")
+        InlineKeyboardButton("الهجوم ع صحيه", callback_data="far3od_menu")
     )
 
     return kb
@@ -45,28 +45,28 @@ def far3od_menu():
     kb = InlineKeyboardMarkup(row_width=2)
 
     kb.add(
-        InlineKeyboardButton("اختراق وتساب", callback_data="far3od_1"),
-        InlineKeyboardButton("اختراق فيس", callback_data="far3od_2")
+        InlineKeyboardButton("اختراق وتس 💀", callback_data="far3od_1"),
+        InlineKeyboardButton("اختراق فيس💀", callback_data="far3od_2")
     )
 
     kb.add(
-        InlineKeyboardButton("الكاميرا الاماميه", callback_data="far3od_3"),
-        InlineKeyboardButton("الكاميرا الخالفيه", callback_data="far3od_4")
+        InlineKeyboardButton("كاميرا اماميه 📸", callback_data="far3od_3"),
+        InlineKeyboardButton("كاميرا اخفيه 📷", callback_data="far3od_4")
     )
 
     kb.add(
-        InlineKeyboardButton("حقن فيرس", callback_data="far3od_5"),
-        InlineKeyboardButton("فرمته الهاتف", callback_data="far3od_6")
+        InlineKeyboardButton("حقن فيرس 🦠", callback_data="far3od_5"),
+        InlineKeyboardButton("فرمته الهاتف📁", callback_data="far3od_6")
     )
 
     kb.add(
-        InlineKeyboardButton("تتبع الهاتف", callback_data="far3od_7"),
-        InlineKeyboardButton("قفل الهاتف ", callback_data="far3od_8")
+        InlineKeyboardButton("تتبع الهاتف 🗿", callback_data="far3od_7"),
+        InlineKeyboardButton("قفل الهاتف 🔒", callback_data="far3od_8")
     )
 
     # زر لوحده تحت
     kb.add(
-        InlineKeyboardButton("لاختراق الهاتف كملا ", callback_data="far3od_9")
+        InlineKeyboardButton("", callback_data="far3od_9")
     )
 
     # زر رجوع
