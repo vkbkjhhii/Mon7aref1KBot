@@ -196,6 +196,7 @@ def register_handlers(dp, DEV_ID):
     async def paid_buttons(callback: types.CallbackQuery):
         await callback.answer()
         await callback.message.answer(paid_text, reply_markup=buy_kb())
+        
 import random, string, asyncio
 from aiogram import types
 
