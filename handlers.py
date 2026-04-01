@@ -52,18 +52,18 @@ def register_handlers(dp, DEV_ID):
         else:
             kb = types.InlineKeyboardMarkup()
             kb.add(
-                types.InlineKeyboardButton("📢 القناة الأولى", url="https://t.me/fraon10k"),
-                types.InlineKeyboardButton("📢 القناة الثانية", url="https://t.me/feraon_1")
+                types.InlineKeyboardButton("اشترك ▪️", url="https://t.me/fraon10k"),
+                types.InlineKeyboardButton("اشترك ▪️", url="https://t.me/feraon_1")
             )
             kb.add(types.InlineKeyboardButton("✅ تحقق", callback_data="check_sub"))
-            await message.answer("🚫 لازم تشترك في القنوات الأول", reply_markup=kb)
+            await message.answer("الرجاء الاشتراك في جميع قنوات المطور قبل استخدام البوت.", reply_markup=kb)
 
     @dp.callback_query_handler(lambda c: c.data=="check_sub")
     async def check_sub(callback: types.CallbackQuery):
         if await is_subscribed(dp.bot, callback.from_user.id):
             await callback.message.edit_text(f"اهلا بك {callback.from_user.first_name} في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
         else:
-            await callback.answer("❌ لسه مش مشترك", show_alert=True)
+            await callback.answer("لم تشترك بعد في القنوات", show_alert=True)
 
     @dp.callback_query_handler(lambda c: c.data=="home")
     async def home(callback: types.CallbackQuery):
