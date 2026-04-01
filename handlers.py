@@ -31,7 +31,7 @@ real_numbers = {
 
 # روابط القنوات للاشتراك الإجباري
 CHANNEL_1 = "@fraon10k"
-CHANNEL_2 = "https://t.me/feraon_1"
+CHANNEL_2 = "@feraon_1"
 
 # دالة التحقق من الاشتراك
 async def is_subscribed(bot, user_id):
@@ -53,7 +53,7 @@ def register_handlers(dp, DEV_ID):
             kb = types.InlineKeyboardMarkup()
             kb.add(
                 types.InlineKeyboardButton("📢 القناة الأولى", url="https://t.me/fraon10k"),
-                types.InlineKeyboardButton("📢 القناة الثانية", url="https://t.me/https://t.me/feraon_1")
+                types.InlineKeyboardButton("📢 القناة الثانية", url="https://t.me/feraon_1")
             )
             kb.add(types.InlineKeyboardButton("✅ تحقق", callback_data="check_sub"))
             await message.answer("🚫 لازم تشترك في القنوات الأول", reply_markup=kb)
