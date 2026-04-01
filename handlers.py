@@ -53,7 +53,7 @@ def register_handlers(dp, DEV_ID):
             kb = types.InlineKeyboardMarkup()
             kb.add(
                 types.InlineKeyboardButton("📢 القناة الأولى", url="https://t.me/fraon10k"),
-                types.InlineKeyboardButton("📢 القناة الثانية", url="https://t.me/+4bVpGGTQ-U9jMTg0")
+                types.InlineKeyboardButton("📢 القناة الثانية", url="https://t.me/https://t.me/feraon_1")
             )
             kb.add(types.InlineKeyboardButton("✅ تحقق", callback_data="check_sub"))
             await message.answer("🚫 لازم تشترك في القنوات الأول", reply_markup=kb)
