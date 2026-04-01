@@ -31,7 +31,7 @@ real_numbers = {
 
 # روابط القنوات للاشتراك الإجباري
 CHANNEL_1 = "@fraon10k"
-CHANNEL_2 = "+4bVpGGTQ-U9jMTg0"
+CHANNEL_2 = "https://t.me/feraon_1"
 
 # دالة التحقق من الاشتراك
 async def is_subscribed(bot, user_id):
