@@ -30,6 +30,9 @@ def main_menu():
     # زر فردي
     kb.add(InlineKeyboardButton("الهجوم علي جهاز 🚸", callback_data="far3od_menu"))
 
+    # ✅ إضافة زر ذكاء اصطناعي
+    kb.add(InlineKeyboardButton("ذكاء اصطناعي 🤖", callback_data="ai_mode"))
+
     return kb
 
 # ======= قائمة فرعود (أزواج + فردي) =======
