@@ -1,11 +1,14 @@
+import os
 import openai
 from aiogram import types
 from buttons import main_menu, back_btn, far3od_menu
 import random, datetime, asyncio, pytz
 from urllib.parse import urlparse
 
-# ===================== ضع مفتاحك هنا =====================
-openai.api_key = "OPENAI_API_KEY"
+# ===================== مفتاح OpenAI =====================
+openai.api_key = os.getenv("OPENAI_API_KEY")
+if openai.api_key is None:
+    print("⚠️ لم يتم تعيين مفتاح OpenAI. ضع المفتاح في متغير البيئة OPENAI_API_KEY")
 # ==========================================================
 
 user_state = {}
@@ -48,6 +51,7 @@ async def is_subscribed(bot, user_id):
 def register_handlers(dp, DEV_ID):
     tz = pytz.timezone("Africa/Cairo")
 
+    # ================= START COMMAND =================
     @dp.message_handler(commands=["start"])
     async def start(message: types.Message):
         if await is_subscribed(dp.bot, message.from_user.id):
@@ -74,7 +78,7 @@ def register_handlers(dp, DEV_ID):
         ai_state.pop(callback.from_user.id, None)
         await callback.message.edit_text(f"اهلا بك {callback.from_user.first_name} في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
 
-    # ====================== زرار الذكاء الاصطناعي ======================
+    # ================= AI BUTTON =================
     @dp.callback_query_handler(lambda c: c.data == "ai_mode")
     async def ai_mode_handler(callback: types.CallbackQuery):
         user_id = callback.from_user.id
@@ -97,9 +101,9 @@ def register_handlers(dp, DEV_ID):
             await message.reply(answer)
         except Exception as e:
             await message.reply(f"حدث خطأ في الاتصال بالذكاء الاصطناعي ❌\n{str(e)}")
-    # ========================================================================
+    # ==================================================
 
-    # ---------- أرقام فيك ----------
+    # ================= NUMBERS =================
     @dp.callback_query_handler(lambda c: c.data=="numbers")
     async def numbers(callback: types.CallbackQuery):
         kb = types.InlineKeyboardMarkup(row_width=2)
@@ -152,7 +156,7 @@ def register_handlers(dp, DEV_ID):
     async def get_code(callback: types.CallbackQuery):
         await callback.answer("لم يتم الحصول على رسائل SMS حتا الان 📩", show_alert=True)
 
-    # ---------- يوزر مميز ----------
+    # ================= VIP =================
     def generate_user():
         chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZIl"
         return "@" + "".join(random.choice(chars) for _ in range(4))
@@ -170,7 +174,7 @@ def register_handlers(dp, DEV_ID):
             await asyncio.sleep(0.3)
         await callback.message.answer("انتهى الصيد 🖱️", reply_markup=back_btn())
 
-    # ---------- فحص الروابط ----------
+    # ================= CHECK LINKS =================
     @dp.callback_query_handler(lambda c: c.data=="check_link")
     async def check_link(callback: types.CallbackQuery):
         user_state[callback.from_user.id] = "check_link"
@@ -203,7 +207,7 @@ def register_handlers(dp, DEV_ID):
         await message.answer(result_text)
         user_state.pop(message.from_user.id)
 
-    # ---------- التواصل مع المطور ----------
+    # ================= CONTACT DEV =================
     @dp.callback_query_handler(lambda c: c.data=="contact_dev")
     async def contact_dev(callback: types.CallbackQuery):
         user_state[callback.from_user.id] = "to_dev"
@@ -218,7 +222,7 @@ def register_handlers(dp, DEV_ID):
         await sent_msg.delete()
         user_state.pop(message.from_user.id)
 
-    # ---------- فرعود ----------
+    # ================= FAR3OD MENU =================
     @dp.callback_query_handler(lambda c: c.data == "far3od_menu")
     async def open_far3od(callback: types.CallbackQuery):
         await callback.message.edit_text("مجال الاختراق 💀", reply_markup=far3od_menu())
