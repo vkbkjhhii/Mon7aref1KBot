@@ -1,12 +1,11 @@
 from aiogram import types
-from buttons import main_menu, back_btn, far3od_menu, ai_menu, security_menu, network_menu, tools_menu
+from buttons import main_menu, back_btn
 import random, datetime, asyncio, pytz
 from urllib.parse import urlparse
 
 user_state = {}
 xo_games = {}
 
-# =================== بيانات الأرقام ===================
 real_numbers = {
     "مصر":["01012345678","01198765432","01234567890"],
     "امريكا":["+12025550123","+12025550987","+12125551234"],
@@ -30,11 +29,11 @@ real_numbers = {
     "استراليا":["+61412345678","+61412345679","+61412345680"]
 }
 
-# =================== القنوات ===================
+# روابط القنوات للاشتراك الإجباري
 CHANNEL_1 = "@fraon10k"
 CHANNEL_2 = "@feraon_1"
 
-# =================== دالة الاشتراك ===================
+# دالة التحقق من الاشتراك
 async def is_subscribed(bot, user_id):
     try:
         member1 = await bot.get_chat_member(CHANNEL_1, user_id)
@@ -43,7 +42,6 @@ async def is_subscribed(bot, user_id):
     except:
         return False
 
-# =================== الدوال الأساسية ===================
 def register_handlers(dp, DEV_ID):
     tz = pytz.timezone("Africa/Cairo")
 
@@ -72,7 +70,7 @@ def register_handlers(dp, DEV_ID):
         user_state.pop(callback.from_user.id, None)
         await callback.message.edit_text(f"اهلا بك {callback.from_user.first_name} في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
 
-    # =================== أرقام فيك ===================
+    # ---------- أرقام فيك ----------
     @dp.callback_query_handler(lambda c: c.data=="numbers")
     async def numbers(callback: types.CallbackQuery):
         kb = types.InlineKeyboardMarkup(row_width=2)
@@ -125,7 +123,7 @@ def register_handlers(dp, DEV_ID):
     async def get_code(callback: types.CallbackQuery):
         await callback.answer("لم يتم الحصول على رسائل SMS حتا الان 📩", show_alert=True)
 
-    # =================== يوزر مميز ===================
+    # ---------- يوزر مميز ----------
     def generate_user():
         chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZIl"
         return "@" + "".join(random.choice(chars) for _ in range(4))
@@ -143,7 +141,7 @@ def register_handlers(dp, DEV_ID):
             await asyncio.sleep(0.3)
         await callback.message.answer("انتهى الصيد 🖱️", reply_markup=back_btn())
 
-    # =================== فحص الروابط ===================
+    # ---------- فحص الروابط ----------
     @dp.callback_query_handler(lambda c: c.data=="check_link")
     async def check_link(callback: types.CallbackQuery):
         user_state[callback.from_user.id] = "check_link"
@@ -155,10 +153,28 @@ def register_handlers(dp, DEV_ID):
         if not (link.startswith("http://") or link.startswith("https://")):
             await message.reply("يمكنك ارسال رابط فقط ❌")
             return
-        await message.answer(f"تم فحص الرابط (تجريبي): {link}")
+        parsed = urlparse(link)
+        domain = parsed.netloc
+        path = parsed.path
+        if "wa.me" in domain or "api.whatsapp.com" in domain:
+            link_type = "واتساب"
+        elif "t.me" in domain:
+            link_type = "تيليجرام"
+        elif "tiktok.com" in domain:
+            link_type = "تيك توك"
+        else:
+            link_type = "عام HTTPS"
+        result_text = f"""
+🔗 الرابط: {link}
+🌐 الدومين: {domain}
+📂 المسار: {path}
+✅ نوع الرابط: {link_type}
+⚠️ الرابط آمن
+"""
+        await message.answer(result_text)
         user_state.pop(message.from_user.id)
 
-    # =================== التواصل مع المطور ===================
+    # ---------- التواصل مع المطور ----------
     @dp.callback_query_handler(lambda c: c.data=="contact_dev")
     async def contact_dev(callback: types.CallbackQuery):
         user_state[callback.from_user.id] = "to_dev"
@@ -173,7 +189,10 @@ def register_handlers(dp, DEV_ID):
         await sent_msg.delete()
         user_state.pop(message.from_user.id)
 
-    # =================== فرعود ===================
+    # ---------- فرعود ----------
+    from buttons import far3od_menu
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+
     @dp.callback_query_handler(lambda c: c.data == "far3od_menu")
     async def open_far3od(callback: types.CallbackQuery):
         await callback.message.edit_text("مجال الاختراق 💀", reply_markup=far3od_menu())
@@ -186,11 +205,11 @@ def register_handlers(dp, DEV_ID):
 """
 
     def buy_kb():
-        kb = types.InlineKeyboardMarkup()
+        kb = InlineKeyboardMarkup()
         kb.add(
-            types.InlineKeyboardButton(
+            InlineKeyboardButton(
                 "شراء عملاة البوت",
-                url="https://vkbkjhhii.github.io/Mon7aref1KBot/"
+                web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
             )
         )
         return kb
@@ -200,56 +219,84 @@ def register_handlers(dp, DEV_ID):
         await callback.answer()
         await callback.message.answer(paid_text, reply_markup=buy_kb())
 
-    # =================== الأزرار الجديدة ===================
-    @dp.callback_query_handler(lambda c: c.data=="ai_menu")
-    async def open_ai(callback: types.CallbackQuery):
-        await callback.message.edit_text("🤖 قسم الذكاء الاصطناعي", reply_markup=ai_menu())
+    # ================= FIXED PART =================
 
-    @dp.callback_query_handler(lambda c: c.data=="ai_chat")
-    async def ai_chat(callback: types.CallbackQuery):
-        user_state[callback.from_user.id] = "ai_chat"
-        await callback.message.edit_text("💬 ابعت سؤالك للذكاء الاصطناعي", reply_markup=back_btn())
+    import string
 
-    @dp.message_handler(lambda m: user_state.get(m.from_user.id)=="ai_chat")
-    async def handle_ai_chat(message: types.Message):
-        await message.answer("🤖 (AI مش متفعل لسه)\nلكن هيتربط قريب 🔥")
+    @dp.callback_query_handler(lambda c: c.data=="short_link")
+    async def ask_long_link(callback: types.CallbackQuery):
+        user_state[callback.from_user.id] = "awaiting_long_link"
+        await callback.message.answer("📎 أرسل الرابط الطويل الذي تريد اختصاره:")
+
+    @dp.message_handler(lambda message: user_state.get(message.from_user.id)=="awaiting_long_link")
+    async def generate_short_links(message: types.Message):
+        long_link = message.text.strip()
+
+        if not (long_link.startswith("http://") or long_link.startswith("https://")):
+            await message.reply("❌ يمكنك ارسال الرابط فقط يبدأ بـ http:// أو https://")
+            return
+
+        short_links = []
+        for _ in range(4):
+            suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+            short_links.append(f"https://short.ly/{suffix}")
+
+        text = "✅ روابطك المختصرة:\n\n"
+        for i, sl in enumerate(short_links, start=1):
+            text += f"{i}. {sl}\n"
+
+        text += f"\n🔗 الرابط الأصلي:\n{long_link}"
+
+        await message.reply(text)
         user_state.pop(message.from_user.id)
 
-    @dp.callback_query_handler(lambda c: c.data=="security_menu")
-    async def open_security(callback: types.CallbackQuery):
-        await callback.message.edit_text("🛡️ فحص الأمان", reply_markup=security_menu())
+    def random_name():
+        first_names = ["Ahmed","Mohamed","Ali","Omar","John","David","Chris","Adam"]
+        last_names = ["Hassan","Mahmoud","Ibrahim","Smith","Johnson","Brown","Davis"]
+        return random.choice(first_names) + " " + random.choice(last_names)
 
-    @dp.callback_query_handler(lambda c: c.data=="check_password")
-    async def check_password(callback: types.CallbackQuery):
-        user_state[callback.from_user.id] = "check_pass"
-        await callback.message.edit_text("🔐 ابعت كلمة السر للفحص", reply_markup=back_btn())
+    def generate_visa():
+        return "4" + "".join([str(random.randint(0,9)) for _ in range(15)])
 
-    @dp.message_handler(lambda m: user_state.get(m.from_user.id)=="check_pass")
-    async def handle_password(message: types.Message):
-        text = message.text
-        strength = "ضعيفة ❌" if len(text) < 6 else "متوسطة ⚠️" if len(text) < 10 else "قوية ✅"
-        await message.answer(f"🔐 قوة الباسورد: {strength}")
-        user_state.pop(message.from_user.id)
+    def generate_expiry():
+        return f"{str(random.randint(1,12)).zfill(2)}/{random.randint(25,30)}"
 
-    @dp.callback_query_handler(lambda c: c.data=="network_menu")
-    async def open_network(callback: types.CallbackQuery):
-        await callback.message.edit_text("🌐 أدوات الشبكات", reply_markup=network_menu())
+    def generate_cvv():
+        return str(random.randint(100,999))
 
-    @dp.callback_query_handler(lambda c: c.data=="ip_info")
-    async def ip_info(callback: types.CallbackQuery):
-        user_state[callback.from_user.id] = "ip"
-        await callback.message.edit_text("📍 ابعت IP", reply_markup=back_btn())
+    def generate_pin():
+        return str(random.randint(1000,9999))
 
-    @dp.message_handler(lambda m: user_state.get(m.from_user.id)=="ip")
-    async def handle_ip(message: types.Message):
-        await message.answer(f"🌍 معلومات IP:\nIP: {message.text}\n(ميزة تجريبية)")
-        user_state.pop(message.from_user.id)
+    def generate_balance():
+        return random.randint(10,500)
 
-    @dp.callback_query_handler(lambda c: c.data=="tools_menu")
-    async def open_tools(callback: types.CallbackQuery):
-        await callback.message.edit_text("🛠️ الأدوات", reply_markup=tools_menu())
+    @dp.callback_query_handler(lambda c: c.data=="random_visa")
+    async def random_visa(callback: types.CallbackQuery):
+        msg = await callback.message.edit_text("⏳ توليد البطاقة: ▰▱▱▱▱ 20%")
 
-    @dp.callback_query_handler(lambda c: c.data=="gen_pass")
-    async def gen_pass(callback: types.CallbackQuery):
-        password = ''.join(random.choice("abcdefghijklmnopqrstuvwxyz123456789") for _ in range(10))
-        await callback.message.edit_text(f"🔑 الباسورد:\n{password}", reply_markup=back_btn())
+        anim = [
+            "⏳ توليد البطاقة: ▰▱▱▱▱ 20%",
+            "⏳ توليد البطاقة: ▰▰▱▱▱ 40%",
+            "⏳ توليد البطاقة: ▰▰▰▱▱ 60%",
+            "⏳ توليد البطاقة: ▰▰▰▰▱ 80%",
+            "⏳ توليد البطاقة: ▰▰▰▰▰ 100%"
+        ]
+
+        for a in anim:
+            await asyncio.sleep(0.4)
+            await msg.edit_text(a)
+
+        text = f"""
+========== 💳 Visa ==========
+
+🔢 رقم البطاقة: <code>{generate_visa()}</code>
+👤 اسم صاحب الفيزاء : {random_name()}
+📅 تاريخ الانتهاء: {generate_expiry()}
+🔒 رمز(CVV): {generate_cvv()}
+🔑 الرقم السري (PIN): {generate_pin()}
+💵 الرصيد المتاح: ${generate_balance()}
+
+========== 💳 Visa ==========
+"""
+
+        await msg.edit_text(text)
