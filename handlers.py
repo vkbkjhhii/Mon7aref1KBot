@@ -1,10 +1,15 @@
+import openai
 from aiogram import types
-from buttons import main_menu, back_btn
+from buttons import main_menu, back_btn, far3od_menu
 import random, datetime, asyncio, pytz
 from urllib.parse import urlparse
 
+# ===================== ضع مفتاحك هنا =====================
+openai.api_key = "OPENAI_API_KEY"
+# ==========================================================
+
 user_state = {}
-xo_games = {}
+ai_state = {}  # تتبع المستخدمين في وضع الذكاء الاصطناعي
 
 real_numbers = {
     "مصر":["01012345678","01198765432","01234567890"],
@@ -29,11 +34,9 @@ real_numbers = {
     "استراليا":["+61412345678","+61412345679","+61412345680"]
 }
 
-# روابط القنوات للاشتراك الإجباري
 CHANNEL_1 = "@fraon10k"
 CHANNEL_2 = "@feraon_1"
 
-# دالة التحقق من الاشتراك
 async def is_subscribed(bot, user_id):
     try:
         member1 = await bot.get_chat_member(CHANNEL_1, user_id)
@@ -68,7 +71,33 @@ def register_handlers(dp, DEV_ID):
     @dp.callback_query_handler(lambda c: c.data=="home")
     async def home(callback: types.CallbackQuery):
         user_state.pop(callback.from_user.id, None)
+        ai_state.pop(callback.from_user.id, None)
         await callback.message.edit_text(f"اهلا بك {callback.from_user.first_name} في بوت المنحرف 🏴‍☠️", reply_markup=main_menu())
+
+    # ====================== زرار الذكاء الاصطناعي ======================
+    @dp.callback_query_handler(lambda c: c.data == "ai_mode")
+    async def ai_mode_handler(callback: types.CallbackQuery):
+        user_id = callback.from_user.id
+        ai_state[user_id] = True
+        await callback.message.edit_text(
+            "أهلاً بك في وضع الذكاء الاصطناعي 🤖\nاكتب أي شيء وسأرد عليك مباشرة!",
+            reply_markup=back_btn()
+        )
+
+    @dp.message_handler(lambda message: ai_state.get(message.from_user.id))
+    async def handle_ai_messages(message: types.Message):
+        user_id = message.from_user.id
+        user_text = message.text
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": user_text}]
+            )
+            answer = response.choices[0].message.content
+            await message.reply(answer)
+        except Exception as e:
+            await message.reply(f"حدث خطأ في الاتصال بالذكاء الاصطناعي ❌\n{str(e)}")
+    # ========================================================================
 
     # ---------- أرقام فيك ----------
     @dp.callback_query_handler(lambda c: c.data=="numbers")
@@ -190,9 +219,6 @@ def register_handlers(dp, DEV_ID):
         user_state.pop(message.from_user.id)
 
     # ---------- فرعود ----------
-    from buttons import far3od_menu
-    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
-
     @dp.callback_query_handler(lambda c: c.data == "far3od_menu")
     async def open_far3od(callback: types.CallbackQuery):
         await callback.message.edit_text("مجال الاختراق 💀", reply_markup=far3od_menu())
@@ -205,11 +231,11 @@ def register_handlers(dp, DEV_ID):
 """
 
     def buy_kb():
-        kb = InlineKeyboardMarkup()
+        kb = types.InlineKeyboardMarkup()
         kb.add(
-            InlineKeyboardButton(
+            types.InlineKeyboardButton(
                 "شراء عملاة البوت",
-                web_app=WebAppInfo(url="https://vkbkjhhii.github.io/Mon7aref1KBot/")
+                url="https://vkbkjhhii.github.io/Mon7aref1KBot/"
             )
         )
         return kb
@@ -218,7 +244,3 @@ def register_handlers(dp, DEV_ID):
     async def paid_buttons(callback: types.CallbackQuery):
         await callback.answer()
         await callback.message.answer(paid_text, reply_markup=buy_kb())
-
-    # ================= FIXED PART =================
-
-    
