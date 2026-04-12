@@ -1,34 +1,19 @@
-from aiogram import types
-from buttons import main_menu, back_btn
+import asyncio
+from aiogram import Bot, Dispatcher
+from aiogram.types import Message, CallbackQuery
 
-async def start(message: types.Message):
-    await message.answer(
-        "🔥 أهلا بيك في البوت",
-        reply_markup=main_menu()
-    )
+from config import BOT_TOKEN
+from handlers import start, handle_buttons
 
-async def handle_buttons(call: types.CallbackQuery):
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
 
-    if call.data == "ai":
-        await call.message.edit_text(
-            "🤖 AI Chat شغال...",
-            reply_markup=back_btn()
-        )
+dp.message.register(start, commands=["start"])
+dp.callback_query.register(handle_buttons)
 
-    elif call.data == "hacker":
-        await call.message.edit_text(
-            "💀 Hacker Tools...",
-            reply_markup=back_btn()
-        )
+async def main():
+    print("Bot is running...")
+    await dp.start_polling(bot)
 
-    elif call.data == "dark":
-        await call.message.edit_text(
-            "🌐 Dark Web Section...",
-            reply_markup=back_btn()
-        )
-
-    elif call.data == "back":
-        await call.message.edit_text(
-            "🔙 رجعنا للقائمة الرئيسية",
-            reply_markup=main_menu()
-        )
+if __name__ == "__main__":
+    asyncio.run(main())
