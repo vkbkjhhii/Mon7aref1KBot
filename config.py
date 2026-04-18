@@ -1,10 +1,8 @@
-import telebot
+import os
 
-# توكن البوت الخاص بك من @BotFather
-BOT_TOKEN = "8768225608:AAHkYYcW-3wIUykW9UIGMh1qug8XtxIPuwY"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME")
 
-# رقم المطور لتلقي إشعارات أو صلاحيات خاصة
-DEV_ID = 7771042305
-
-# إنشاء كائن البوت
-bot = telebot.TeleBot(BOT_TOKEN)
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN مش موجود ❌")
