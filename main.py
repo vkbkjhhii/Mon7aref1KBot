@@ -1,6 +1,5 @@
-import asyncio
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message, CallbackQuery
+import asyncio
 
 from config import BOT_TOKEN
 from handlers import start, handle_buttons
@@ -9,10 +8,11 @@ bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
 dp.message.register(start, commands=["start"])
-dp.callback_query.register(handle_buttons)
+
+# مهم نبعته bot للهاندلر
+dp.message.register(lambda msg: handle_buttons(msg, bot))
 
 async def main():
-    print("Bot is running...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
