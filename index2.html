@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شراء أرقام</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#000;
+    color:#fff;
+    text-align:center;
+}
+
+/* الهيدر */
+header{
+    background:#111;
+    padding:15px;
+    font-size:20px;
+}
+
+/* الدول */
+.countries{
+    display:flex;
+    overflow-x:auto;
+    padding:10px;
+    gap:10px;
+}
+
+.country{
+    min-width:110px;
+    background:#222;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    flex-shrink:0;
+}
+
+/* الأرقام */
+#numbers{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-top:20px;
+}
+
+.number-box{
+    width:45%;
+    background:#111;
+    margin:10px;
+    padding:15px;
+    border-radius:10px;
+}
+
+button{
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#00ffcc;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+/* الدفع */
+#payment{
+    display:none;
+    padding:20px;
+}
+
+.pay{
+    background:#111;
+    margin:15px;
+    padding:15px;
+    border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>📱 شراء أرقام دولية</header>
+
+<!-- الدول -->
+<div class="countries" id="countries"></div>
+
+<!-- الأرقام -->
+<div id="numbers"></div>
+
+<!-- الدفع -->
+<div id="payment">
+    <h2>💳 صفحة الدفع</h2>
+
+    <p>الرقم المختار:</p>
+    <h3 id="selectedNumber"></h3>
+
+    <div class="pay">
+        📱 فودافون كاش<br>
+        010XXXXXXX
+    </div>
+
+    <div class="pay">
+        🏦 InstaPay<br>
+        your@bank
+    </div>
+
+    <button onclick="done()">تم الدفع</button>
+</div>
+
+<script>
+
+// الدول والأرقام
+const data = {
+    "🇺🇸 أمريكا": ["+12025550123","+12025550124"],
+    "🇳🇱 هولندا": ["+319701234567","+319701234568"],
+    "🇩🇿 الجزائر": ["+213550000000","+213550000001"],
+    "🇸🇦 السعودية": ["+966500000000","+966500000001"],
+    "🇮🇱 إسرائيل": ["+972500000000","+972500000001"],
+    "🇹🇷 تركيا": ["+905000000000","+905000000001"],
+    "🇫🇷 فرنسا": ["+33700000000","+33700000001"]
+};
+
+// عرض الدول
+let countriesDiv = document.getElementById("countries");
+
+for(let c in data){
+    countriesDiv.innerHTML += `
+        <div class="country" onclick="showNumbers('${c}')">
+            ${c}
+        </div>
+    `;
+}
+
+// عرض أرقام الدولة
+function showNumbers(country){
+    document.getElementById("payment").style.display="none";
+
+    let box = document.getElementById("numbers");
+    box.innerHTML="";
+
+    data[country].forEach(num=>{
+        box.innerHTML += `
+            <div class="number-box">
+                <p>${num}</p>
+                <button onclick="buy('${num}')">شراء</button>
+            </div>
+        `;
+    });
+}
+
+// شراء رقم
+function buy(num){
+    document.getElementById("numbers").innerHTML="";
+    document.getElementById("payment").style.display="block";
+    document.getElementById("selectedNumber").innerText=num;
+}
+
+// تأكيد الدفع
+function done(){
+    alert("✅ تم تسجيل طلبك\nسيتم تفعيل الرقم بعد مراجعة الدفع");
+}
+
+</script>
+
+</body>
+</html>
