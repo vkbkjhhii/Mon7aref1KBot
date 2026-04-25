@@ -1,2 +1,4 @@
 aiogram
-aiohttp
+requests
+python-whois
+phonenumbers
